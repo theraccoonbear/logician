@@ -1,0 +1,469 @@
+/* Terrain palette — fixed colors (not theme-swapped) since hexes are always painted tiles. */
+:root {
+  --terrain-prairies: #e8d47a;
+  --terrain-forests: #5f9a5f;
+  --terrain-mountains: #4b4f56;
+  --terrain-swamps: #c9c2e0;
+  --terrain-ink: #1a1a1a;
+  --terrain-ink-light: #f4f4f4;
+}
+
+.setup-screen,
+.game-view {
+  text-align: left;
+  padding: 24px;
+  max-width: 100%;
+}
+
+.setup-screen {
+  max-width: 480px;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.setup-subtitle {
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.seat-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+}
+
+.seat-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.setup-field input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 16px;
+}
+
+.primary-button,
+.action-button {
+  font: inherit;
+  font-size: 15px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 2px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.primary-button:hover,
+.action-button:not(:disabled):hover {
+  border-color: var(--accent);
+}
+
+.action-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-button.secondary {
+  border-color: var(--border);
+  background: transparent;
+}
+
+/* --- Header --- */
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.turn-indicator {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.turn-indicator span {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.held-cards-summary {
+  font-style: italic;
+}
+
+.vp-tracker {
+  display: flex;
+  gap: 16px;
+}
+
+.vp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.vp-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.vp-value {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.winner-banner {
+  background: var(--accent-bg);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* --- Body layout --- */
+
+.game-body {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.game-sidebar {
+  flex: 1 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 320px;
+}
+
+/* --- Board --- */
+
+.board {
+  display: flex;
+  gap: 0;
+  flex: 0 0 auto;
+}
+
+.board-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.board-column-offset {
+  margin-top: 68px;
+  margin-left: -34px;
+}
+
+.hex-tile {
+  width: 130px;
+  min-height: 138px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  padding: 38px 18px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--terrain-ink);
+  transition: outline-color 0.15s;
+  outline: 3px solid transparent;
+  outline-offset: -3px;
+  box-sizing: border-box;
+}
+
+.hex-tile.is-selected {
+  outline-color: var(--accent);
+}
+
+.terrain-prairies {
+  background: var(--terrain-prairies);
+}
+.terrain-forests {
+  background: var(--terrain-forests);
+  color: var(--terrain-ink-light);
+}
+.terrain-mountains {
+  background: var(--terrain-mountains);
+  color: var(--terrain-ink-light);
+}
+.terrain-swamps {
+  background: var(--terrain-swamps);
+}
+
+.hex-terrain-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.75;
+}
+
+.hex-structures {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.hex-owner-stack {
+  display: flex;
+  gap: 2px;
+}
+
+/* --- Structure tokens --- */
+
+.structure-token {
+  width: 22px;
+  height: 22px;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.token-pool {
+  border-radius: 50%;
+}
+
+.token-pyramid {
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.token-tower {
+  border-radius: 3px;
+}
+
+.token-fortress {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.structure-token.is-fortressed {
+  box-shadow: 0 0 0 2px gold;
+}
+
+.structure-token.is-highlighted {
+  box-shadow: 0 0 0 3px #ff3b9a;
+}
+
+.structure-token.is-clickable {
+  cursor: pointer;
+}
+
+.major-arcana-panel {
+  border-top: 1px dashed var(--border);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.major-arcana-choices {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.major-arcana-form {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.deck-search-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.deck-search-list label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.redistribute-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.redistribute-row input {
+  width: 60px;
+  padding: 4px 6px;
+}
+
+/* --- Hands / cards --- */
+
+.card-hand-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.card-hand {
+  margin-bottom: 10px;
+}
+
+.card-hand-row,
+.tarot-row-cards {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-button,
+.tarot-card {
+  font: inherit;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+}
+
+.card-button.is-selected,
+.tarot-card.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.tarot-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+}
+
+.tarot-major {
+  min-width: 170px;
+  max-width: 200px;
+}
+
+.tarot-operands {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.tarot-major-description {
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.tarot-major.is-disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.tarot-note {
+  font-size: 10px;
+  color: var(--text);
+}
+
+/* --- Action panel --- */
+
+.action-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.action-hint {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.ai-thinking {
+  font-size: 15px;
+  text-align: center;
+  color: var(--text);
+}
+
+.action-error {
+  color: #e0455c;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* --- Log --- */
+
+.game-log {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 13px;
+}
+
+.game-log ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text);
+}
