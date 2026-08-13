@@ -1,5 +1,5 @@
 import type { Hex } from '../../../engine/board'
-import type { Structure } from '../../../engine/types/structure'
+import type { Structure, StructureType } from '../../../engine/types/structure'
 import { StructureToken } from './StructureToken'
 
 const TERRAIN_CLASS: Record<Hex['terrain'], string> = {
@@ -8,6 +8,12 @@ const TERRAIN_CLASS: Record<Hex['terrain'], string> = {
   Mountains: 'terrain-mountains',
   Swamps: 'terrain-swamps',
 }
+
+// Fixed left-to-right spot per structure type, rather than grouping by owner —
+// so a Pool is always in the same place on every hex regardless of whose it is
+// or what else is built there. Each spot can stack more than one token when
+// multiple players have that type on the same hex.
+const TYPE_SLOTS: readonly StructureType[] = ['Pool', 'Pyramid', 'Tower', 'Fortress']
 
 export function HexTile({
   hex,
@@ -28,8 +34,6 @@ export function HexTile({
   onClick?: () => void
   onStructureClick?: (structure: Structure) => void
 }) {
-  const owners = Array.from(new Set(structures.map((s) => s.owner)))
-
   return (
     // The selection ring below has to render OUTSIDE .hex-tile, not inside it: clip-path on
     // .hex-tile clips its entire subtree's paint to the hex silhouette, so no descendant —
@@ -49,15 +53,15 @@ export function HexTile({
         <div className={`hex-terrain-art ${TERRAIN_CLASS[hex.terrain]}`} />
         <div className="hex-terrain-label">{hex.terrain}</div>
         <div className="hex-structures">
-          {owners.map((owner) => (
-            <div className="hex-owner-stack" key={owner}>
+          {TYPE_SLOTS.filter((type) => structures.some((s) => s.type === type)).map((type) => (
+            <div className={`hex-type-slot hex-type-slot-${type.toLowerCase()}`} key={type}>
               {structures
-                .filter((s) => s.owner === owner)
+                .filter((s) => s.type === type)
                 .map((s) => (
                   <StructureToken
                     key={s.id}
                     structure={s}
-                    color={colorOf(owner)}
+                    color={colorOf(s.owner)}
                     highlighted={highlightedIds.has(s.id) || Boolean(selectedStructureIds?.has(s.id))}
                     onClick={
                       onStructureClick

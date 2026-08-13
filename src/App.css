@@ -281,21 +281,25 @@
 
 .hex-structures {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
+  align-items: flex-start;
   gap: 4px;
 }
 
-.hex-owner-stack {
+/* One column per structure type — Pool, Pyramid, Tower, then Fortress when
+   present — so a given type always has the same spot on every hex, rather
+   than grouping by owner. Stacks vertically when more than one player has
+   that type on the same hex. */
+.hex-type-slot {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 2px;
 }
 
 /* --- Structure tokens --- */
 
 .structure-token {
-  width: 22px;
-  height: 22px;
   border: 2px solid;
   display: flex;
   align-items: center;
@@ -304,6 +308,8 @@
   font-weight: 700;
   background: var(--bg);
   color: var(--text-h);
+  width: 22px;
+  height: 22px;
 }
 
 .token-pool {
@@ -322,12 +328,62 @@
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
+/* Art tokens (Pool/Pyramid/Tower currently) — a standard footprint box that
+   each source image is fit into via object-fit: contain, so a wide flat
+   Pool illustration and a tall narrow Tower one read as roughly the same
+   size on the board despite very different native aspect ratios. */
+.structure-token-art {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.structure-art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Owner identity, since there's no border to color on an irregular,
+     mostly-transparent image the way there was on the flat shape tokens. */
+  filter: drop-shadow(0 0 0 var(--owner-color)) drop-shadow(1px 0 0 var(--owner-color))
+    drop-shadow(-1px 0 0 var(--owner-color)) drop-shadow(0 1px 0 var(--owner-color))
+    drop-shadow(0 -1px 0 var(--owner-color));
+}
+
+.structure-level-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--owner-color);
+  color: #fff;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
 .structure-token.is-fortressed {
   box-shadow: 0 0 0 2px gold;
 }
 
+.structure-token-art.is-fortressed {
+  box-shadow: none;
+  filter: drop-shadow(0 0 3px gold) drop-shadow(0 0 3px gold);
+}
+
 .structure-token.is-highlighted {
   box-shadow: 0 0 0 3px #ff3b9a;
+}
+
+.structure-token-art.is-highlighted {
+  box-shadow: none;
+  filter: drop-shadow(0 0 3px #ff3b9a) drop-shadow(0 0 3px #ff3b9a);
 }
 
 .structure-token.is-clickable {
