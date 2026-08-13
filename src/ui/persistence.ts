@@ -26,3 +26,21 @@ export function clearSavedGame(): void {
     // ignore
   }
 }
+
+const PLAYER_NAME_KEY = 'logician-player-name-v1'
+
+export function loadSavedPlayerName(): string | null {
+  try {
+    return localStorage.getItem(PLAYER_NAME_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function savePlayerName(name: string): void {
+  try {
+    if (name.trim()) localStorage.setItem(PLAYER_NAME_KEY, name)
+  } catch {
+    // Storage full or unavailable (e.g. private browsing) — silently skip persistence.
+  }
+}

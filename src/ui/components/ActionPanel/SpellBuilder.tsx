@@ -1,6 +1,5 @@
 import { EffectCardHand } from '../Hand/EffectCardHand'
 import { LogicCardHand } from '../Hand/LogicCardHand'
-import { TarotRow } from '../TarotRow/TarotRow'
 import { useGameEngine } from '../../hooks/useGameEngine'
 
 export interface SpellSelection {
@@ -35,8 +34,7 @@ export function SpellBuilder({
   }
 
   return (
-    <div className="action-panel">
-      <TarotRow cards={state.tarotRow} selectedId={selection.tarotId} onSelect={(id) => onChange({ ...selection, tarotId: id })} />
+    <div className="cast-pane">
       <LogicCardHand
         cards={player.logicHand}
         selectedId={selection.logicId}

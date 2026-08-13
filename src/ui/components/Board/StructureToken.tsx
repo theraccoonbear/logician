@@ -13,11 +13,14 @@ export function StructureToken({
   structure,
   color,
   highlighted,
+  crowded,
   onClick,
 }: {
   structure: Structure
   color: string
   highlighted: boolean
+  /** More than one player has this hex — render at the smaller "shared" footprint. */
+  crowded?: boolean
   onClick?: (e: MouseEvent) => void
 }) {
   const title = `${structure.type} — level ${structure.level}`
@@ -32,6 +35,7 @@ export function StructureToken({
     const classes = [
       'structure-token',
       'structure-token-art',
+      crowded ? 'is-crowded' : '',
       structure.fortressed ? 'is-fortressed' : '',
       highlighted ? 'is-highlighted' : '',
       onClick ? 'is-clickable' : '',

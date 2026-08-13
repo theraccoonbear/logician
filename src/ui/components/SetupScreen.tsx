@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { AIDifficulty } from '../../engine/types/state'
 import { useGameEngine } from '../hooks/useGameEngine'
+import { loadSavedPlayerName, savePlayerName } from '../persistence'
 
 interface SeatDraft {
   name: string
@@ -13,7 +14,9 @@ const MAX_PLAYERS = 4
 
 function defaultSeats(): SeatDraft[] {
   return [
-    { name: 'You', isAI: false, aiDifficulty: 'heuristic' },
+    // Seat 0 is the default human seat — remember whatever name they last set here
+    // instead of always defaulting to the generic "You".
+    { name: loadSavedPlayerName() ?? 'You', isAI: false, aiDifficulty: 'heuristic' },
     { name: 'AI Opponent', isAI: true, aiDifficulty: 'heuristic' },
   ]
 }
@@ -23,6 +26,7 @@ export function SetupScreen() {
   const [seats, setSeats] = useState<SeatDraft[]>(defaultSeats())
 
   const updateSeat = (index: number, patch: Partial<SeatDraft>) => {
+    if (index === 0 && patch.name !== undefined) savePlayerName(patch.name)
     setSeats((prev) => prev.map((seat, i) => (i === index ? { ...seat, ...patch } : seat)))
   }
   const addSeat = () => {
@@ -36,7 +40,7 @@ export function SetupScreen() {
 
   return (
     <div className="setup-screen">
-      <h1>Logician</h1>
+      <img className="setup-title-card" src="/img/title-card.jpg" alt="Logician" />
       <p className="setup-subtitle">Hotseat play — any seat can be human or AI.</p>
       <div className="setup-form">
         {seats.map((seat, i) => (

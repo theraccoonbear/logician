@@ -18,13 +18,13 @@ import { WorldForm } from './majorForms/WorldForm'
 
 export function MajorArcanaPanel({
   activeMajorId,
-  setActiveMajorId,
+  onDeselect,
   wheelTargets,
   setWheelTargets,
   selectedHexId,
 }: {
-  activeMajorId: MajorArcanaId | null
-  setActiveMajorId: (id: MajorArcanaId | null) => void
+  activeMajorId: MajorArcanaId
+  onDeselect: () => void
   wheelTargets: Set<string>
   setWheelTargets: (next: Set<string>) => void
   selectedHexId: string | null
@@ -33,54 +33,48 @@ export function MajorArcanaPanel({
   if (!state) return null
 
   const player = state.players[state.activePlayerIndex]
-  const majorCards = state.tarotRow.filter((t) => t.kind === 'major')
-  if (majorCards.length === 0) return null
-
   const activeTarot = state.tarotRow.find((t) => t.kind === 'major' && t.id === activeMajorId)
+  if (!activeTarot) return null
 
   const play = (params?: unknown) => {
     if (!activeTarot) return
     dispatch({ type: 'PLAY_MAJOR_ARCANA', playerId: player.id, tarotId: activeTarot.instanceId, params })
-    setActiveMajorId(null)
+    onDeselect()
     setWheelTargets(new Set())
   }
-  const cancel = () => setActiveMajorId(null)
+  const cancel = onDeselect
+
+  const holdable = isHoldCard(activeMajorId) || activeMajorId === 'HIGH_PRIESTESS'
+  const implemented = holdable || IMPLEMENTED_MAJOR_ARCANA_IDS.has(activeMajorId)
 
   return (
     <div className="major-arcana-panel">
-      <div className="card-hand-label">Or Play a Major Arcana Action</div>
-      <div className="major-arcana-choices">
-        {majorCards.map((tarot) => {
-          if (tarot.kind !== 'major') return null
-          const holdable = isHoldCard(tarot.id) || tarot.id === 'HIGH_PRIESTESS'
-          if (holdable) {
-            return (
-              <button
-                key={tarot.instanceId}
-                className="card-button"
-                onClick={() => dispatch({ type: 'TAKE_HOLD_CARD', playerId: player.id, tarotId: tarot.instanceId })}
-                title={`${MAJOR_ARCANA_DESCRIPTIONS[tarot.id]} (taken now, played later)`}
-              >
-                Take {describeMajorArcana(tarot.id)}
-              </button>
-            )
-          }
-          const implemented = IMPLEMENTED_MAJOR_ARCANA_IDS.has(tarot.id)
-          return (
-            <button
-              key={tarot.instanceId}
-              className={`card-button ${activeMajorId === tarot.id ? 'is-selected' : ''}`}
-              disabled={!implemented}
-              title={implemented ? MAJOR_ARCANA_DESCRIPTIONS[tarot.id] : 'Not implemented yet'}
-              onClick={() => setActiveMajorId(tarot.id)}
-            >
-              {describeMajorArcana(tarot.id)}
-            </button>
-          )
-        })}
-      </div>
+      <p className="action-hint">{MAJOR_ARCANA_DESCRIPTIONS[activeMajorId]}</p>
 
-      {activeMajorId && <p className="action-hint">{MAJOR_ARCANA_DESCRIPTIONS[activeMajorId]}</p>}
+      {holdable && (
+        <div className="action-buttons">
+          <button
+            className="action-button"
+            onClick={() => {
+              dispatch({ type: 'TAKE_HOLD_CARD', playerId: player.id, tarotId: activeTarot.instanceId })
+              onDeselect()
+            }}
+          >
+            Take &amp; Hold {describeMajorArcana(activeMajorId)}
+          </button>
+          <button className="action-button secondary" onClick={cancel}>
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {!holdable && !implemented && (
+        <div className="action-buttons">
+          <button className="action-button secondary" onClick={cancel}>
+            Cancel
+          </button>
+        </div>
+      )}
 
       {activeMajorId === 'WHEEL' && (
         <div className="major-arcana-form">

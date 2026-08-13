@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getAffectedStructures } from '../../engine/selectors'
-import type { MajorArcanaId } from '../../engine/types/tarot'
 import { useAITurns } from '../hooks/useAITurns'
 import { useGameEngine } from '../hooks/useGameEngine'
 import { ActionPanel } from './ActionPanel/ActionPanel'
@@ -18,15 +17,19 @@ export function GameView() {
   useAITurns()
   const [selectedHexId, setSelectedHexId] = useState<string | null>(null)
   const [spellSelection, setSpellSelection] = useState<SpellSelection>(EMPTY_SELECTION)
-  const [activeMajorId, setActiveMajorId] = useState<MajorArcanaId | null>(null)
   const [wheelTargets, setWheelTargets] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setSelectedHexId(null)
     setSpellSelection(EMPTY_SELECTION)
-    setActiveMajorId(null)
     setWheelTargets(new Set())
   }, [state?.activePlayerIndex, state?.phase])
+
+  // Derived, not separately tracked: which major arcana (if any) is selected in the tarot
+  // row right now. Single source of truth is spellSelection.tarotId, shared with the minor
+  // logic/effect picking flow — see ActionPanel.
+  const selectedTarot = state?.tarotRow.find((t) => t.instanceId === spellSelection.tarotId)
+  const activeMajorId = selectedTarot?.kind === 'major' ? selectedTarot.id : null
 
   const highlightedIds = useMemo(() => {
     if (!state || !spellSelection.logicId || !spellSelection.tarotId) return new Set<string>()
@@ -67,6 +70,7 @@ export function GameView() {
         <div className="winner-banner">{state.players.find((p) => p.id === state.winner)?.name} wins!</div>
       )}
       <div className="game-header">
+        <img className="game-logo" src="/img/logician.png" alt="Logician" />
         <TurnIndicator state={state} />
         <VPTracker state={state} />
         <button
@@ -95,8 +99,6 @@ export function GameView() {
               selectedHexId={selectedHexId}
               spellSelection={spellSelection}
               onSpellSelectionChange={setSpellSelection}
-              activeMajorId={activeMajorId}
-              setActiveMajorId={setActiveMajorId}
               wheelTargets={wheelTargets}
               setWheelTargets={setWheelTargets}
             />

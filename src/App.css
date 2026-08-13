@@ -16,9 +16,17 @@
 }
 
 .setup-screen {
-  max-width: 480px;
+  max-width: 640px;
   margin: 60px auto;
   text-align: center;
+}
+
+.setup-title-card {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  display: block;
 }
 
 .setup-subtitle {
@@ -93,6 +101,13 @@
 }
 
 /* --- Header --- */
+
+.game-logo {
+  height: 40px;
+  width: auto;
+  border-radius: 4px;
+  margin-right: auto;
+}
 
 .game-header {
   display: flex;
@@ -191,21 +206,23 @@
   /* Flat-top hexes nest one column into the next: shift down by half a hex
      height plus half the column gap, so this column's tiles sit centered in
      the notches of its neighbor rather than flush against them. */
-  margin-top: 69px;
+  margin-top: 83px;
   /* Pull columns together to ~3/4 hex width apart (center-to-center) minus a
      little breathing room, the spacing at which flat-top hexes interlock
      with a small gap instead of sitting flush or fully side by side. */
-  margin-left: -30px;
+  margin-left: -37px;
 }
 
 /* Flat-top hex: width is point-to-point (left/right vertices), height is
    flat-to-flat (top/bottom edges). For a regular hexagon, height = width * sqrt(3)/2.
    This size lives on .hex-slot (the flex item the column layout math is built
    around) rather than .hex-tile itself, so the selection ring can sit next to
-   .hex-tile as a true sibling — see the comment on .hex-tile-ring below. */
+   .hex-tile as a true sibling — see the comment on .hex-tile-ring below.
+   Sized up from the original 150x130 to give the structure art room to grow
+   without cropping against the hex's own slanted edges. */
 .hex-slot {
-  width: 150px;
-  height: 130px;
+  width: 180px;
+  height: 156px;
   position: relative;
 }
 
@@ -235,12 +252,12 @@
   width: 100%;
   height: 100%;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  padding: 20px 28px 12px;
+  padding: 24px 40px 15px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   color: var(--terrain-ink-light);
   position: relative;
   box-sizing: border-box;
@@ -279,22 +296,58 @@
   border-radius: 3px;
 }
 
+/* One band per player who has structures on this hex — top player, then
+   bottom player, rather than interleaving owners within each type slot.
+   Single-owner hexes (the common case) are just one full-size band; a
+   second band triggers .is-crowded, scaling both bands down to fit. */
 .hex-structures {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hex-owner-band {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   gap: 4px;
 }
 
-/* One column per structure type — Pool, Pyramid, Tower, then Fortress when
-   present — so a given type always has the same spot on every hex, rather
-   than grouping by owner. Stacks vertically when more than one player has
-   that type on the same hex. */
+/* One column per structure type within a band — Pool, Tower, Pyramid, then
+   Fortress when present — so a given type always has the same spot,
+   regardless of what else is built on the hex. */
 .hex-type-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Tower sits centered and behind Pool/Pyramid rather than in its own
+   non-overlapping column — negative margins on its neighbors pull them in
+   over its flanks, and the lower z-index keeps it visually "back" like the
+   other two are standing in front of it. */
+.hex-type-slot-tower {
+  z-index: 1;
+}
+
+.hex-type-slot-pool {
+  margin-right: -16px;
+}
+
+.hex-type-slot-pyramid {
+  margin-left: -16px;
+}
+
+.hex-structures.is-crowded .hex-type-slot-pool {
+  margin-right: -9px;
+}
+
+.hex-structures.is-crowded .hex-type-slot-pyramid {
+  margin-left: -9px;
 }
 
 /* --- Structure tokens --- */
@@ -334,11 +387,44 @@
    size on the board despite very different native aspect ratios. */
 .structure-token-art {
   position: relative;
-  width: 34px;
-  height: 34px;
+  width: 58px;
+  height: 58px;
   border: none;
   background: none;
   padding: 0;
+}
+
+/* Tower is deliberately the exception to "standard footprint": taller than
+   the others and pulled up behind the row (negative margin-top), so it
+   actually reads as the tall piece on the hex instead of just another
+   same-size icon sitting in line with Pool and Pyramid. Source art has a
+   fair amount of transparent headroom above the actual tower silhouette, so
+   the box can overlap the terrain label above it more than it looks like it
+   should on paper. */
+.hex-type-slot-tower .structure-token-art {
+  width: 60px;
+  height: 88px;
+  margin-top: -10px;
+}
+
+/* Crowded (2+ owners on this hex, stacked in bands) — both bands scale down
+   to roughly half footprint so two full stacks fit without overflowing the
+   hex vertically. */
+.hex-structures.is-crowded .structure-token-art {
+  width: 32px;
+  height: 32px;
+}
+
+.hex-structures.is-crowded .hex-type-slot-tower .structure-token-art {
+  width: 34px;
+  height: 50px;
+  margin-top: -4px;
+}
+
+.hex-structures.is-crowded .structure-level-badge {
+  width: 11px;
+  height: 11px;
+  font-size: 7px;
 }
 
 .structure-art {
@@ -390,17 +476,14 @@
   cursor: pointer;
 }
 
+/* Cast pane, shared look for whichever one is showing below the tarot row —
+   the minor logic/effect picker (.cast-pane) or a selected major's own
+   action (.major-arcana-panel). Never both at once. */
+.cast-pane,
 .major-arcana-panel {
   border-top: 1px dashed var(--border);
   margin-top: 12px;
   padding-top: 12px;
-}
-
-.major-arcana-choices {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
 }
 
 .major-arcana-form {
@@ -485,12 +568,25 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 110px;
+  width: 96px;
+  padding: 6px;
 }
 
 .tarot-major {
-  min-width: 170px;
-  max-width: 200px;
+  width: 96px;
+}
+
+/* Card art — same footprint for major and minor so the row stays even
+   regardless of which kind of card it is. Source images are the 1909
+   Rider-Waite-Smith deck at ~0.58:1 (width:height); object-fit: cover crops
+   to a slightly taller box rather than letterboxing, since these are meant
+   to read as cards, not icons. */
+.tarot-art {
+  width: 100%;
+  height: 128px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 2px;
 }
 
 .tarot-operands {
@@ -498,13 +594,6 @@
   flex-direction: column;
   font-size: 11px;
   color: var(--text);
-}
-
-.tarot-major-description {
-  font-size: 11px;
-  color: var(--text);
-  line-height: 1.35;
-  white-space: normal;
 }
 
 .tarot-major.is-disabled {
