@@ -183,55 +183,100 @@
 .board-column {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  /* Vertical breathing room between stacked hexes in the same column. */
+  gap: 8px;
 }
 
 .board-column-offset {
-  margin-top: 68px;
-  margin-left: -34px;
+  /* Flat-top hexes nest one column into the next: shift down by half a hex
+     height plus half the column gap, so this column's tiles sit centered in
+     the notches of its neighbor rather than flush against them. */
+  margin-top: 69px;
+  /* Pull columns together to ~3/4 hex width apart (center-to-center) minus a
+     little breathing room, the spacing at which flat-top hexes interlock
+     with a small gap instead of sitting flush or fully side by side. */
+  margin-left: -30px;
+}
+
+/* Flat-top hex: width is point-to-point (left/right vertices), height is
+   flat-to-flat (top/bottom edges). For a regular hexagon, height = width * sqrt(3)/2.
+   This size lives on .hex-slot (the flex item the column layout math is built
+   around) rather than .hex-tile itself, so the selection ring can sit next to
+   .hex-tile as a true sibling — see the comment on .hex-tile-ring below. */
+.hex-slot {
+  width: 150px;
+  height: 130px;
+  position: relative;
+}
+
+/* Lifts the whole slot (tile + ring) above normal-flow sibling hexes, so a
+   later-painted neighbor in this interlocking layout can't paint over the
+   ring — the same reason `outline` used to end up partially hidden. */
+.hex-slot.is-selected {
+  z-index: 5;
+}
+
+/* Selection ring. Deliberately a sibling of .hex-tile, not a descendant:
+   clip-path on .hex-tile clips its entire subtree's paint to the hex
+   silhouette, so no descendant — pseudo-element, filter:drop-shadow,
+   anything, regardless of position/size — can ever visually extend past
+   that same boundary. A same-shaped, slightly larger sibling element that
+   isn't itself clipped by .hex-tile can. It's placed before .hex-tile in
+   the DOM so the (opaque) tile paints over its center, leaving only the
+   protruding edge visible as a ring. */
+.hex-tile-ring {
+  position: absolute;
+  inset: -4px;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: var(--accent);
 }
 
 .hex-tile {
-  width: 130px;
-  min-height: 138px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  padding: 38px 18px 14px;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  padding: 20px 28px 12px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  color: var(--terrain-ink);
-  transition: outline-color 0.15s;
-  outline: 3px solid transparent;
-  outline-offset: -3px;
+  color: var(--terrain-ink-light);
+  position: relative;
   box-sizing: border-box;
 }
 
-.hex-tile.is-selected {
-  outline-color: var(--accent);
+/* Terrain art fills the tile as its own layer (not the tile's own `background`),
+   purely so it's a normal child rather than the tile's own background paint —
+   keeps it consistent with how .hex-tile-ring is composed. clip-path on the
+   parent .hex-tile still clips this child's paint to the hex silhouette. */
+.hex-terrain-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
 }
 
 .terrain-prairies {
-  background: var(--terrain-prairies);
+  background: var(--terrain-prairies) url('/img/terrain/prairies.png') center / cover;
 }
 .terrain-forests {
-  background: var(--terrain-forests);
-  color: var(--terrain-ink-light);
+  background: var(--terrain-forests) url('/img/terrain/forests.png') center / cover;
 }
 .terrain-mountains {
-  background: var(--terrain-mountains);
-  color: var(--terrain-ink-light);
+  background: var(--terrain-mountains) url('/img/terrain/mountains.png') center / cover;
 }
 .terrain-swamps {
-  background: var(--terrain-swamps);
+  background: var(--terrain-swamps) url('/img/terrain/swamps.png') center / cover;
 }
 
 .hex-terrain-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.75;
+  color: var(--terrain-ink-light);
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2px 8px;
+  border-radius: 3px;
 }
 
 .hex-structures {
