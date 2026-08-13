@@ -1,13 +1,7 @@
 import type { Hex } from '../../../engine/board'
 import type { Structure, StructureType } from '../../../engine/types/structure'
+import { terrainArtUrl } from '../../terrainArt'
 import { StructureToken } from './StructureToken'
-
-const TERRAIN_CLASS: Record<Hex['terrain'], string> = {
-  Prairies: 'terrain-prairies',
-  Forests: 'terrain-forests',
-  Mountains: 'terrain-mountains',
-  Swamps: 'terrain-swamps',
-}
 
 // Fixed left-to-right spot per structure type, rather than grouping by owner —
 // so a Pool is always in the same place on every hex regardless of whose it is
@@ -48,15 +42,14 @@ export function HexTile({
     <div className={`hex-slot ${selected ? 'is-selected' : ''}`}>
       {selected && <div className="hex-tile-ring" />}
       <div
-        className="hex-tile"
+        className={`hex-tile ${onClick ? 'is-clickable' : ''}`}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
         onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
         aria-label={`${hex.id}, ${hex.terrain}, ${structures.length} structure(s)`}
       >
-        <div className={`hex-terrain-art ${TERRAIN_CLASS[hex.terrain]}`} />
-        <div className="hex-terrain-label">{hex.terrain}</div>
+        <img className="hex-terrain-art" src={terrainArtUrl(hex.terrain)} alt={hex.terrain} />
         <div className={`hex-structures ${owners.length > 1 ? 'is-crowded' : ''}`}>
           {owners.map((owner) => {
             const ownerStructures = structures.filter((s) => s.owner === owner)

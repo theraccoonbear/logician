@@ -1,10 +1,4 @@
-/* Terrain palette — fixed colors (not theme-swapped) since hexes are always painted tiles. */
 :root {
-  --terrain-prairies: #e8d47a;
-  --terrain-forests: #5f9a5f;
-  --terrain-mountains: #4b4f56;
-  --terrain-swamps: #c9c2e0;
-  --terrain-ink: #1a1a1a;
   --terrain-ink-light: #f4f4f4;
 }
 
@@ -100,21 +94,88 @@
   background: transparent;
 }
 
-/* --- Header --- */
+/* --- Header: two rows, not one — title/menu, then turn/score --- */
 
 .game-logo {
-  height: 40px;
+  height: 56px;
   width: auto;
   border-radius: 4px;
-  margin-right: auto;
+  display: block;
 }
 
-.game-header {
+.title-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.menu-bar {
+  position: relative;
+}
+
+.hamburger-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.hamburger-button span {
+  width: 20px;
+  height: 2px;
+  background: var(--text-h);
+  border-radius: 1px;
+}
+
+.hamburger-button:hover {
+  border-color: var(--accent);
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+}
+
+.menu-item {
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: var(--accent-bg);
+}
+
+.score-row {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 24px;
   margin-bottom: 20px;
 }
 
@@ -170,29 +231,62 @@
   text-align: center;
 }
 
-/* --- Body layout --- */
+/* --- Body layout: game field, then cards/log below it --- */
 
-.game-body {
+/* overflow: hidden, not auto — the board is scaled down to fit (useFitScale
+   in GameView) rather than left to overflow into a scrollbar. Hex sizes are
+   fixed px values tuned per orientation, not fluid, so this is what keeps a
+   landscape board from spilling past a narrower-than-ideal window. */
+.game-field {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+/* Card selection (left) and the actual cast/spell mechanics (right).
+   Narrower than a fixed 2-column split would allow: wraps to stacked rows
+   once the pane can't fit both side by side (portrait/mobile). */
+.cards-row {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
   align-items: flex-start;
+  margin-bottom: 24px;
 }
 
-.game-sidebar {
-  flex: 1 1 360px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 320px;
+.tarot-pane {
+  flex: 1 1 340px;
 }
 
-/* --- Board --- */
+.spell-pane {
+  flex: 2 1 420px;
+}
+
+.log-row .game-log {
+  width: 100%;
+}
+
+/* --- Board ---
+
+   Two full layouts, not one layout that reflows: rotating the board 90°
+   between portrait and landscape also rotates which hex orientation
+   actually tessellates without gaps (see the hex-geometry note further
+   down), so the columns-of-flat-top-hexes arrangement below and the
+   rows-of-pointy-top-hexes arrangement further down are genuinely
+   different shapes, not a CSS media-query reflow of the same one. Board.tsx
+   picks which one to render (and which position map) based on
+   useOrientation(); same 10 hex ids, same terrain groups staying adjacent
+   to each other, just read as a 2-col x 5-row tower or a 2-row x 5-col
+   strip. */
 
 .board {
   display: flex;
-  gap: 0;
   flex: 0 0 auto;
+}
+
+.board-portrait {
+  gap: 0;
 }
 
 .board-column {
@@ -226,6 +320,57 @@
   position: relative;
 }
 
+/* --- Landscape board: pointy-top hexes, tessellating in rows ---
+
+   Same "size" (center-to-vertex radius = 110, vs. 90 for the portrait
+   hexes) but bigger overall — landscape means a wide screen with room to
+   spare, so the board can afford to be physically larger there instead of
+   just centered-but-small; portrait/mobile is the orientation that needs
+   to stay compact. Width and height are swapped from the flat-top case
+   (point-to-point is now vertical, flat-to-flat is now horizontal), and
+   the tessellation math swaps which margin does the "pull together" job
+   and which does the "stagger" job. */
+.board-landscape {
+  flex-direction: column;
+  align-items: center;
+}
+
+.board-row {
+  display: flex;
+  flex-direction: row;
+  /* Horizontal breathing room between adjacent hexes in the same row. */
+  gap: 8px;
+}
+
+.board-row-offset {
+  /* Stagger this row half a hex-width-plus-gap to the right, so it nests
+     into the notches of the row above/below instead of sitting flush. */
+  margin-left: 199px;
+  /* Pull rows together vertically to ~3/4 hex height apart (center-to-center)
+     minus a little breathing room — the pointy-top mirror of
+     .board-column-offset's margin-left. */
+  margin-top: -50px;
+}
+
+.board-landscape .hex-slot {
+  width: 190px;
+  height: 220px;
+}
+
+/* Pointy-top hex: height is point-to-point (top/bottom vertices), width is
+   flat-to-flat (left/right edges) — the mirror image of the flat-top
+   clip-path. The "full width" safe zone for content is the middle 50% of
+   the height (25%-75%); padding below is sized to land inside it. */
+.board-landscape .hex-tile-ring {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.board-landscape .hex-tile {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  padding: 58px 20px 45px;
+  gap: 6px;
+}
+
 /* Lifts the whole slot (tile + ring) above normal-flow sibling hexes, so a
    later-painted neighbor in this interlocking layout can't paint over the
    ring — the same reason `outline` used to end up partially hidden. */
@@ -253,7 +398,7 @@
   height: 100%;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   padding: 24px 40px 15px;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -263,6 +408,10 @@
   box-sizing: border-box;
 }
 
+.hex-tile.is-clickable {
+  cursor: pointer;
+}
+
 /* Terrain art fills the tile as its own layer (not the tile's own `background`),
    purely so it's a normal child rather than the tile's own background paint —
    keeps it consistent with how .hex-tile-ring is composed. clip-path on the
@@ -270,20 +419,10 @@
 .hex-terrain-art {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   z-index: -1;
-}
-
-.terrain-prairies {
-  background: var(--terrain-prairies) url('/img/terrain/prairies.png') center / cover;
-}
-.terrain-forests {
-  background: var(--terrain-forests) url('/img/terrain/forests.png') center / cover;
-}
-.terrain-mountains {
-  background: var(--terrain-mountains) url('/img/terrain/mountains.png') center / cover;
-}
-.terrain-swamps {
-  background: var(--terrain-swamps) url('/img/terrain/swamps.png') center / cover;
 }
 
 .hex-terrain-label {
@@ -298,8 +437,9 @@
 
 /* One band per player who has structures on this hex — top player, then
    bottom player, rather than interleaving owners within each type slot.
-   Single-owner hexes (the common case) are just one full-size band; a
-   second band triggers .is-crowded, scaling both bands down to fit. */
+   Structure art is always the same size regardless of context (a Tower is
+   a Tower, crowded hex or not) — so a second band on the same hex overlaps
+   the first (see .is-crowded below) rather than shrinking to fit. */
 .hex-structures {
   display: flex;
   flex-direction: column;
@@ -312,6 +452,16 @@
   justify-content: center;
   align-items: flex-start;
   gap: 4px;
+  position: relative;
+}
+
+/* Second (and later) owner band on a crowded hex overlaps up into the
+   first rather than pushing the hex's content taller than it has room for
+   — full-size art stays full-size, at the cost of some intentional overlap
+   between owners' structures instead of a clean gap. */
+.hex-structures.is-crowded .hex-owner-band:nth-child(n + 2) {
+  margin-top: -18px;
+  z-index: 3;
 }
 
 /* One column per structure type within a band — Pool, Tower, Pyramid, then
@@ -340,14 +490,6 @@
 
 .hex-type-slot-pyramid {
   margin-left: -16px;
-}
-
-.hex-structures.is-crowded .hex-type-slot-pool {
-  margin-right: -9px;
-}
-
-.hex-structures.is-crowded .hex-type-slot-pyramid {
-  margin-left: -9px;
 }
 
 /* --- Structure tokens --- */
@@ -407,26 +549,6 @@
   margin-top: -10px;
 }
 
-/* Crowded (2+ owners on this hex, stacked in bands) — both bands scale down
-   to roughly half footprint so two full stacks fit without overflowing the
-   hex vertically. */
-.hex-structures.is-crowded .structure-token-art {
-  width: 32px;
-  height: 32px;
-}
-
-.hex-structures.is-crowded .hex-type-slot-tower .structure-token-art {
-  width: 34px;
-  height: 50px;
-  margin-top: -4px;
-}
-
-.hex-structures.is-crowded .structure-level-badge {
-  width: 11px;
-  height: 11px;
-  font-size: 7px;
-}
-
 .structure-art {
   width: 100%;
   height: 100%;
@@ -463,13 +585,40 @@
   filter: drop-shadow(0 0 3px gold) drop-shadow(0 0 3px gold);
 }
 
+/* Structures a pending spell would hit — pulses rather than sitting as a
+   static ring, so "these are the targets" reads at a glance instead of
+   blending into the other borders/glows already on the board. */
+@keyframes highlight-throb {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px #ff3b9a;
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px #ff3b9a,
+      0 0 14px 4px #ff3b9a;
+  }
+}
+
+@keyframes highlight-throb-art {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px #ff3b9a) drop-shadow(0 0 3px #ff3b9a);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 8px #ff3b9a) drop-shadow(0 0 8px #ff3b9a) drop-shadow(0 0 8px #ff3b9a);
+    transform: scale(1.08);
+  }
+}
+
 .structure-token.is-highlighted {
-  box-shadow: 0 0 0 3px #ff3b9a;
+  animation: highlight-throb 1.1s ease-in-out infinite;
 }
 
 .structure-token-art.is-highlighted {
   box-shadow: none;
-  filter: drop-shadow(0 0 3px #ff3b9a) drop-shadow(0 0 3px #ff3b9a);
+  animation: highlight-throb-art 1.1s ease-in-out infinite;
 }
 
 .structure-token.is-clickable {
@@ -490,6 +639,13 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px;
+}
+
+/* Separates the effect-card picker from the cast/skip buttons — otherwise
+   "End Turn Without Casting" reads as just another card choice. */
+.cast-divider {
+  border-top: 1px dashed var(--border);
+  margin: 12px 0;
 }
 
 .deck-search-list {
@@ -599,6 +755,21 @@
 .tarot-major.is-disabled {
   opacity: 0.75;
   cursor: default;
+}
+
+/* Fills whatever room is left in the card, truncating to however many lines
+   actually fit rather than a fixed line count — "cast below ↓" always sits
+   right after it instead of floating with a gap on shorter descriptions. */
+.tarot-major-description {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text);
+  margin: 0;
 }
 
 .tarot-note {

@@ -1,4 +1,5 @@
 import type { Structure, StructureType } from '../engine/types/structure'
+import { assetUrl } from './assetUrl'
 
 // Per-type, per-level art. Only types/levels with a file in public/img/structures/
 // are listed — StructureToken falls back to the flat shape token for anything
@@ -25,5 +26,6 @@ const STRUCTURE_ART: Partial<Record<StructureType, Record<number, string>>> = {
 }
 
 export function structureArtUrl(structure: Pick<Structure, 'type' | 'level'>): string | undefined {
-  return STRUCTURE_ART[structure.type]?.[structure.level]
+  const path = STRUCTURE_ART[structure.type]?.[structure.level]
+  return path ? assetUrl(path) : undefined
 }
