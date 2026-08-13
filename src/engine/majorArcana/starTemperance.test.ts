@@ -56,7 +56,7 @@ describe('resolveStar', () => {
     // gained = (3-2) + floor(Pyramid=1) = 2, but gap is 4 -> still short
     expect(exact.ok).toBe(false)
 
-    // gained needs to total exactly 4: (3-2 pool upgrade) + 1(Tower floor) + 1(Pool floor) + 1(Pyramid floor) = 4.
+    // gained needs to total exactly 4: (3-2 laggard upgrade) + 1(Tower floor) + 2(Pool floor) = 4.
     const correct2 = resolveStar(state, 'p1', tarot, {
       playerAdjustments: {
         p2: {
@@ -64,7 +64,6 @@ describe('resolveStar', () => {
           builds: [
             { hexId: 'hex-3', structureType: 'Tower' },
             { hexId: 'hex-4', structureType: 'Pool' },
-            { hexId: 'hex-5', structureType: 'Pyramid' },
           ],
         },
       },
@@ -74,7 +73,6 @@ describe('resolveStar', () => {
     expect(correct2.state.structures.find((s) => s.id === 'laggard')!.level).toBe(3)
     expect(correct2.state.structures.some((s) => s.hexId === 'hex-3' && s.type === 'Tower' && s.owner === 'p2')).toBe(true)
     expect(correct2.state.structures.some((s) => s.hexId === 'hex-4' && s.type === 'Pool' && s.owner === 'p2')).toBe(true)
-    expect(correct2.state.structures.some((s) => s.hexId === 'hex-5' && s.type === 'Pyramid' && s.owner === 'p2')).toBe(true)
   })
 
   it('rejects the leader submitting any net-positive adjustment', () => {

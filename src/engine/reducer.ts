@@ -131,7 +131,7 @@ function handleBuildStructure(
     return err(`You already have a ${action.structureType} on this hex`)
   }
 
-  // Boosted entry is capped at the structure's own max (relevant now that Pool's max is only 2).
+  // Boosted entry is capped at the structure's own max (relevant for Fortress, whose max is only 2).
   const entryLevel = boosted ? Math.min(3, LEVEL_BOUNDS[action.structureType].max) : LEVEL_BOUNDS[action.structureType].floor
   const structure: Structure = {
     id: crypto.randomUUID(),

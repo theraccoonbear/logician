@@ -158,7 +158,7 @@ describe('Judgement', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.state.structures).toHaveLength(3)
-    expect(result.state.structures.find((s) => s.id === 'pool')!.level).toBe(1)
+    expect(result.state.structures.find((s) => s.id === 'pool')!.level).toBe(2)
     expect(result.state.structures.find((s) => s.id === 'tower')!.level).toBe(1)
     expect(result.state.structures.find((s) => s.id === 'fort')!.level).toBe(1)
     // fortressed flag itself is untouched — only levels are minimized

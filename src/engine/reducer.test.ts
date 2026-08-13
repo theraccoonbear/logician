@@ -94,7 +94,7 @@ describe('build phase', () => {
     const next = expectOk(applyAction(state, { type: 'BUILD_STRUCTURE', playerId: 'p1', hexId: 'hex-1', structureType: 'Pool' }))
     expect(next.phase).toBe('cast')
     expect(next.activePlayerIndex).toBe(0)
-    expect(next.structures).toEqual([{ id: expect.any(String), type: 'Pool', owner: 'p1', hexId: 'hex-1', level: 1, fortressed: false }])
+    expect(next.structures).toEqual([{ id: expect.any(String), type: 'Pool', owner: 'p1', hexId: 'hex-1', level: 2, fortressed: false }])
   })
 
   it('SKIP_BUILD also advances straight to the cast phase', () => {
@@ -134,8 +134,8 @@ describe('build phase', () => {
 describe('cast phase', () => {
   it('casting a spell resolves the matched structures, discards/redraws cards, and advances the turn', () => {
     const structures: Structure[] = [
-      { id: 'p1-pool', type: 'Pool', owner: 'p1', hexId: 'hex-1', level: 1, fortressed: false },
-      { id: 'p2-pool', type: 'Pool', owner: 'p2', hexId: 'hex-2', level: 1, fortressed: false },
+      { id: 'p1-pool', type: 'Pool', owner: 'p1', hexId: 'hex-1', level: 2, fortressed: false },
+      { id: 'p2-pool', type: 'Pool', owner: 'p2', hexId: 'hex-2', level: 2, fortressed: false },
       { id: 'p1-tower', type: 'Tower', owner: 'p1', hexId: 'hex-1', level: 3, fortressed: false },
     ]
     const state = makeState({
@@ -166,12 +166,12 @@ describe('cast phase', () => {
     )
 
     // Logic card 'A' selects operandA (terrain=Forests) => both Pools (both on Forests hexes) upgrade by 2,
-    // clamped to Pool's max of 2. Logic 'A' only cares about terrain, so the Tower (also on a Forests hex) is affected too.
+    // clamped to Pool's max of 3. Logic 'A' only cares about terrain, so the Tower (also on a Forests hex) is affected too.
     const p1Pool = next.structures.find((s) => s.id === 'p1-pool')!
     const p2Pool = next.structures.find((s) => s.id === 'p2-pool')!
     const p1Tower = next.structures.find((s) => s.id === 'p1-tower')!
-    expect(p1Pool.level).toBe(2)
-    expect(p2Pool.level).toBe(2)
+    expect(p1Pool.level).toBe(3)
+    expect(p2Pool.level).toBe(3)
     expect(p1Tower.level).toBe(5)
 
     expect(next.players[0].logicHand.some((c) => c.instanceId === 'logic-1')).toBe(false)
@@ -425,7 +425,7 @@ describe('High Priestess build boost', () => {
     expect(boosted.players[0].heldMajorArcana).toHaveLength(0)
   })
 
-  it('caps a boosted Pool at its own max of 2, not 3', () => {
+  it('boosts a Pool straight to its own max of 3', () => {
     const boosted = expectOk(
       applyAction(stateWithPriestess(), {
         type: 'BUILD_STRUCTURE',
@@ -436,7 +436,7 @@ describe('High Priestess build boost', () => {
       }),
     )
     const newPool = boosted.structures.find((s) => s.hexId === 'hex-2')!
-    expect(newPool.level).toBe(2)
+    expect(newPool.level).toBe(3)
   })
 
   it('boosts a Fortress build to level 2, not 3', () => {

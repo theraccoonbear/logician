@@ -17,10 +17,10 @@ describe('resolveLevelChange', () => {
     expect(resolveLevelChange(structure('Tower', 2), -3)).toEqual({ destroyed: true })
   })
 
-  it('Pool (a 2-sided coin: floor 1, max 2) follows the same generic rule as every other structure', () => {
-    expect(resolveLevelChange(structure('Pool', 2), -1)).toEqual({ destroyed: false, newLevel: 1 })
-    expect(resolveLevelChange(structure('Pool', 1), -1)).toEqual({ destroyed: true })
-    expect(resolveLevelChange(structure('Pool', 1), 2)).toEqual({ destroyed: false, newLevel: 2 })
+  it('Pool (a 2-sided coin: floor 2, max 3) follows the same generic rule as every other structure', () => {
+    expect(resolveLevelChange(structure('Pool', 3), -1)).toEqual({ destroyed: false, newLevel: 2 })
+    expect(resolveLevelChange(structure('Pool', 2), -2)).toEqual({ destroyed: true })
+    expect(resolveLevelChange(structure('Pool', 2), 1)).toEqual({ destroyed: false, newLevel: 3 })
   })
 
   it('clamps a downgrade that would land below floor at the floor', () => {
@@ -38,16 +38,16 @@ describe('applyEffect', () => {
 
   it('Maximize sets the structure to its type max regardless of current level', () => {
     expect(applyEffect(structure('Pyramid', 1), 'MAXIMIZE')).toEqual({ destroyed: false, newLevel: 4 })
-    expect(applyEffect(structure('Pool', 1), 'MAXIMIZE')).toEqual({ destroyed: false, newLevel: 2 })
+    expect(applyEffect(structure('Pool', 2), 'MAXIMIZE')).toEqual({ destroyed: false, newLevel: 3 })
   })
 
   it('Randomize always lands within [floor, max] and never destroys', () => {
     const random = () => 0 // deterministic: picks the floor
     expect(applyEffect(structure('Tower', 6), 'RANDOMIZE', { random })).toEqual({ destroyed: false, newLevel: 1 })
     const randomHigh = () => 0.999999
-    expect(applyEffect(structure('Pool', 1), 'RANDOMIZE', { random: randomHigh })).toEqual({
+    expect(applyEffect(structure('Pool', 2), 'RANDOMIZE', { random: randomHigh })).toEqual({
       destroyed: false,
-      newLevel: 2,
+      newLevel: 3,
     })
   })
 

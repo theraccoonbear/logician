@@ -9,9 +9,9 @@ export interface LevelBounds {
 }
 
 // A structure always enters play at its floor level. Modeled on the physical pieces:
-// Pool = 2-sided coin (1-2), Pyramid = d4 (1-4), Tower = d6 (1-6), Fortress wall (1-2).
+// Pool = 2-sided coin (2-3), Pyramid = d4 (1-4), Tower = d6 (1-6), Fortress wall (1-2).
 export const LEVEL_BOUNDS: Record<StructureType, LevelBounds> = {
-  Pool: { floor: 1, max: 2 },
+  Pool: { floor: 2, max: 3 },
   Pyramid: { floor: 1, max: 4 },
   Tower: { floor: 1, max: 6 },
   Fortress: { floor: 1, max: 2 },
