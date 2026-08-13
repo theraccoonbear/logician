@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { assetUrl } from '../assetUrl'
 
 export function MenuBar({ onNewGame }: { onNewGame: () => void }) {
   const [open, setOpen] = useState(false)
@@ -15,11 +16,8 @@ export function MenuBar({ onNewGame }: { onNewGame: () => void }) {
 
   return (
     <div className="menu-bar" ref={ref}>
-      {/* Placeholder CSS-drawn icon — swap for the custom hamburger art when it's ready. */}
       <button className="hamburger-button" aria-label="Menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        <span />
-        <span />
-        <span />
+        <img src={assetUrl(open ? '/img/menu-close.png' : '/img/menu-open.png')} alt="" />
       </button>
       {open && (
         <div className="menu-dropdown">
