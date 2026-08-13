@@ -29,6 +29,7 @@ export function TarotCardView({
       >
         <img className="tarot-art" src={art} alt={describeMajorArcana(tarot.id)} />
         <div className="tarot-name">{describeMajorArcana(tarot.id)}</div>
+        <p className="tarot-major-description">{description}</p>
         <div className="tarot-note">{holdable ? 'hold for later ↓' : implemented ? 'cast below ↓' : 'coming soon'}</div>
       </button>
     )

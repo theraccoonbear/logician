@@ -35,29 +35,41 @@ export function ActionPanel({
     const selectedTarot = state.tarotRow.find((t) => t.instanceId === spellSelection.tarotId)
 
     return (
-      <div className="action-panel">
-        <TarotRow
-          cards={state.tarotRow}
-          selectedId={spellSelection.tarotId}
-          onSelect={(id) => onSpellSelectionChange({ ...EMPTY_SELECTION, tarotId: id })}
-        />
-
-        {!selectedTarot && (
-          <p className="action-hint">Select a tarot card above to cast a spell or play a major arcana action.</p>
-        )}
-
-        {selectedTarot?.kind === 'minor' && <SpellBuilder selection={spellSelection} onChange={onSpellSelectionChange} />}
-
-        {selectedTarot?.kind === 'major' && (
-          <MajorArcanaPanel
-            activeMajorId={selectedTarot.id}
-            onDeselect={() => onSpellSelectionChange(EMPTY_SELECTION)}
-            wheelTargets={wheelTargets}
-            setWheelTargets={setWheelTargets}
-            selectedHexId={selectedHexId}
+      <>
+        {/* Left: which tarot card you're casting against/playing. */}
+        <div className="action-panel tarot-pane">
+          <TarotRow
+            cards={state.tarotRow}
+            selectedId={spellSelection.tarotId}
+            // Only the targeted tarot changes here — logicId/effectId are deliberately carried
+            // over rather than reset. Every Minor Arcana shares the same logic+effect
+            // mechanic, so switching which one you're casting against shouldn't lose your
+            // chosen operator/effect; Major Arcana forms don't read logicId/effectId at all,
+            // so carrying them through a major selection is harmless (they're just waiting for
+            // the next minor).
+            onSelect={(id) => onSpellSelectionChange({ ...spellSelection, tarotId: id })}
           />
-        )}
-      </div>
+        </div>
+
+        {/* Right: the actual casting mechanics for whatever's selected on the left. */}
+        <div className="action-panel spell-pane">
+          {!selectedTarot && (
+            <p className="action-hint">Select a tarot card to cast a spell or play a major arcana action.</p>
+          )}
+
+          {selectedTarot?.kind === 'minor' && <SpellBuilder selection={spellSelection} onChange={onSpellSelectionChange} />}
+
+          {selectedTarot?.kind === 'major' && (
+            <MajorArcanaPanel
+              activeMajorId={selectedTarot.id}
+              onDeselect={() => onSpellSelectionChange(EMPTY_SELECTION)}
+              wheelTargets={wheelTargets}
+              setWheelTargets={setWheelTargets}
+              selectedHexId={selectedHexId}
+            />
+          )}
+        </div>
+      </>
     )
   }
 

@@ -27,9 +27,7 @@ export function BuildPanel({ selectedHexId }: { selectedHexId: string | null }) 
 
   return (
     <div className="action-panel">
-      <p className="action-hint">
-        {selectedHexId ? `Selected hex: ${selectedHexId}` : 'Select a hex on the board to build on.'}
-      </p>
+      {!selectedHexId && <p className="action-hint">Select a hex on the board to build on.</p>}
       {!isSetup && priestessCard && (
         <label className="action-hint" style={{ display: 'block' }}>
           <input type="checkbox" checked={useHighPriestess} onChange={(e) => setUseHighPriestess(e.target.checked)} /> Boost this build with

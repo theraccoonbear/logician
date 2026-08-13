@@ -12,7 +12,6 @@ export function TarotRow({
 }) {
   return (
     <div className="tarot-row">
-      <div className="card-hand-label">Tarot Row</div>
       <div className="tarot-row-cards">
         {cards.map((tarot) => (
           <TarotCardView key={tarot.instanceId} tarot={tarot} selected={selectedId === tarot.instanceId} onSelect={onSelect} />

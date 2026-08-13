@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { AIDifficulty } from '../../engine/types/state'
+import { assetUrl } from '../assetUrl'
 import { useGameEngine } from '../hooks/useGameEngine'
 import { loadSavedPlayerName, savePlayerName } from '../persistence'
 
@@ -40,7 +41,7 @@ export function SetupScreen() {
 
   return (
     <div className="setup-screen">
-      <img className="setup-title-card" src="/img/title-card.jpg" alt="Logician" />
+      <img className="setup-title-card" src={assetUrl('/img/title-card.jpg')} alt="Logician" />
       <p className="setup-subtitle">Hotseat play — any seat can be human or AI.</p>
       <div className="setup-form">
         {seats.map((seat, i) => (

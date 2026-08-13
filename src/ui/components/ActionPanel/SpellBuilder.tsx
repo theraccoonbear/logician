@@ -45,6 +45,7 @@ export function SpellBuilder({
         selectedId={selection.effectId}
         onSelect={(id) => onChange({ ...selection, effectId: id })}
       />
+      <div className="cast-divider" />
       <div className="action-buttons">
         <button className="action-button" disabled={!canCast} onClick={cast}>
           Cast Spell
