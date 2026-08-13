@@ -1,32 +1,64 @@
-# React + TypeScript + Vite
+<p align="center">
+  <img src="public/img/title-card.jpg" alt="Logician" width="720">
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+<p align="center">
+  A tabletop game where <strong>high fantasy magic meets boolean logic</strong> —
+  now a browser prototype.
+</p>
 
-Currently, two official plugins are available:
+## What is this?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Logician started life as a physical tabletop prototype and is now a
+browser-playable digital version, built with React, TypeScript, and Vite.
 
-## React Compiler
+You and your opponents build structures on a 10-hex board, then cast **logic
+spells** — `AND`, `OR`, `XOR`, `NOT A`, `A NOT B`, and more — matched against
+face-up tarot cards to upgrade, downgrade, randomize, or destroy structures
+across the board. Major Arcana cards layer in bigger, stranger effects (The
+Devil forces your opponents to name your own targets; The Hermit lets you
+search the deck; Death culls every weak structure on the board, fortresses
+included). First player to **40 victory points** — the sum of your
+structures' levels — wins.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+<p align="center">
+  <img src="docs/img/gameplay.png" alt="Logician gameplay screenshot" width="800">
+</p>
 
-## Expanding the Oxlint configuration
+## How it plays, briefly
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- **The board**: 10 hexes across four terrains — Prairies, Forests,
+  Mountains, Swamps — each tied to a tarot suit (Swords, Wands, Cups,
+  Pentacles respectively).
+- **Structures**: Pool, Pyramid, and Tower can be built freely; a Fortress
+  can only be raised once you hold all three on the same hex, and makes them
+  immune to most targeting.
+- **A turn** has two phases: build a structure (or skip), then either cast a
+  logic spell against one of the three face-up tarot cards or play a Major
+  Arcana action.
+- **The logic**: each Minor Arcana tarot card encodes two operands (a
+  terrain/structure-type/level pair, derived from its suit and rank). A
+  Logic Card turns those into a boolean match over every structure on the
+  board; an Effect Card (Upgrade, Downgrade, Maximize, Randomize, Combo) is
+  then applied to everything that matches.
+- **AI opponents**: any seat can be human or AI (a one-ply heuristic bot or
+  a random baseline), so you can play solo, hotseat with friends, or mix
+  both.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+The full tabletop ruleset this prototype implements lives in
+[`docs/rules.md`](docs/rules.md).
+
+## Development
+
+```sh
+npm install
+npm run dev      # start the dev server
+npm run test      # run the engine test suite (vitest)
+npm run build     # typecheck + production build
+npm run lint       # oxlint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Built with React 19, TypeScript, and Vite. The game engine
+(`src/engine/`) is a pure, dependency-free reducer — every rule, from spell
+resolution to AI move simulation, runs through the same
+`(state, action) => state` function, with no UI code involved.
