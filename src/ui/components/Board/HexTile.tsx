@@ -1,5 +1,6 @@
 import type { Hex } from '../../../engine/board'
 import type { Structure, StructureType } from '../../../engine/types/structure'
+import { fortressArtUrls } from '../../fortressArt'
 import { terrainArtUrl } from '../../terrainArt'
 import { StructureToken } from './StructureToken'
 
@@ -53,8 +54,19 @@ export function HexTile({
         <div className={`hex-structures ${owners.length > 1 ? 'is-crowded' : ''}`}>
           {owners.map((owner) => {
             const ownerStructures = structures.filter((s) => s.owner === owner)
+            // Fortress art is a two-layer ring wrapping the owner's other structures, not a
+            // token of its own — the Fortress structure still renders its (existing, clickable)
+            // token below like any other type, so it stays a valid target for anything that
+            // needs to select a structure (Wheel of Fortune, major arcana forms, ...). The ring
+            // is purely decorative on top of that: both layers share one source canvas per
+            // level and must render at an identical box/position to overlay correctly (see
+            // .fortress-back/.fortress-fore in App.css) — pointer-events: none on both so they
+            // never intercept clicks meant for the structures they're wrapped around.
+            const fortress = ownerStructures.find((s) => s.type === 'Fortress')
+            const fortressArt = fortress ? fortressArtUrls(fortress.level) : undefined
             return (
               <div className="hex-owner-band" key={owner}>
+                {fortressArt && <img className="fortress-back" src={fortressArt.back} alt="" />}
                 {TYPE_SLOTS.filter((type) => ownerStructures.some((s) => s.type === type)).map((type) => (
                   <div className={`hex-type-slot hex-type-slot-${type.toLowerCase()}`} key={type}>
                     {ownerStructures
@@ -78,6 +90,7 @@ export function HexTile({
                       ))}
                   </div>
                 ))}
+                {fortressArt && <img className="fortress-fore" src={fortressArt.fore} alt="" />}
               </div>
             )
           })}

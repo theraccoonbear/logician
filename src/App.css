@@ -453,6 +453,31 @@
   position: relative;
 }
 
+/* Fortress ring — two layers sharing one source canvas per level, rendered at an identical
+   box/position so their pixel-cropped edges line up into one seamless ring; only z-index
+   differs (back behind the owner's structures, fore in front). pointer-events: none on both
+   so the ring never intercepts clicks meant for the (still individually clickable) structure
+   tokens it wraps. */
+.fortress-back,
+.fortress-fore {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 230px;
+  height: 181.6px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.fortress-back {
+  z-index: 0;
+}
+
+.fortress-fore {
+  z-index: 10;
+}
+
 /* Second (and later) owner band on a crowded hex overlaps up into the
    first rather than pushing the hex's content taller than it has room for
    — full-size art stays full-size, at the cost of some intentional overlap
@@ -488,6 +513,17 @@
 
 .hex-type-slot-pyramid {
   margin-left: -16px;
+}
+
+/* Pulled out of the flex row into a fixed corner badge on the ring instead of sitting as a
+   4th column — the Fortress token was skewing Pool/Tower/Pyramid's centering and landing
+   outside the hex's own edge. z-index above .fortress-fore so it stays visible/clickable on
+   top of the ring art rather than the ring covering it. */
+.hex-type-slot-fortress {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  z-index: 11;
 }
 
 /* --- Structure tokens --- */
