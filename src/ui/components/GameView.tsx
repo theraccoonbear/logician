@@ -94,7 +94,24 @@ export function GameView() {
         <VPTracker state={state} />
       </div>
 
-      {/* Zone 3: the game field. Board.tsx itself picks a portrait (tall, flat-top hexes in
+      {/* Zone 3: card selection (left) and the actual cast/spell mechanics (right) — above the
+          board now, right under turn/score, and stacked into a single column on narrow/portrait
+          screens instead of side by side (see .cards-row in App.css). */}
+      <div className="cards-row">
+        {waitingOnAI ? (
+          <div className="action-panel ai-thinking">🤖 {currentActor?.name} is thinking…</div>
+        ) : (
+          <ActionPanel
+            selectedHexId={selectedHexId}
+            spellSelection={spellSelection}
+            onSpellSelectionChange={setSpellSelection}
+            wheelTargets={wheelTargets}
+            setWheelTargets={setWheelTargets}
+          />
+        )}
+      </div>
+
+      {/* Zone 4: the game field. Board.tsx itself picks a portrait (tall, flat-top hexes in
           columns) or landscape (wide, pointy-top hexes in rows) layout based on viewport
           orientation — see useOrientation. Scaled down (never up) via useFitScale so a board
           wider than the available space shrinks to fit instead of overflowing into a
@@ -110,22 +127,6 @@ export function GameView() {
             onStructureClick={activeMajorId === 'WHEEL' ? handleStructureClick : undefined}
           />
         </div>
-      </div>
-
-      {/* Zone 4: card selection (left) and the actual cast/spell mechanics (right) — spills
-          into its own stacked rows on narrow/portrait screens (see .cards-row in App.css). */}
-      <div className="cards-row">
-        {waitingOnAI ? (
-          <div className="action-panel ai-thinking">🤖 {currentActor?.name} is thinking…</div>
-        ) : (
-          <ActionPanel
-            selectedHexId={selectedHexId}
-            spellSelection={spellSelection}
-            onSpellSelectionChange={setSpellSelection}
-            wheelTargets={wheelTargets}
-            setWheelTargets={setWheelTargets}
-          />
-        )}
       </div>
 
       {/* Zone 5: the game log, always last, full width on its own. */}
