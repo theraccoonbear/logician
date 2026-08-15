@@ -391,17 +391,15 @@
   background: var(--accent);
 }
 
+/* Holds only the terrain art now — structures/fortress art moved to .hex-structures as a
+   sibling of this, not a descendant, specifically so they AREN'T subject to this clip-path
+   and can spill past the hex edge for a 3D pop-out look instead of being cropped flush to
+   the hex silhouette. */
 .hex-tile {
   width: 100%;
   height: 100%;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  padding: 24px 40px 15px;
   cursor: default;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  color: var(--terrain-ink-light);
   position: relative;
   box-sizing: border-box;
 }
@@ -439,10 +437,23 @@
    a Tower, crowded hex or not) — so a second band on the same hex overlaps
    the first (see .is-crowded below) rather than shrinking to fit. */
 .hex-structures {
+  position: absolute;
+  inset: 0;
+  padding: 24px 40px 15px;
+  box-sizing: border-box;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
+}
+
+/* Re-enables clicks specifically on the actual interactive tokens — everything else in
+   .hex-structures (the owner-band/type-slot wrapper divs, the fortress ring images) stays
+   pointer-events: none so clicks in the empty space around the art still reach .hex-tile's
+   own onClick underneath instead of this overlay silently swallowing them. */
+.structure-token {
+  pointer-events: auto;
 }
 
 .hex-owner-band {

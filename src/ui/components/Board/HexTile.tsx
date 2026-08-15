@@ -51,8 +51,15 @@ export function HexTile({
         aria-label={`${hex.id}, ${hex.terrain}, ${structures.length} structure(s)`}
       >
         <img className="hex-terrain-art" src={terrainArtUrl(hex.terrain)} alt={hex.terrain} />
-        <div className={`hex-structures ${owners.length > 1 ? 'is-crowded' : ''}`}>
-          {owners.map((owner) => {
+      </div>
+      {/* A sibling of .hex-tile, not a descendant, same reason .hex-tile-ring is: clip-path on
+          .hex-tile clips its entire subtree to the hex silhouette, so structure/fortress art
+          can never spill past the hex edge for a 3D pop-out look while it's nested inside.
+          pointer-events: none here, re-enabled on .structure-token specifically (App.css), so
+          clicks in the empty space around the art still fall through to .hex-tile's own
+          onClick (hex selection) instead of this layer silently swallowing them. */}
+      <div className={`hex-structures ${owners.length > 1 ? 'is-crowded' : ''}`}>
+        {owners.map((owner) => {
             const ownerStructures = structures.filter((s) => s.owner === owner)
             // Fortress art is a two-layer ring wrapping the owner's other structures, not a
             // token of its own — the Fortress structure still renders its (existing, clickable)
@@ -93,8 +100,7 @@ export function HexTile({
                 {fortressArt && <img className="fortress-fore" src={fortressArt.fore} alt="" />}
               </div>
             )
-          })}
-        </div>
+        })}
       </div>
     </div>
   )
