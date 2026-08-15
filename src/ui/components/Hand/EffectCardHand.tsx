@@ -1,6 +1,6 @@
 import type { EffectCard } from '../../../engine/types/cards'
 import { EFFECT_CARD_LABELS } from '../../cardLabels'
-import { EFFECT_FRAME, effectCaptionStyle } from '../../cardArt'
+import { EFFECT_FRAME, effectArtStyle, effectCaptionStyle } from '../../cardArt'
 import { GameCard, CARD_WIDTH, CARD_HEIGHT } from './GameCard'
 
 export function EffectCardHand({
@@ -21,6 +21,7 @@ export function EffectCardHand({
             key={card.instanceId}
             frame={EFFECT_FRAME}
             label={EFFECT_CARD_LABELS[card.kind]}
+            artStyle={effectArtStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}
             captionStyle={effectCaptionStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}
             selected={selectedId === card.instanceId}
             onClick={() => onSelect(card.instanceId)}

@@ -64,6 +64,15 @@ const LOGIC_OPERATOR_ART: Partial<Record<LogicCardId, string>> = {
   A_XOR_B: assetUrl('/img/cards/XOR_operator.png'),
 }
 
+// Dedicated effect art (public/img/cards/effect_{kind}.png) for the card's center panel.
+// Filled in as art is delivered — kinds without an entry just render the frame + caption,
+// same as every card did before any operator/effect art existed.
+const EFFECT_ART: Partial<Record<EffectCardId, string>> = {
+  UPGRADE_1: assetUrl('/img/cards/effect_upgrade_1.png'),
+  UPGRADE_2: assetUrl('/img/cards/effect_upgrade_2.png'),
+  UPGRADE_3: assetUrl('/img/cards/effect_upgrade_3.png'),
+}
+
 interface Box {
   left: number
   top: number
@@ -71,13 +80,32 @@ interface Box {
   height: number
 }
 
-// The card's big empty center panel — where the operator art above goes, when a kind has any.
+// The card's big empty center panel — where the operator/effect art above goes, when a kind
+// has any. Effect's black panel runs closer to the frame's edges than Logic's (which has its
+// own inset square sub-frame), hence the different box.
 const LOGIC_ART_BOX: Box = { left: 0.207, top: 0.205, width: 0.6, height: 0.44 }
+const EFFECT_ART_BOX: Box = { left: 0.12, top: 0.17, width: 0.76, height: 0.48 }
 
 // Bottom third of the card, where the brass/gold nameplate is on both frames — the actual
 // caption for every card, logic or effect.
 const LOGIC_CAPTION_BOX: Box = { left: 0.12, top: 0.65, width: 0.76, height: 0.28 }
 const EFFECT_CAPTION_BOX: Box = { left: 0.08, top: 0.72, width: 0.84, height: 0.22 }
+
+// Shared by logicArtStyle/effectArtStyle — centers a piece of center-panel art inside a box
+// on the card, scaled to fit without cropping.
+function iconStyle(url: string, box: Box, cardWidthPx: number, cardHeightPx: number): CSSProperties {
+  return {
+    position: 'absolute',
+    left: cardWidthPx * box.left,
+    top: cardHeightPx * box.top,
+    width: cardWidthPx * box.width,
+    height: cardHeightPx * box.height,
+    backgroundImage: `url(${url})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    backgroundSize: 'contain',
+  }
+}
 
 function labelStyle(sheet: Sheet, band: [number, number], box: Box, cardWidthPx: number, cardHeightPx: number): CSSProperties {
   const [top, bottom] = band
@@ -100,18 +128,12 @@ function labelStyle(sheet: Sheet, band: [number, number], box: Box, cardWidthPx:
 
 export function logicArtStyle(kind: LogicCardId, cardWidthPx: number, cardHeightPx: number): CSSProperties | undefined {
   const url = LOGIC_OPERATOR_ART[kind]
-  if (!url) return undefined
-  return {
-    position: 'absolute',
-    left: cardWidthPx * LOGIC_ART_BOX.left,
-    top: cardHeightPx * LOGIC_ART_BOX.top,
-    width: cardWidthPx * LOGIC_ART_BOX.width,
-    height: cardHeightPx * LOGIC_ART_BOX.height,
-    backgroundImage: `url(${url})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
-    backgroundSize: 'contain',
-  }
+  return url ? iconStyle(url, LOGIC_ART_BOX, cardWidthPx, cardHeightPx) : undefined
+}
+
+export function effectArtStyle(kind: EffectCardId, cardWidthPx: number, cardHeightPx: number): CSSProperties | undefined {
+  const url = EFFECT_ART[kind]
+  return url ? iconStyle(url, EFFECT_ART_BOX, cardWidthPx, cardHeightPx) : undefined
 }
 
 export function logicCaptionStyle(kind: LogicCardId, cardWidthPx: number, cardHeightPx: number): CSSProperties {

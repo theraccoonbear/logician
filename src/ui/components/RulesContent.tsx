@@ -1,7 +1,7 @@
 import type { TarotCard } from '../../engine/types/tarot'
 import { MAJOR_ARCANA_IDS } from '../../engine/types/tarot'
 import { LEVEL_BOUNDS, type StructureType } from '../../engine/types/structure'
-import { EFFECT_FRAME, LOGIC_FRAME, effectCaptionStyle, logicArtStyle, logicCaptionStyle } from '../cardArt'
+import { EFFECT_FRAME, LOGIC_FRAME, effectArtStyle, effectCaptionStyle, logicArtStyle, logicCaptionStyle } from '../cardArt'
 import { EFFECT_CARD_LABELS, LOGIC_CARD_LABELS } from '../cardLabels'
 import { fortressArtUrls } from '../fortressArt'
 import { MAJOR_ARCANA_DESCRIPTIONS } from '../majorArcanaDescriptions'
@@ -150,6 +150,7 @@ export function RulesContent() {
         <GameCard
           frame={EFFECT_FRAME}
           label={EFFECT_CARD_LABELS.UPGRADE_2}
+          artStyle={effectArtStyle('UPGRADE_2', CARD_WIDTH, CARD_HEIGHT)}
           captionStyle={effectCaptionStyle('UPGRADE_2', CARD_WIDTH, CARD_HEIGHT)}
           selected={false}
           onClick={() => {}}
