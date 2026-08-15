@@ -2,13 +2,14 @@ import type { CSSProperties } from 'react'
 import type { EffectCardId, LogicCardId } from '../engine/types/cards'
 import { assetUrl } from './assetUrl'
 
-// Label sheets (logic_labels.jpg, effect_labels.png) are sprite sheets — one label stacked
+// Label sheets (logic_labels.png, effect_labels.png) are sprite sheets — one label stacked
 // per row, at varying heights (short labels like "A" render in a much bigger font than long
 // ones like "A NOT B"). Rather than pre-cropping each label into its own file, every card
 // reads a window into the same sheet via CSS background-position — see labelStyle().
 // Band Y-ranges below are raw pixel coordinates in the SOURCE sheet, found by scanning for
-// contiguous rows of non-background pixels (content in the .jpg = brightness above a
-// threshold, since it has no alpha channel; content in the .png = alpha above a threshold).
+// contiguous rows of non-transparent pixels. Re-scan and update these if either sheet is
+// ever re-exported at a different size — the coordinates are tied to the exact source pixels,
+// not proportional to sheet size, so a re-export shifts every band.
 
 interface Sheet {
   url: string
@@ -16,18 +17,18 @@ interface Sheet {
   naturalHeight: number
 }
 
-const LOGIC_SHEET: Sheet = { url: assetUrl('/img/cards/logic_labels.jpg'), naturalWidth: 727, naturalHeight: 1371 }
+const LOGIC_SHEET: Sheet = { url: assetUrl('/img/cards/logic_labels.png'), naturalWidth: 650, naturalHeight: 1150 }
 const LOGIC_BANDS: Record<LogicCardId, [number, number]> = {
-  A: [62, 168],
-  B: [194, 297],
-  NOT_A: [322, 427],
-  NOT_B: [450, 555],
-  A_AND_B: [579, 682],
-  A_OR_B: [705, 810],
-  A_NOT_B: [833, 937],
-  B_NOT_A: [960, 1066],
-  A_NOR_B: [1089, 1194],
-  A_XOR_B: [1217, 1323],
+  A: [27, 121],
+  B: [143, 234],
+  NOT_A: [255, 349],
+  NOT_B: [368, 461],
+  A_AND_B: [481, 572],
+  A_OR_B: [592, 685],
+  A_NOT_B: [704, 797],
+  B_NOT_A: [816, 909],
+  A_NOR_B: [928, 1022],
+  A_XOR_B: [1041, 1135],
 }
 
 const EFFECT_SHEET: Sheet = { url: assetUrl('/img/cards/effect_labels.png'), naturalWidth: 868, naturalHeight: 1343 }
