@@ -8,9 +8,14 @@ import { clearSavedGame, loadSavedGame, saveGame } from './persistence'
 export interface GameContextValue {
   state: GameState | null
   lastError: string | null
-  startGame: (players: PlayerConfig[]) => void
+  startGame: (players: PlayerConfig[], opts?: { showRules?: boolean }) => void
   dispatch: (action: GameAction) => void
   newGame: () => void
+  // One-shot signal for "a new game was just started with the rules-on-start preference
+  // checked" — not part of GameState (which gets persisted/serialized), just a UI cue that
+  // GameView consumes once to auto-open the help modal, then clears.
+  pendingRulesOnStart: boolean
+  clearPendingRulesOnStart: () => void
 }
 
 export const GameContext = createContext<GameContextValue | null>(null)
@@ -18,14 +23,16 @@ export const GameContext = createContext<GameContextValue | null>(null)
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<GameState | null>(() => loadSavedGame())
   const [lastError, setLastError] = useState<string | null>(null)
+  const [pendingRulesOnStart, setPendingRulesOnStart] = useState(false)
 
   useEffect(() => {
     if (state) saveGame(state)
   }, [state])
 
-  const startGame = (players: PlayerConfig[]) => {
+  const startGame = (players: PlayerConfig[], opts?: { showRules?: boolean }) => {
     setState(createInitialGameState(players))
     setLastError(null)
+    setPendingRulesOnStart(Boolean(opts?.showRules))
   }
 
   const dispatch = (action: GameAction) => {
@@ -43,7 +50,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
     clearSavedGame()
     setState(null)
     setLastError(null)
+    setPendingRulesOnStart(false)
   }
 
-  return <GameContext.Provider value={{ state, lastError, startGame, dispatch, newGame }}>{children}</GameContext.Provider>
+  return (
+    <GameContext.Provider
+      value={{
+        state,
+        lastError,
+        startGame,
+        dispatch,
+        newGame,
+        pendingRulesOnStart,
+        clearPendingRulesOnStart: () => setPendingRulesOnStart(false),
+      }}
+    >
+      {children}
+    </GameContext.Provider>
+  )
 }

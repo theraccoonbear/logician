@@ -9,6 +9,7 @@ import type { SpellSelection } from './ActionPanel/SpellBuilder'
 import { Board } from './Board/Board'
 import { GameLog } from './GameLog'
 import { MenuBar } from './MenuBar'
+import { RulesModal } from './RulesModal'
 import { TurnIndicator } from './TurnIndicator'
 import { VPTracker } from './VPTracker'
 
@@ -16,18 +17,28 @@ const EMPTY_SELECTION: SpellSelection = { logicId: null, effectId: null, tarotId
 const MAX_WHEEL_TARGETS = 3
 
 export function GameView() {
-  const { state, newGame } = useGameEngine()
+  const { state, newGame, pendingRulesOnStart, clearPendingRulesOnStart } = useGameEngine()
   useAITurns()
   const { containerRef: fieldRef, contentRef: boardRef, scale: boardScale } = useFitScale<HTMLDivElement, HTMLDivElement>()
   const [selectedHexId, setSelectedHexId] = useState<string | null>(null)
   const [spellSelection, setSpellSelection] = useState<SpellSelection>(EMPTY_SELECTION)
   const [wheelTargets, setWheelTargets] = useState<Set<string>>(new Set())
+  const [helpOpen, setHelpOpen] = useState(false)
 
   useEffect(() => {
     setSelectedHexId(null)
     setSpellSelection(EMPTY_SELECTION)
     setWheelTargets(new Set())
   }, [state?.activePlayerIndex, state?.phase])
+
+  // Auto-open the rules once, right after a fresh game starts with the "show rules" setup
+  // preference checked — not on every reload of a saved-in-progress game.
+  useEffect(() => {
+    if (pendingRulesOnStart) {
+      setHelpOpen(true)
+      clearPendingRulesOnStart()
+    }
+  }, [pendingRulesOnStart, clearPendingRulesOnStart])
 
   // Derived, not separately tracked: which major arcana (if any) is selected in the tarot
   // row right now. Single source of truth is spellSelection.tarotId, shared with the minor
@@ -75,6 +86,7 @@ export function GameView() {
 
   return (
     <div className="game-view">
+      {helpOpen && <RulesModal onClose={() => setHelpOpen(false)} />}
       {state.winner && (
         <div className="winner-banner">{state.players.find((p) => p.id === state.winner)?.name} wins!</div>
       )}
@@ -85,6 +97,7 @@ export function GameView() {
           onNewGame={() => {
             if (window.confirm('Start a new game? This will discard the current game.')) newGame()
           }}
+          onHelp={() => setHelpOpen(true)}
         />
       </div>
 

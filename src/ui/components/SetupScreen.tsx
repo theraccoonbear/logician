@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { AIDifficulty } from '../../engine/types/state'
 import { assetUrl } from '../assetUrl'
 import { useGameEngine } from '../hooks/useGameEngine'
-import { loadSavedPlayerName, savePlayerName } from '../persistence'
+import { loadSavedPlayerName, loadShowRulesOnStart, savePlayerName, saveShowRulesOnStart } from '../persistence'
 
 interface SeatDraft {
   name: string
@@ -25,6 +25,7 @@ function defaultSeats(): SeatDraft[] {
 export function SetupScreen() {
   const { startGame } = useGameEngine()
   const [seats, setSeats] = useState<SeatDraft[]>(defaultSeats())
+  const [showRules, setShowRules] = useState(loadShowRulesOnStart())
 
   const updateSeat = (index: number, patch: Partial<SeatDraft>) => {
     if (index === 0 && patch.name !== undefined) savePlayerName(patch.name)
@@ -67,10 +68,24 @@ export function SetupScreen() {
           Add Player
         </button>
       </div>
+      <label className="setup-field show-rules-field">
+        <input
+          type="checkbox"
+          checked={showRules}
+          onChange={(e) => {
+            setShowRules(e.target.checked)
+            saveShowRulesOnStart(e.target.checked)
+          }}
+        />{' '}
+        Show the rules before starting
+      </label>
       <button
         className="primary-button"
         onClick={() =>
-          startGame(seats.map((seat) => ({ name: seat.name.trim() || 'Player', isAI: seat.isAI, aiDifficulty: seat.aiDifficulty })))
+          startGame(
+            seats.map((seat) => ({ name: seat.name.trim() || 'Player', isAI: seat.isAI, aiDifficulty: seat.aiDifficulty })),
+            { showRules },
+          )
         }
       >
         Start Game

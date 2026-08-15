@@ -44,10 +44,9 @@ The goal of the game is to reach 40 victory points.  Your victory points are the
 
 **Major-Arcana Actions**
 
-**The Fool** \- TBD.  Take this card from the active tarot area and save it on the table in front of you.  You may play this card at any time. If played during opponent's turn, this card can be used after that player has committed to a tarot/logic/effect play, but before the effects of that tarot are executed.  The effect switches the 'A' and 'B' for that player's turn.  
+**The Fool** \- Take this card from the active tarot area and save it on the table in front of you.  You may play this card at any time. If played during opponent's turn, this card can be used after that player has committed to a tarot/logic/effect play, but before the effects of that tarot are executed.  The effect switches the 'A' and 'B' operands for that pending spell.  
 	  
-**Strength** \- Choose any one target structure on the board. That structure is immediately destroyed. Afterward, total all players' VP. If your VP is lowest, you may target and destroy another structure of your choice.   
-/// ///// //// NEW MEANING //// downgrade 1 on one of your structures to downgrade 1 on all unfortified streuctures of the same type opponent controls  
+**Strength** \- Downgrade one of your own structures by 1. Every unfortified structure of that same type controlled by your opponent is also downgraded by 1.  
 	  
 **The High Priestess** \- Take this tarot from the active area and place it on the table in front of you. You may play this card at any time you choose, though it must be played at the beginning of your turn, in conjunction with placing a structure. The chosen structure enters play at VP level 3, (unless it is a fortification, in which case it enters play at level 2\)  
 	  
@@ -61,10 +60,7 @@ The goal of the game is to reach 40 victory points.  Your victory points are the
 	  
 **MAGICIAN-** Look at opponent’s hand exchange one logic and effect of your choice with them
 
-**The Chariot**  \- Choose a structure type. The opponent sitting clockwise from you chooses a VP level. Using the chosen criteria, play this card as a normal tarot, using logic and effect from your hand as per the standard rules. ///// NEW MEANING take all pieces from one unfortified hex and redistribute. Do not eat pieces.   
-	
-
-**Strength**  \- Discard this card when played. This turn, you may play BOTH of the two remaining active tarot cards as your tarot action. (Use separate logic and effects for each of the two cards).  
+**The Chariot**  \- Choose one unfortified hex. Redistribute the levels of all structures on that hex among themselves however you like — the total is conserved, and no structure is destroyed or created.  
 	  
 **The Hermit** 	After this card has been played, discard all of the currently tarot cards from the active area. You may search through the deck and choose any three tarot cards to replace them as the active tarots for the next turn.  
 	  

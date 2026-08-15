@@ -44,3 +44,24 @@ export function savePlayerName(name: string): void {
     // Storage full or unavailable (e.g. private browsing) — silently skip persistence.
   }
 }
+
+const SHOW_RULES_KEY = 'logician-show-rules-on-start-v1'
+
+// Defaults to true (show the rules) whenever the preference has never been set — a new
+// player should see the how-to-play modal before their first game unless they opt out.
+export function loadShowRulesOnStart(): boolean {
+  try {
+    const raw = localStorage.getItem(SHOW_RULES_KEY)
+    return raw === null ? true : raw === 'true'
+  } catch {
+    return true
+  }
+}
+
+export function saveShowRulesOnStart(value: boolean): void {
+  try {
+    localStorage.setItem(SHOW_RULES_KEY, String(value))
+  } catch {
+    // ignore
+  }
+}

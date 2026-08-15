@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { assetUrl } from '../assetUrl'
 
-export function MenuBar({ onNewGame }: { onNewGame: () => void }) {
+export function MenuBar({ onNewGame, onHelp }: { onNewGame: () => void; onHelp: () => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -29,6 +29,15 @@ export function MenuBar({ onNewGame }: { onNewGame: () => void }) {
             }}
           >
             New Game
+          </button>
+          <button
+            className="menu-item"
+            onClick={() => {
+              setOpen(false)
+              onHelp()
+            }}
+          >
+            Help
           </button>
         </div>
       )}

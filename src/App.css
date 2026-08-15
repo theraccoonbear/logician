@@ -67,6 +67,17 @@
   font-size: 16px;
 }
 
+.show-rules-field {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.show-rules-field input {
+  width: auto;
+}
+
 .primary-button,
 .action-button {
   font: inherit;
@@ -227,6 +238,119 @@
   font-weight: 600;
   margin-bottom: 16px;
   text-align: center;
+}
+
+.rules-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.rules-modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  max-width: 760px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.rules-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rules-modal-header h2 {
+  margin: 0;
+  color: var(--text-h);
+}
+
+.rules-modal-close {
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.rules-modal-close:hover {
+  border-color: var(--accent);
+}
+
+.rules-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  color: var(--text);
+}
+
+.rules-content h3 {
+  color: var(--text-h);
+  margin: 24px 0 8px;
+}
+
+.rules-content h3:first-child {
+  margin-top: 0;
+}
+
+.rules-content p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.rules-content ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  line-height: 1.5;
+}
+
+.rules-content li {
+  margin-bottom: 6px;
+}
+
+.rules-note {
+  font-style: italic;
+  font-size: 13px;
+}
+
+.rules-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rules-table th,
+.rules-table td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.rules-table th {
+  color: var(--text-h);
+  background: var(--accent-bg);
 }
 
 /* --- Body layout: game field, then cards/log below it --- */
