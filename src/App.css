@@ -622,6 +622,29 @@
   z-index: 5;
 }
 
+/* Fake tile thickness (issue #8's "directional-only bevel"): a same-shaped, same-size sibling
+   of .hex-tile, darkened and nudged down-right so only its bottom-right sliver peeks out past
+   the (opaque, unshifted) tile painted on top of it — reading as a beveled edge/shadow along
+   an implied top-left light source, without needing any extra gap between tiles. Has to be a
+   sibling rather than a descendant for the same clip-path reason .hex-tile-ring does (below):
+   nothing inside .hex-tile can ever paint past its own clipped silhouette. Solid color for
+   now, not a darkened clone of the terrain art itself — cheaper (no extra image/filter per
+   tile) and the open question from the issue about which reads better is still open; swapping
+   this rule for a filtered <img> clone later is a small, contained change if solid doesn't
+   read well enough. Terrain hex only — doesn't extend to structure/fortress art. */
+.hex-tile-bevel {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: rgba(0, 0, 0, 0.55);
+  transform: translate(5px, 6px);
+  pointer-events: none;
+}
+
+.board-landscape .hex-tile-bevel {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
 /* Selection ring. Deliberately a sibling of .hex-tile, not a descendant:
    clip-path on .hex-tile clips its entire subtree's paint to the hex
    silhouette, so no descendant — pseudo-element, filter:drop-shadow,

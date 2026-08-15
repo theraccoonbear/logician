@@ -41,6 +41,11 @@ export function HexTile({
     // boundary, no matter how it's positioned or sized. This wrapper is the true (unclipped)
     // sibling context the ring needs; see .hex-tile-ring in App.css.
     <div className={`hex-slot ${selected ? 'is-selected' : ''}`}>
+      {/* Fake tile thickness: a same-shaped, darkened sibling offset down-right and painted
+          before (so underneath) the ring/tile — see .hex-tile-bevel in App.css for why this
+          has to be a sibling, same reason as the ring below. Only the offset's bottom-right
+          sliver ends up visible, reading as a beveled edge/shadow rather than a flat cutout. */}
+      <div className="hex-tile-bevel" />
       {selected && <div className="hex-tile-ring" />}
       <div
         className={`hex-tile ${onClick ? 'is-clickable' : ''}`}
