@@ -754,6 +754,25 @@
   margin-bottom: 10px;
 }
 
+/* Logic and Effect hands side by side on desktop instead of stacked sections; each keeps
+   its own label + card row. Stacks back to a single column at the same breakpoint .cards-row
+   already uses for mobile. */
+.card-hands-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.card-hands-row > .card-hand {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 640px) {
+  .card-hands-row {
+    flex-direction: column;
+  }
+}
+
 .card-hand-row,
 .tarot-row-cards {
   display: flex;

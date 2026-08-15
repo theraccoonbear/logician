@@ -35,16 +35,18 @@ export function SpellBuilder({
 
   return (
     <div className="cast-pane">
-      <LogicCardHand
-        cards={player.logicHand}
-        selectedId={selection.logicId}
-        onSelect={(id) => onChange({ ...selection, logicId: id })}
-      />
-      <EffectCardHand
-        cards={player.effectHand}
-        selectedId={selection.effectId}
-        onSelect={(id) => onChange({ ...selection, effectId: id })}
-      />
+      <div className="card-hands-row">
+        <LogicCardHand
+          cards={player.logicHand}
+          selectedId={selection.logicId}
+          onSelect={(id) => onChange({ ...selection, logicId: id })}
+        />
+        <EffectCardHand
+          cards={player.effectHand}
+          selectedId={selection.effectId}
+          onSelect={(id) => onChange({ ...selection, effectId: id })}
+        />
+      </div>
       <div className="cast-divider" />
       <div className="action-buttons">
         <button className="action-button" disabled={!canCast} onClick={cast}>
