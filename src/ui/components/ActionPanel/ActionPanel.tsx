@@ -13,12 +13,15 @@ export function ActionPanel({
   onSpellSelectionChange,
   wheelTargets,
   setWheelTargets,
+  onPreviewTargetsChange,
 }: {
   selectedHexId: string | null
   spellSelection: SpellSelection
   onSpellSelectionChange: (next: SpellSelection) => void
   wheelTargets: Set<string>
   setWheelTargets: (next: Set<string>) => void
+  /** Reports which structures a Major Arcana form/trigger in progress would target, for board highlighting. */
+  onPreviewTargetsChange: (ids: Set<string>) => void
 }) {
   const { state } = useGameEngine()
   if (!state) return null
@@ -66,6 +69,7 @@ export function ActionPanel({
               wheelTargets={wheelTargets}
               setWheelTargets={setWheelTargets}
               selectedHexId={selectedHexId}
+              onPreviewTargetsChange={onPreviewTargetsChange}
             />
           )}
         </div>
@@ -73,5 +77,5 @@ export function ActionPanel({
     )
   }
 
-  return <TriggerWindowPanel />
+  return <TriggerWindowPanel onPreviewTargetsChange={onPreviewTargetsChange} />
 }

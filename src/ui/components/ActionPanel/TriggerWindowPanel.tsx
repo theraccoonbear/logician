@@ -3,17 +3,23 @@ import { HOLD_CARD_HANDLERS, computeRandomizeTargets } from '../../../engine/tri
 import { TERRAIN_TYPES } from '../../../engine/majorArcana/forcedOperand'
 import { describeMajorArcana } from '../../operandLabels'
 import { useGameEngine } from '../../hooks/useGameEngine'
+import { useTargetPreview } from '../../hooks/useTargetPreview'
 
-export function TriggerWindowPanel() {
+export function TriggerWindowPanel({ onPreviewTargetsChange }: { onPreviewTargetsChange: (ids: Set<string>) => void }) {
   const { state, dispatch, lastError } = useGameEngine()
   const [empressFrom, setEmpressFrom] = useState('')
   const [empressTo, setEmpressTo] = useState('')
   const [hierophantTarget, setHierophantTarget] = useState('')
   const [hierophantLevel, setHierophantLevel] = useState(1)
 
-  if (!state || state.phase !== 'awaitingTrigger' || !state.pendingTrigger || !state.triggerQueue?.length) return null
+  const pending = state?.phase === 'awaitingTrigger' ? state.pendingTrigger : undefined
+  // Hierophant's only legal targets are exactly what's about to be randomized — already fully
+  // computed by computeRandomizeTargets, so preview it directly whenever a trigger window is
+  // open (harmless no-op when Hierophant isn't the eligible card, since it's just an empty set).
+  useTargetPreview(state && pending ? new Set(computeRandomizeTargets(state, pending).map((s) => s.id)) : new Set(), onPreviewTargetsChange)
 
-  const pending = state.pendingTrigger
+  if (!state || !pending || !state.triggerQueue?.length) return null
+
   const responderId = state.triggerQueue[0]
   const responder = state.players.find((p) => p.id === responderId)!
   const eligible = responder.heldMajorArcana.filter((card) => HOLD_CARD_HANDLERS[card.id]?.canRespond(pending, responderId))

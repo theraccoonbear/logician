@@ -3,6 +3,7 @@ import { computeVP } from '../../../../engine/selectors'
 import { LEVEL_BOUNDS } from '../../../../engine/types/structure'
 import type { StructureType } from '../../../../engine/types/structure'
 import { useGameEngine } from '../../../hooks/useGameEngine'
+import { useTargetPreview } from '../../../hooks/useTargetPreview'
 
 const BASIC_TYPES: StructureType[] = ['Pool', 'Pyramid', 'Tower']
 
@@ -11,10 +12,29 @@ interface Build {
   structureType: StructureType
 }
 
-export function StarForm({ onConfirm, onCancel }: { onConfirm: (params: unknown) => void; onCancel: () => void }) {
+export function StarForm({
+  onConfirm,
+  onCancel,
+  onPreviewTargetsChange,
+}: {
+  onConfirm: (params: unknown) => void
+  onCancel: () => void
+  onPreviewTargetsChange?: (ids: Set<string>) => void
+}) {
   const { state } = useGameEngine()
   const [upgrades, setUpgrades] = useState<Record<string, number>>({})
   const [builds, setBuilds] = useState<Record<string, Build[]>>({})
+
+  // Who's affected doesn't depend on any choice — every laggard's existing structures are
+  // previewable the instant the form opens, before any upgrade/build amounts are entered.
+  const previewIds = new Set<string>()
+  if (state) {
+    const maxVPNow = Math.max(...state.players.map((p) => computeVP(state, p.id)))
+    const laggardIds = new Set(state.players.filter((p) => computeVP(state, p.id) < maxVPNow).map((p) => p.id))
+    for (const s of state.structures) if (laggardIds.has(s.owner)) previewIds.add(s.id)
+  }
+  useTargetPreview(previewIds, onPreviewTargetsChange)
+
   if (!state) return null
 
   const maxVP = Math.max(...state.players.map((p) => computeVP(state, p.id)))

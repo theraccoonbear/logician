@@ -1,10 +1,26 @@
 import { useState } from 'react'
 import { useGameEngine } from '../../../hooks/useGameEngine'
+import { useTargetPreview } from '../../../hooks/useTargetPreview'
 
-export function TowerForm({ onConfirm, onCancel }: { onConfirm: (params: unknown) => void; onCancel: () => void }) {
+export function TowerForm({
+  onConfirm,
+  onCancel,
+  onPreviewTargetsChange,
+}: {
+  onConfirm: (params: unknown) => void
+  onCancel: () => void
+  onPreviewTargetsChange?: (ids: Set<string>) => void
+}) {
   const { state } = useGameEngine()
   const [ownId, setOwnId] = useState<string | null>(null)
   const [opponentIds, setOpponentIds] = useState<Set<string>>(new Set())
+
+  // The candidate set — own structure plus whatever opponent structures are checked so far —
+  // previews as soon as anything's picked, even before the running total legally matches X.
+  const candidateIds = new Set(opponentIds)
+  if (ownId) candidateIds.add(ownId)
+  useTargetPreview(candidateIds, onPreviewTargetsChange)
+
   if (!state) return null
 
   const player = state.players[state.activePlayerIndex]

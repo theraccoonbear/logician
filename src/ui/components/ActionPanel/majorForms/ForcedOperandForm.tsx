@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { designatedOpponentId, getForcedOperandSpec } from '../../../../engine/majorArcana/forcedOperand'
-import type { MajorArcanaCard } from '../../../../engine/types/tarot'
+import { getAffectedStructures } from '../../../../engine/selectors'
+import type { MajorArcanaCard, Operand } from '../../../../engine/types/tarot'
 import { useGameEngine } from '../../../hooks/useGameEngine'
+import { useTargetPreview } from '../../../hooks/useTargetPreview'
 import { EffectCardHand } from '../../Hand/EffectCardHand'
 import { LogicCardHand } from '../../Hand/LogicCardHand'
 import { OperandPicker, operandKindLabel } from './OperandPicker'
@@ -10,10 +12,12 @@ export function ForcedOperandForm({
   tarot,
   onConfirm,
   onCancel,
+  onPreviewTargetsChange,
 }: {
   tarot: MajorArcanaCard
   onConfirm: (params: unknown) => void
   onCancel: () => void
+  onPreviewTargetsChange?: (ids: Set<string>) => void
 }) {
   const { state } = useGameEngine()
   const [casterValue, setCasterValue] = useState<string | number | ''>('')
@@ -22,6 +26,22 @@ export function ForcedOperandForm({
   const [effectId, setEffectId] = useState<string | null>(null)
 
   const spec = getForcedOperandSpec(tarot.id)
+  const logicCard = state?.players[state.activePlayerIndex].logicHand.find((c) => c.instanceId === logicId)
+  const previewIds =
+    state && spec && casterValue !== '' && opponentValue !== '' && logicCard
+      ? new Set(
+          getAffectedStructures(state, {
+            logicCardId: logicCard.kind,
+            // Cast, not narrowed: the preview trusts the same values the real resolver validates
+            // via validateOperandValue at confirm-time — this is best-effort while typing, not
+            // the source of truth for whether the combo is actually legal.
+            operandA: { kind: spec.casterCategory, value: casterValue as Operand['value'] },
+            operandB: { kind: spec.opponentCategory, value: opponentValue as Operand['value'] },
+          }).map((s) => s.id),
+        )
+      : new Set<string>()
+  useTargetPreview(previewIds, onPreviewTargetsChange)
+
   if (!state || !spec) return null
 
   const player = state.players[state.activePlayerIndex]
