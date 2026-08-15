@@ -64,15 +64,15 @@ const LOGIC_OPERATOR_ART: Partial<Record<LogicCardId, string>> = {
   A_XOR_B: assetUrl('/img/cards/XOR_operator.png'),
 }
 
-// Dedicated effect art (public/img/cards/effect_{kind}.png) for the card's center panel.
-// Filled in as art is delivered — kinds without an entry just render the frame + caption,
-// same as every card did before any operator/effect art existed.
+// Dedicated effect art (public/img/cards/effect_{kind}.png) for the card's center panel —
+// every EffectCardId now has one. Still a Partial map (rather than Record) so a future new
+// kind without art yet falls back to caption-only instead of a missing-key type error.
 const EFFECT_ART: Partial<Record<EffectCardId, string>> = {
   UPGRADE_1: assetUrl('/img/cards/effect_upgrade_1.png'),
   UPGRADE_2: assetUrl('/img/cards/effect_upgrade_2.png'),
   UPGRADE_3: assetUrl('/img/cards/effect_upgrade_3.png'),
   DOWNGRADE_1: assetUrl('/img/cards/effect_downgrade_1.png'),
-  // DOWNGRADE_2 held back — source art (effect_downgrade_2.png) is being redone.
+  DOWNGRADE_2: assetUrl('/img/cards/effect_downgrade_2.png'),
   DOWNGRADE_3: assetUrl('/img/cards/effect_downgrade_3.png'),
   MAXIMIZE: assetUrl('/img/cards/effect_maximize.png'),
   RANDOMIZE: assetUrl('/img/cards/effect_randomize.png'),
