@@ -71,6 +71,12 @@ const EFFECT_ART: Partial<Record<EffectCardId, string>> = {
   UPGRADE_1: assetUrl('/img/cards/effect_upgrade_1.png'),
   UPGRADE_2: assetUrl('/img/cards/effect_upgrade_2.png'),
   UPGRADE_3: assetUrl('/img/cards/effect_upgrade_3.png'),
+  DOWNGRADE_1: assetUrl('/img/cards/effect_downgrade_1.png'),
+  // DOWNGRADE_2 held back — source art (effect_downgrade_2.png) is being redone.
+  DOWNGRADE_3: assetUrl('/img/cards/effect_downgrade_3.png'),
+  MAXIMIZE: assetUrl('/img/cards/effect_maximize.png'),
+  RANDOMIZE: assetUrl('/img/cards/effect_randomize.png'),
+  COMBO: assetUrl('/img/cards/effect_combo.png'),
 }
 
 interface Box {
