@@ -1,5 +1,7 @@
 import type { LogicCard } from '../../../engine/types/cards'
 import { LOGIC_CARD_LABELS } from '../../cardLabels'
+import { LOGIC_FRAME, logicArtStyle, logicCaptionStyle } from '../../cardArt'
+import { GameCard, CARD_WIDTH, CARD_HEIGHT } from './GameCard'
 
 export function LogicCardHand({
   cards,
@@ -15,13 +17,15 @@ export function LogicCardHand({
       <div className="card-hand-label">Logic Cards</div>
       <div className="card-hand-row">
         {cards.map((card) => (
-          <button
+          <GameCard
             key={card.instanceId}
-            className={`card-button card-logic ${selectedId === card.instanceId ? 'is-selected' : ''}`}
+            frame={LOGIC_FRAME}
+            label={LOGIC_CARD_LABELS[card.kind]}
+            artStyle={logicArtStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}
+            captionStyle={logicCaptionStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}
+            selected={selectedId === card.instanceId}
             onClick={() => onSelect(card.instanceId)}
-          >
-            {LOGIC_CARD_LABELS[card.kind]}
-          </button>
+          />
         ))}
       </div>
     </div>

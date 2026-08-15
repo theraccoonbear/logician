@@ -1,5 +1,7 @@
 import type { EffectCard } from '../../../engine/types/cards'
 import { EFFECT_CARD_LABELS } from '../../cardLabels'
+import { EFFECT_FRAME, effectCaptionStyle } from '../../cardArt'
+import { GameCard, CARD_WIDTH, CARD_HEIGHT } from './GameCard'
 
 export function EffectCardHand({
   cards,
@@ -15,13 +17,14 @@ export function EffectCardHand({
       <div className="card-hand-label">Effect Cards</div>
       <div className="card-hand-row">
         {cards.map((card) => (
-          <button
+          <GameCard
             key={card.instanceId}
-            className={`card-button card-effect ${selectedId === card.instanceId ? 'is-selected' : ''}`}
+            frame={EFFECT_FRAME}
+            label={EFFECT_CARD_LABELS[card.kind]}
+            captionStyle={effectCaptionStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}
+            selected={selectedId === card.instanceId}
             onClick={() => onSelect(card.instanceId)}
-          >
-            {EFFECT_CARD_LABELS[card.kind]}
-          </button>
+          />
         ))}
       </div>
     </div>
