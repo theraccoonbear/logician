@@ -46,6 +46,19 @@ const EFFECT_BANDS: Record<EffectCardId, [number, number]> = {
 export const LOGIC_FRAME = assetUrl('/img/cards/logic.png')
 export const EFFECT_FRAME = assetUrl('/img/cards/effect.png')
 
+// Dedicated operator art (public/img/cards/{OP}_operator.png) for the card's center panel —
+// only exists for the 6 kinds built directly from one named operator. A/B (no operator) and
+// A_NOT_B/B_NOT_A (compound — not a single named operator) have no matching art and fall back
+// to an empty center panel, same as Effect cards.
+const LOGIC_OPERATOR_ART: Partial<Record<LogicCardId, string>> = {
+  NOT_A: assetUrl('/img/cards/NOT_operator.png'),
+  NOT_B: assetUrl('/img/cards/NOT_operator.png'),
+  A_AND_B: assetUrl('/img/cards/AND_operator.png'),
+  A_OR_B: assetUrl('/img/cards/OR_operator.png'),
+  A_NOR_B: assetUrl('/img/cards/NOR_operator.png'),
+  A_XOR_B: assetUrl('/img/cards/XOR_operator.png'),
+}
+
 interface Box {
   left: number
   top: number
@@ -53,8 +66,7 @@ interface Box {
   height: number
 }
 
-// The card's big empty center panel — used on Logic cards to show the operator label large,
-// as if it were the card's artwork (Effect cards don't get this treatment, just the caption).
+// The card's big empty center panel — where the operator art above goes, when a kind has any.
 const LOGIC_ART_BOX: Box = { left: 0.207, top: 0.205, width: 0.6, height: 0.44 }
 
 // Bottom third of the card, where the brass/gold nameplate is on both frames — the actual
@@ -81,8 +93,20 @@ function labelStyle(sheet: Sheet, band: [number, number], box: Box, cardWidthPx:
   }
 }
 
-export function logicArtStyle(kind: LogicCardId, cardWidthPx: number, cardHeightPx: number): CSSProperties {
-  return labelStyle(LOGIC_SHEET, LOGIC_BANDS[kind], LOGIC_ART_BOX, cardWidthPx, cardHeightPx)
+export function logicArtStyle(kind: LogicCardId, cardWidthPx: number, cardHeightPx: number): CSSProperties | undefined {
+  const url = LOGIC_OPERATOR_ART[kind]
+  if (!url) return undefined
+  return {
+    position: 'absolute',
+    left: cardWidthPx * LOGIC_ART_BOX.left,
+    top: cardHeightPx * LOGIC_ART_BOX.top,
+    width: cardWidthPx * LOGIC_ART_BOX.width,
+    height: cardHeightPx * LOGIC_ART_BOX.height,
+    backgroundImage: `url(${url})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    backgroundSize: 'contain',
+  }
 }
 
 export function logicCaptionStyle(kind: LogicCardId, cardWidthPx: number, cardHeightPx: number): CSSProperties {
