@@ -49,8 +49,8 @@ export const EFFECT_FRAME = assetUrl('/img/cards/effect.png')
 
 // Dedicated operator art (public/img/cards/{OP}_operator.png) for the card's center panel.
 // A/B aren't operators, but get their own "Alpha"/"Beta" art rather than staying empty.
-// A_NOT_B/B_NOT_A (compound — not a single named operator) have no matching art and fall
-// back to an empty center panel, same as Effect cards.
+// A_NOT_B/B_NOT_A reuse the NOT art too — both are NOT-based (A AND NOT B / B AND NOT A),
+// same reasoning as NOT_A/NOT_B.
 const LOGIC_OPERATOR_ART: Partial<Record<LogicCardId, string>> = {
   A: assetUrl('/img/cards/ALPHA_operator.png'),
   B: assetUrl('/img/cards/BETA_operator.png'),
@@ -58,6 +58,8 @@ const LOGIC_OPERATOR_ART: Partial<Record<LogicCardId, string>> = {
   NOT_B: assetUrl('/img/cards/NOT_operator.png'),
   A_AND_B: assetUrl('/img/cards/AND_operator.png'),
   A_OR_B: assetUrl('/img/cards/OR_operator.png'),
+  A_NOT_B: assetUrl('/img/cards/NOT_operator.png'),
+  B_NOT_A: assetUrl('/img/cards/NOT_operator.png'),
   A_NOR_B: assetUrl('/img/cards/NOR_operator.png'),
   A_XOR_B: assetUrl('/img/cards/XOR_operator.png'),
 }
