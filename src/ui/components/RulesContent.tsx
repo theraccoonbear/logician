@@ -9,6 +9,18 @@ import { describeMajorArcana } from '../operandLabels'
 import { structureArtUrl } from '../structureArt'
 import { tarotArtUrl } from '../tarotArt'
 import { CARD_HEIGHT, CARD_WIDTH, GameCard } from './Hand/GameCard'
+import { TarotCardView } from './TarotRow/TarotCardView'
+
+// The tarot card in the worked Cast example below — 3 of Swords: Prairies (its terrain) at
+// level 3, exactly the operands the caption walks through.
+const EXAMPLE_TAROT: TarotCard = {
+  kind: 'minor',
+  instanceId: 'rules-example-swords-3',
+  suit: 'Swords',
+  rank: '3',
+  operandA: { kind: 'terrain', value: 'Prairies' },
+  operandB: { kind: 'level', value: 3 },
+}
 
 // Static, non-interactive examples of the actual in-game structure/card art — same source
 // helpers (and the same LEVEL_BOUNDS the engine enforces) that the board and hands use, so
@@ -155,6 +167,7 @@ export function RulesContent() {
           selected={false}
           onClick={() => {}}
         />
+        <TarotCardView tarot={EXAMPLE_TAROT} selected={false} onSelect={() => {}} />
         <p className="rules-caption">
           Example: paired against a tarot card naming <em>Prairies, level 3</em>, this matches every Prairies
           structure at exactly level 3 and upgrades each of them by 2.

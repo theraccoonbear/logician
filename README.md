@@ -7,6 +7,10 @@
   now a browser prototype.
 </p>
 
+<p align="center">
+  <strong><a href="https://theraccoonbear.github.io/logician/">▶ Play it live</a></strong>
+</p>
+
 ## What is this?
 
 Logician started life as a physical tabletop prototype and is now a
