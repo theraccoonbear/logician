@@ -5,6 +5,7 @@ import type { MajorArcanaId } from '../../../engine/types/tarot'
 import { MAJOR_ARCANA_DESCRIPTIONS } from '../../majorArcanaDescriptions'
 import { describeMajorArcana } from '../../operandLabels'
 import { useGameEngine } from '../../hooks/useGameEngine'
+import { useTargetPreview } from '../../hooks/useTargetPreview'
 import { ChariotForm } from './majorForms/ChariotForm'
 import { DevilForm } from './majorForms/DevilForm'
 import { ForcedOperandForm } from './majorForms/ForcedOperandForm'
@@ -22,14 +23,27 @@ export function MajorArcanaPanel({
   wheelTargets,
   setWheelTargets,
   selectedHexId,
+  onPreviewTargetsChange,
 }: {
   activeMajorId: MajorArcanaId
   onDeselect: () => void
   wheelTargets: Set<string>
   setWheelTargets: (next: Set<string>) => void
   selectedHexId: string | null
+  onPreviewTargetsChange: (ids: Set<string>) => void
 }) {
   const { state, dispatch, lastError } = useGameEngine()
+
+  // Death/Judgement have no form (no choices to make) — their targets are the whole board,
+  // computable with zero interaction, so preview them as soon as either is the active major.
+  const deathJudgementPreview =
+    activeMajorId === 'DEATH'
+      ? new Set((state?.structures ?? []).filter((s) => s.type !== 'Fortress' && s.level <= 2).map((s) => s.id))
+      : activeMajorId === 'JUDGEMENT'
+        ? new Set((state?.structures ?? []).map((s) => s.id))
+        : new Set<string>()
+  useTargetPreview(deathJudgementPreview, onPreviewTargetsChange)
+
   if (!state) return null
 
   const player = state.players[state.activePlayerIndex]
@@ -91,16 +105,20 @@ export function MajorArcanaPanel({
       )}
 
       {activeMajorId === 'HERMIT' && <HermitForm onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'CHARIOT' && <ChariotForm selectedHexId={selectedHexId} onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'DEVIL' && <DevilForm onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'WORLD' && <WorldForm onConfirm={play} onCancel={cancel} />}
+      {activeMajorId === 'CHARIOT' && (
+        <ChariotForm selectedHexId={selectedHexId} onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />
+      )}
+      {activeMajorId === 'DEVIL' && <DevilForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
+      {activeMajorId === 'WORLD' && <WorldForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
       {activeMajorId === 'MAGICIAN' && <MagicianForm onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'TOWER' && <TowerForm onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'STRENGTH' && <StrengthForm onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'STAR' && <StarForm onConfirm={play} onCancel={cancel} />}
-      {activeMajorId === 'TEMPERANCE' && <TemperanceForm onConfirm={play} onCancel={cancel} />}
+      {activeMajorId === 'TOWER' && <TowerForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
+      {activeMajorId === 'STRENGTH' && <StrengthForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
+      {activeMajorId === 'STAR' && <StarForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
+      {activeMajorId === 'TEMPERANCE' && (
+        <TemperanceForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />
+      )}
       {activeMajorId && activeTarot?.kind === 'major' && isForcedOperandMajor(activeTarot.id) && (
-        <ForcedOperandForm tarot={activeTarot} onConfirm={play} onCancel={cancel} />
+        <ForcedOperandForm tarot={activeTarot} onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />
       )}
 
       {(activeMajorId === 'DEATH' || activeMajorId === 'JUDGEMENT') && (

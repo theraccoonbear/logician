@@ -1,17 +1,30 @@
 import { useState } from 'react'
 import { useGameEngine } from '../../../hooks/useGameEngine'
+import { useTargetPreview } from '../../../hooks/useTargetPreview'
 
-export function StrengthForm({ onConfirm, onCancel }: { onConfirm: (params: unknown) => void; onCancel: () => void }) {
+export function StrengthForm({
+  onConfirm,
+  onCancel,
+  onPreviewTargetsChange,
+}: {
+  onConfirm: (params: unknown) => void
+  onCancel: () => void
+  onPreviewTargetsChange?: (ids: Set<string>) => void
+}) {
   const { state } = useGameEngine()
   const [ownId, setOwnId] = useState<string | null>(null)
+
+  const own = state?.structures.find((s) => s.id === ownId)
+  const affectedOpponents = own
+    ? state!.structures.filter((s) => s.owner !== own.owner && s.type === own.type && !s.fortressed)
+    : []
+  useTargetPreview(own ? new Set([own.id, ...affectedOpponents.map((s) => s.id)]) : new Set(), onPreviewTargetsChange)
+
   if (!state) return null
 
   const player = state.players[state.activePlayerIndex]
   const myTargets = state.structures.filter((s) => s.owner === player.id && !s.fortressed)
-  const own = state.structures.find((s) => s.id === ownId)
-  const affectedOpponentCount = own
-    ? state.structures.filter((s) => s.owner !== player.id && s.type === own.type && !s.fortressed).length
-    : 0
+  const affectedOpponentCount = affectedOpponents.length
 
   return (
     <div className="major-arcana-form">

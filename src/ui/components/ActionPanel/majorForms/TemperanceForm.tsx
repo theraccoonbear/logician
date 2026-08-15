@@ -1,10 +1,30 @@
 import { useState } from 'react'
 import { computeVP } from '../../../../engine/selectors'
 import { useGameEngine } from '../../../hooks/useGameEngine'
+import { useTargetPreview } from '../../../hooks/useTargetPreview'
 
-export function TemperanceForm({ onConfirm, onCancel }: { onConfirm: (params: unknown) => void; onCancel: () => void }) {
+export function TemperanceForm({
+  onConfirm,
+  onCancel,
+  onPreviewTargetsChange,
+}: {
+  onConfirm: (params: unknown) => void
+  onCancel: () => void
+  onPreviewTargetsChange?: (ids: Set<string>) => void
+}) {
   const { state } = useGameEngine()
   const [levels, setLevels] = useState<Record<string, number>>({})
+
+  // Who's affected doesn't depend on any choice — every affected player's existing structures
+  // are previewable the instant the form opens, before any downgrade amounts are entered.
+  const previewIds = new Set<string>()
+  if (state) {
+    const minVPNow = Math.min(...state.players.map((p) => computeVP(state, p.id)))
+    const affectedIds = new Set(state.players.filter((p) => computeVP(state, p.id) > minVPNow).map((p) => p.id))
+    for (const s of state.structures) if (affectedIds.has(s.owner)) previewIds.add(s.id)
+  }
+  useTargetPreview(previewIds, onPreviewTargetsChange)
+
   if (!state) return null
 
   const minVP = Math.min(...state.players.map((p) => computeVP(state, p.id)))

@@ -24,11 +24,17 @@ export function GameView() {
   const [spellSelection, setSpellSelection] = useState<SpellSelection>(EMPTY_SELECTION)
   const [wheelTargets, setWheelTargets] = useState<Set<string>>(new Set())
   const [helpOpen, setHelpOpen] = useState(false)
+  // Live target preview for whichever Major Arcana form/trigger is currently being filled
+  // out — reported up from ActionPanel via useTargetPreview. Minor-arcana spells have their
+  // own highlightedIds below; the two are unioned when passed to Board, since only one is
+  // ever non-empty at a time (they correspond to mutually exclusive selection states).
+  const [majorPreviewIds, setMajorPreviewIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setSelectedHexId(null)
     setSpellSelection(EMPTY_SELECTION)
     setWheelTargets(new Set())
+    setMajorPreviewIds(new Set())
   }, [state?.activePlayerIndex, state?.phase])
 
   // Auto-open the rules once, right after a fresh game starts with the "show rules" setup
@@ -59,6 +65,14 @@ export function GameView() {
     })
     return new Set(affected.map((s) => s.id))
   }, [state, spellSelection])
+
+  // Union, not either/or: minor-spell highlighting and major-arcana preview highlighting
+  // correspond to mutually exclusive selection states (a minor tarot+logic pair vs. a major
+  // arcana form/trigger in progress), so at most one side is ever non-empty at once.
+  const boardHighlightedIds = useMemo(
+    () => new Set([...highlightedIds, ...majorPreviewIds]),
+    [highlightedIds, majorPreviewIds],
+  )
 
   if (!state) return null
 
@@ -120,6 +134,7 @@ export function GameView() {
             onSpellSelectionChange={setSpellSelection}
             wheelTargets={wheelTargets}
             setWheelTargets={setWheelTargets}
+            onPreviewTargetsChange={setMajorPreviewIds}
           />
         )}
       </div>
@@ -133,7 +148,7 @@ export function GameView() {
         <div ref={boardRef} style={{ transform: `scale(${boardScale})`, transformOrigin: 'top center' }}>
           <Board
             state={state}
-            highlightedIds={highlightedIds}
+            highlightedIds={boardHighlightedIds}
             selectedHexId={hexSelectionEnabled ? selectedHexId : null}
             onHexClick={hexSelectionEnabled ? setSelectedHexId : undefined}
             selectedStructureIds={activeMajorId === 'WHEEL' ? wheelTargets : undefined}
