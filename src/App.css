@@ -353,6 +353,114 @@
   background: var(--accent-bg);
 }
 
+.rules-structure-item {
+  margin-bottom: 18px;
+}
+
+.rules-structure-item p {
+  margin: 0 0 8px;
+}
+
+.rules-structure-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.rules-structure-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text);
+  height: 130px;
+}
+
+.rules-structure-level img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+/* Tower art is a tall, narrow silhouette (same exception the board itself makes for it) —
+   a square box shrinks it down to fit the width, so give it a taller box instead. */
+.rules-structure-level.is-tower img {
+  width: 96px;
+  height: 130px;
+}
+
+.rules-fortress-thumb {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.rules-fortress-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.rules-card-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+
+.rules-card-examples .game-card {
+  cursor: default;
+}
+
+.rules-caption {
+  flex: 1 1 200px;
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text);
+}
+
+.rules-major-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.rules-major-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--bg);
+}
+
+.rules-major-art {
+  width: 100%;
+  aspect-ratio: 3 / 5;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.rules-major-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-h);
+  margin-bottom: 4px;
+}
+
+.rules-major-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
 /* --- Body layout: game field, then cards/log below it --- */
 
 /* overflow: hidden, not auto — the board is scaled down to fit (useFitScale

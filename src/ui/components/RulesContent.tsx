@@ -1,9 +1,65 @@
+import type { TarotCard } from '../../engine/types/tarot'
 import { MAJOR_ARCANA_IDS } from '../../engine/types/tarot'
+import { LEVEL_BOUNDS, type StructureType } from '../../engine/types/structure'
+import { EFFECT_FRAME, LOGIC_FRAME, effectCaptionStyle, logicArtStyle, logicCaptionStyle } from '../cardArt'
+import { EFFECT_CARD_LABELS, LOGIC_CARD_LABELS } from '../cardLabels'
+import { fortressArtUrls } from '../fortressArt'
 import { MAJOR_ARCANA_DESCRIPTIONS } from '../majorArcanaDescriptions'
 import { describeMajorArcana } from '../operandLabels'
+import { structureArtUrl } from '../structureArt'
+import { tarotArtUrl } from '../tarotArt'
+import { CARD_HEIGHT, CARD_WIDTH, GameCard } from './Hand/GameCard'
+
+// Static, non-interactive examples of the actual in-game structure/card art — same source
+// helpers (and the same LEVEL_BOUNDS the engine enforces) that the board and hands use, so
+// these can never drift out of sync with real assets or real rules.
+
+function levelRange(type: StructureType): number[] {
+  const { floor, max } = LEVEL_BOUNDS[type]
+  return Array.from({ length: max - floor + 1 }, (_, i) => floor + i)
+}
+
+// Every upgrade stage of a basic structure, floor to max, so a player can see the whole
+// progression rather than a single snapshot.
+function StructureLevelRow({ type }: { type: 'Pool' | 'Pyramid' | 'Tower' }) {
+  return (
+    <div className="rules-structure-levels">
+      {levelRange(type).map((level) => {
+        const url = structureArtUrl({ type, level })
+        if (!url) return null
+        return (
+          <div className={`rules-structure-level${type === 'Tower' ? ' is-tower' : ''}`} key={level}>
+            <img src={url} alt={`${type} level ${level}`} />
+            <span>Lvl {level}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function FortressLevelRow() {
+  return (
+    <div className="rules-structure-levels">
+      {levelRange('Fortress').map((level) => {
+        const art = fortressArtUrls(level)
+        if (!art) return null
+        return (
+          <div className="rules-structure-level" key={level}>
+            <div className="rules-fortress-thumb">
+              <img src={art.back} alt="" />
+              <img src={art.fore} alt={`Fortress level ${level}`} />
+            </div>
+            <span>Lvl {level}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 // The in-app "Help" modal's content. This mirrors docs/rules.md, cleaned up for a first-time
-// player, with the Major Arcana table sourced directly from MAJOR_ARCANA_DESCRIPTIONS so it
+// player, with the Major Arcana gallery sourced directly from MAJOR_ARCANA_DESCRIPTIONS so it
 // can't drift from what the engine actually does.
 export function RulesContent() {
   return (
@@ -21,22 +77,38 @@ export function RulesContent() {
         tarot suits: Swords, Wands, Cups, and Pentacles, respectively. Each hex can hold at most one of each structure
         type per player: a Pool, a Pyramid, a Tower, and (once you have all three) a Fortress.
       </p>
-      <ul>
-        <li>
-          <strong>Pool</strong> — a 2-sided coin. Enters play at level 2, maxes out at 3.
-        </li>
-        <li>
-          <strong>Pyramid</strong> — a 4-sided die. Enters play at level 1, maxes out at 4.
-        </li>
-        <li>
-          <strong>Tower</strong> — a 6-sided die. Enters play at level 1, maxes out at 6.
-        </li>
-        <li>
-          <strong>Fortress</strong> — a hexagonal wall around your other structures on that hex. Enters play at level
-          1, maxes out at 2. Requires a Pool, Pyramid, and Tower already on the hex to build. While it stands, the
-          structures inside are immune to downgrades — but also to your own upgrades.
-        </li>
-      </ul>
+      <div className="rules-structure-list">
+        <div className="rules-structure-item">
+          <p>
+            <strong>Pool</strong> — a 2-sided coin. Enters play at level {LEVEL_BOUNDS.Pool.floor}, maxes out at{' '}
+            {LEVEL_BOUNDS.Pool.max}.
+          </p>
+          <StructureLevelRow type="Pool" />
+        </div>
+        <div className="rules-structure-item">
+          <p>
+            <strong>Pyramid</strong> — a 4-sided die. Enters play at level {LEVEL_BOUNDS.Pyramid.floor}, maxes out at{' '}
+            {LEVEL_BOUNDS.Pyramid.max}.
+          </p>
+          <StructureLevelRow type="Pyramid" />
+        </div>
+        <div className="rules-structure-item">
+          <p>
+            <strong>Tower</strong> — a 6-sided die. Enters play at level {LEVEL_BOUNDS.Tower.floor}, maxes out at{' '}
+            {LEVEL_BOUNDS.Tower.max}.
+          </p>
+          <StructureLevelRow type="Tower" />
+        </div>
+        <div className="rules-structure-item">
+          <p>
+            <strong>Fortress</strong> — a hexagonal wall around your other structures on that hex. Enters play at
+            level {LEVEL_BOUNDS.Fortress.floor}, maxes out at {LEVEL_BOUNDS.Fortress.max}. Requires a Pool, Pyramid,
+            and Tower already on the hex to build. While it stands, the structures inside are immune to downgrades —
+            but also to your own upgrades.
+          </p>
+          <FortressLevelRow />
+        </div>
+      </div>
 
       <h3>Setup</h3>
       <p>
@@ -63,9 +135,30 @@ export function RulesContent() {
         </li>
         <li>
           <strong>Play a Major Arcana action</strong> — if one is face up in the tarot row, you may play it instead
-          of casting a spell. See the table below for what each one does.
+          of casting a spell. See the gallery below for what each one does.
         </li>
       </ul>
+      <div className="rules-card-examples">
+        <GameCard
+          frame={LOGIC_FRAME}
+          label={LOGIC_CARD_LABELS.A_AND_B}
+          artStyle={logicArtStyle('A_AND_B', CARD_WIDTH, CARD_HEIGHT)}
+          captionStyle={logicCaptionStyle('A_AND_B', CARD_WIDTH, CARD_HEIGHT)}
+          selected={false}
+          onClick={() => {}}
+        />
+        <GameCard
+          frame={EFFECT_FRAME}
+          label={EFFECT_CARD_LABELS.UPGRADE_2}
+          captionStyle={effectCaptionStyle('UPGRADE_2', CARD_WIDTH, CARD_HEIGHT)}
+          selected={false}
+          onClick={() => {}}
+        />
+        <p className="rules-caption">
+          Example: paired against a tarot card naming <em>Prairies, level 3</em>, this matches every Prairies
+          structure at exactly level 3 and upgrades each of them by 2.
+        </p>
+      </div>
       <p>
         Once a spell resolves, the Logic, Effect, and Tarot cards played are discarded. If a structure&apos;s level
         would drop below its floor, it&apos;s destroyed and returns to its owner&apos;s supply — a Pool specifically
@@ -153,23 +246,19 @@ export function RulesContent() {
       </p>
 
       <h3>Major Arcana Actions</h3>
-      <div className="rules-table-wrap">
-        <table className="rules-table">
-          <thead>
-            <tr>
-              <th>Card</th>
-              <th>Effect</th>
-            </tr>
-          </thead>
-          <tbody>
-            {MAJOR_ARCANA_IDS.map((id) => (
-              <tr key={id}>
-                <td>{describeMajorArcana(id)}</td>
-                <td>{MAJOR_ARCANA_DESCRIPTIONS[id]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <p>Each one has its own effect and its own tie-in to the card&apos;s character:</p>
+      <div className="rules-major-gallery">
+        {MAJOR_ARCANA_IDS.map((id) => {
+          const card: TarotCard = { kind: 'major', instanceId: id, id }
+          const name = describeMajorArcana(id)
+          return (
+            <div className="rules-major-card" key={id}>
+              <img className="rules-major-art" src={tarotArtUrl(card)} alt={name} loading="lazy" />
+              <div className="rules-major-name">{name}</div>
+              <div className="rules-major-desc">{MAJOR_ARCANA_DESCRIPTIONS[id]}</div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
