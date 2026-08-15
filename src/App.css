@@ -622,22 +622,24 @@
   z-index: 5;
 }
 
-/* Fake tile thickness (issue #8's "directional-only bevel"): a same-shaped, same-size sibling
-   of .hex-tile, darkened and nudged down-right so only its bottom-right sliver peeks out past
-   the (opaque, unshifted) tile painted on top of it — reading as a beveled edge/shadow along
-   an implied top-left light source, without needing any extra gap between tiles. Has to be a
-   sibling rather than a descendant for the same clip-path reason .hex-tile-ring does (below):
-   nothing inside .hex-tile can ever paint past its own clipped silhouette. Solid color for
-   now, not a darkened clone of the terrain art itself — cheaper (no extra image/filter per
-   tile) and the open question from the issue about which reads better is still open; swapping
-   this rule for a filtered <img> clone later is a small, contained change if solid doesn't
-   read well enough. Terrain hex only — doesn't extend to structure/fortress art. */
+/* Fake tile thickness (issue #8's "directional-only bevel"): the SAME terrain art as
+   .hex-terrain-art, darkened and nudged down-right so only its bottom-right sliver peeks out
+   past the (opaque, unshifted) tile painted on top of it — reading as the die-cut edge of this
+   same physical piece of material continuing slightly past its top face, not a generic drop
+   shadow. That's why this is a darkened clone of the actual art rather than a flat color: a
+   solid-color version was tried first and looked like a shadow, not a beveled edge of the same
+   piece. Has to be a sibling of .hex-tile, not a descendant, for the same clip-path reason
+   .hex-tile-ring is (below): nothing inside .hex-tile can ever paint past its own clipped
+   silhouette. Terrain hex only — doesn't extend to structure/fortress art. */
 .hex-tile-bevel {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  background: rgba(0, 0, 0, 0.55);
-  transform: translate(5px, 6px);
+  filter: brightness(0.40) saturate(0.85);
+  transform: translate(0px, 3px);
   pointer-events: none;
 }
 

@@ -110,8 +110,8 @@ no test coverage**. `npm run test` runs the suite (Vitest).
 
 - **Feature branches + PRs against `main`.** Don't commit/push directly to `main` — branch first
   (`git switch -c ...`), open a PR.
-- **Branch naming**: `<type>-<short-kebab-case-desc>-<gh-issue-num>`, e.g. `feat-hex-tile-bevel-8`
-  or `fix-pool-level-bounds-12`. `<type>` is `feat`, `fix`, `spike`, `docs`, `chore`, or similar.
+- **Branch naming**: `<type>/<short-kebab-case-desc>-<gh-issue-num>`, e.g. `feat/hex-tile-bevel-8`
+  or `fix/pool-level-bounds-12`. `<type>` is `feat`, `fix`, `spike`, `docs`, `chore`, or similar.
   Omit the trailing issue number only when the branch has no corresponding issue.
 - **Pure engine, no exceptions.** New rules/effects belong in `src/engine/`, expressed as
   reducer logic with no side effects and no UI dependency — the AI depends on this.
