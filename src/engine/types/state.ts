@@ -7,7 +7,7 @@ import type { MajorArcanaCard, MajorArcanaId, MinorArcanaCard, Operand, TarotCar
 // 'setup': each player is still placing their initial Pool+Pyramid+Tower trio.
 export type Phase = 'setup' | 'build' | 'cast' | 'awaitingTrigger'
 
-export type AIDifficulty = 'random' | 'heuristic'
+export type AIDifficulty = 'random' | 'heuristic' | 'optimus'
 export type AssistanceLevel = 'none' | 'some' | 'full'
 
 export interface Player {

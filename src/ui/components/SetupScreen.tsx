@@ -56,6 +56,7 @@ export function SetupScreen() {
               {seat.isAI && (
                 <select value={seat.aiDifficulty} onChange={(e) => updateSeat(i, { aiDifficulty: e.target.value as AIDifficulty })}>
                   <option value="heuristic">Heuristic</option>
+                  <option value="optimus">Optimus</option>
                   <option value="random">Random</option>
                 </select>
               )}
