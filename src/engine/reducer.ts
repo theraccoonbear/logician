@@ -10,6 +10,103 @@ import { LEVEL_BOUNDS } from './types/structure'
 
 const VICTORY_VP = 40
 
+/**
+ * Unified LGN token stringification helper.
+ * Formats various game entities cleanly and systematically into easily parseable LGN tokens.
+ */
+export function toLGNToken(type: 'player', value: string): string;
+export function toLGNToken(type: 'terrain', value: string, hexId?: string, board?: any[]): string;
+export function toLGNToken(type: 'structure', value: string): string;
+export function toLGNToken(type: 'tarot', value: string): string;
+export function toLGNToken(type: 'logic', value: string): string;
+export function toLGNToken(type: 'effect', value: string): string;
+export function toLGNToken(type: 'operand', value: any): string;
+export function toLGNToken(type: 'level', value: number | string): string;
+export function toLGNToken(type: string, value: any, extra1?: any, extra2?: any): string {
+  switch (type) {
+    case 'player': {
+      const match = String(value).match(/\d+/)
+      return match ? `p:${match[0]}` : `p:${value}`
+    }
+    case 'terrain': {
+      const terrain = String(value)
+      const hexId = extra1 as string | undefined
+      const board = extra2 as any[] | undefined
+      let suffix = ''
+      if (hexId && board) {
+        const index = board.findIndex((h) => h.id === hexId)
+        if (index !== -1) {
+          suffix = `:${index + 1}`
+        }
+      }
+      switch (terrain) {
+        case 'Mountains': return `g:m${suffix}`
+        case 'Swamps': return `g:s${suffix}`
+        case 'Forests': return `g:f${suffix}`
+        case 'Prairies': return `g:p${suffix}`
+        default: return `g:${terrain}${suffix}`
+      }
+    }
+    case 'structure': {
+      switch (value) {
+        case 'Tower': return 'b:t'
+        case 'Pool': return 'b:p'
+        case 'Pyramid': return 'b:y'
+        case 'Fortress': return 'b:f'
+        default: return `b:${value}`
+      }
+    }
+    case 'tarot': {
+      return `t:${String(value).toUpperCase().replace(/[\s-]/g, '_')}`
+    }
+    case 'logic': {
+      return `l:${value}`
+    }
+    case 'effect': {
+      return `e:${value}`
+    }
+    case 'level': {
+      return `v:${value}`
+    }
+    case 'operand': {
+      if (!value) return ''
+      if (value.kind === 'terrain') return toLGNToken('terrain', value.value)
+      if (value.kind === 'level') return toLGNToken('level', value.value)
+      if (value.kind === 'structureType' || value.kind === 'structure') {
+        return toLGNToken('structure', value.value)
+      }
+      return String(value.value)
+    }
+    default:
+      return String(value)
+  }
+}
+
+function formatSubstitutedLogic(logicKind: string, opA: any, opB: any): string {
+  const a = toLGNToken('operand', opA)
+  const b = toLGNToken('operand', opB)
+  const logicToken = toLGNToken('logic', logicKind)
+  switch (logicKind) {
+    case 'A':
+    case 'NOT_A':
+      return `${logicToken} ${a}`
+    case 'B':
+    case 'NOT_B':
+      return `${logicToken} ${b}`
+    case 'B_NOT_A':
+      return `${logicToken} ${b} ${a}`
+    case 'A_AND_B':
+    case 'A_OR_B':
+    case 'A_XOR_B':
+    case 'A_NOT_B':
+    case 'A_NOR_B':
+    case 'A_BICON':
+      return `${logicToken} ${a} ${b}`
+    default:
+      return `${logicToken} ${a} ${b}`
+  }
+}
+
 function err(error: string): ActionResult {
   return { ok: false, error }
 }
@@ -49,13 +146,17 @@ function checkForWinner(state: GameState): GameState {
   if (state.winner) return state
   const winner = state.players.find((p) => computeVP(state, p.id) >= VICTORY_VP)
   if (!winner) return state
-  return withLog({ ...state, winner: winner.id }, `${winner.name} reaches ${VICTORY_VP} VP and wins!`)
+  const scoresStr = state.players.map((p) => `${toLGNToken('player', p.id)}: ${computeVP(state, p.id)}`).join(', ')
+  return withLog(
+    { ...state, winner: winner.id },
+    `GAME_OVER: ${toLGNToken('player', winner.id)} wins with ${computeVP(state, winner.id)} VP | Scores: ${scoresStr}`,
+  )
 }
 
 function handleBuildStructure(
   state: GameState,
   action: { playerId: string; hexId: string; structureType: Structure['type']; playHighPriestessCardId?: string },
-): ActionResult {
+ ): ActionResult {
   const player = requireActivePlayer(state, action.playerId)
   if (!player) return err('Not the active player')
   if (!state.board.some((h) => h.id === action.hexId)) return err('Unknown hex')
@@ -73,9 +174,11 @@ function handleBuildStructure(
       level: LEVEL_BOUNDS[action.structureType].floor,
       fortressed: false,
     }
+    const hex = state.board.find((h) => h.id === action.hexId)
+    const terrainStr = hex ? toLGNToken('terrain', hex.terrain, action.hexId, state.board) : 'g:?'
     let next: GameState = withLog(
       { ...state, structures: [...state.structures, structure] },
-      `${player.name} places a ${action.structureType} during setup.`,
+      `${toLGNToken('player', player.id)} BUILD ${toLGNToken('structure', action.structureType)} @ ${terrainStr}`,
     )
 
     const playerStructureCount = next.structures.filter((s) => s.owner === player.id).length
@@ -85,7 +188,7 @@ function handleBuildStructure(
 
     const everyoneDone = next.players.every((p) => next.structures.filter((s) => s.owner === p.id).length >= 3)
     next = everyoneDone
-      ? withLog({ ...next, phase: 'build', activePlayerIndex: 0 }, 'Setup complete. Real turns begin.')
+      ? withLog({ ...next, phase: 'build', activePlayerIndex: 0 }, 'SETUP_COMPLETE')
       : { ...next, activePlayerIndex: (next.activePlayerIndex + 1) % next.players.length }
     return ok(next)
   }
@@ -118,11 +221,11 @@ function handleBuildStructure(
       fortressed: false,
     }
     const fortifiedStructures = setFortressedForHex([...next.structures, fortress], player.id, action.hexId, true)
+    const hex = state.board.find((h) => h.id === action.hexId)
+    const terrainStr = hex ? toLGNToken('terrain', hex.terrain, action.hexId, state.board) : 'g:?'
     const logged = withLog(
       { ...next, structures: fortifiedStructures },
-      boosted
-        ? `${player.name} builds a Fortress on ${action.hexId} (High Priestess boost), ending their turn.`
-        : `${player.name} builds a Fortress on ${action.hexId}, ending their turn.`,
+      `${toLGNToken('player', player.id)} BUILD ${toLGNToken('structure', 'Fortress')} @ ${terrainStr}`,
     )
     return ok(checkForWinner(advanceTurn(logged)))
   }
@@ -141,11 +244,11 @@ function handleBuildStructure(
     level: entryLevel,
     fortressed: false,
   }
+  const hex = state.board.find((h) => h.id === action.hexId)
+  const terrainStr = hex ? toLGNToken('terrain', hex.terrain, action.hexId, state.board) : '[g:?]'
   next = withLog(
     { ...next, structures: [...next.structures, structure], phase: 'cast' },
-    boosted
-      ? `${player.name} builds a ${action.structureType} on ${action.hexId}, boosted by the High Priestess to level ${entryLevel}.`
-      : `${player.name} builds a ${action.structureType} on ${action.hexId}.`,
+    `${toLGNToken('player', player.id)} BUILD ${toLGNToken('structure', action.structureType)} @ ${terrainStr}`,
   )
   return ok(checkForWinner(next))
 }
@@ -154,7 +257,7 @@ function handleSkipBuild(state: GameState, playerId: string): ActionResult {
   const player = requireActivePlayer(state, playerId)
   if (!player) return err('Not the active player')
   if (state.phase !== 'build') return err(`Cannot skip build during phase '${state.phase}'`)
-  return ok(withLog({ ...state, phase: 'cast' }, `${player.name} skips building.`))
+  return ok(withLog({ ...state, phase: 'cast' }, `${toLGNToken('player', player.id)} SKIP_BUILD`))
 }
 
 /** Either resolves immediately (nobody can react) or opens an 'awaitingTrigger' window. */
@@ -183,7 +286,7 @@ function finalizePending(state: GameState, pending: PendingResolution): ActionRe
       tarotDiscard: [...draw.remainingDiscard, pending.tarot],
       tarotRow: [...base.tarotRow.filter((t) => t.instanceId !== pending.tarot.instanceId), ...draw.drawn],
     }
-    const logged = withLog(next, `The Emperor negates the tarot before it could resolve.`)
+    const logged = withLog(next, `-> Negated by ${toLGNToken('tarot', 'EMPEROR')}`)
     return ok(advanceTurn(checkForWinner(logged)))
   }
 
@@ -198,11 +301,71 @@ function finalizePending(state: GameState, pending: PendingResolution): ActionRe
       hierophantOverride: pending.hierophantOverride,
     })
     if (!result.ok) return err(result.error)
-    const logged = withLog(
+
+    const currentStructuresMap = new Map(base.structures.map((s) => [s.id, s]))
+    const nextStructuresMap = new Map(result.state.structures.map((s) => [s.id, s]))
+
+    const changes: string[] = []
+
+    for (const [id, current] of currentStructuresMap.entries()) {
+      const nextStruct = nextStructuresMap.get(id)
+      const hex = base.board.find((h) => h.id === current.hexId)
+      const terrainStr = hex ? toLGNToken('terrain', hex.terrain, current.hexId, base.board) : 'g:?'
+      const owner = base.players.find((p) => p.id === current.owner)!
+
+      if (!nextStruct) {
+        changes.push(`-> ${toLGNToken('player', owner.id)}: ${toLGNToken('structure', current.type)} ${toLGNToken('level', current.level)} -> destroyed @ ${terrainStr}`)
+      } else if (nextStruct.level !== current.level) {
+        changes.push(`-> ${toLGNToken('player', owner.id)}: ${toLGNToken('structure', current.type)} ${toLGNToken('level', current.level)} -> ${toLGNToken('level', nextStruct.level)} @ ${terrainStr}`)
+      }
+    }
+
+    const logicCondition = formatSubstitutedLogic(pending.logicCardKind, pending.operandA, pending.operandB)
+    let nextState = withLog(
       result.state,
-      `${caster.name} casts a spell: ${result.affectedCount} structure(s) affected, ${result.destroyedCount} destroyed.`,
+      `${toLGNToken('player', caster.id)} CAST ${toLGNToken('effect', pending.effectCardKind)} WHERE ${logicCondition}`,
     )
-    return ok(advanceTurn(checkForWinner(logged)))
+
+    for (const change of changes) {
+      nextState = withLog(nextState, change)
+    }
+
+    // Log the drawn Logic/Effect cards to make the log complete and deterministic
+    const prePlayer = base.players.find((p) => p.id === pending.casterId)!
+    const postPlayer = result.state.players.find((p) => p.id === pending.casterId)!
+    const preLogicIds = new Set(prePlayer.logicHand.map((c) => c.instanceId))
+    const drawnLogic = postPlayer.logicHand.filter((c) => !preLogicIds.has(c.instanceId))
+    const preEffectIds = new Set(prePlayer.effectHand.map((c) => c.instanceId))
+    const drawnEffect = postPlayer.effectHand.filter((c) => !preEffectIds.has(c.instanceId))
+
+    if (drawnLogic.length > 0 || drawnEffect.length > 0) {
+      const drawLogicStr = drawnLogic.map((c) => toLGNToken('logic', c.kind)).join(', ')
+      const drawEffectStr = drawnEffect.map((c) => toLGNToken('effect', c.kind)).join(', ')
+      const drawParts = []
+      if (drawLogicStr) drawParts.push(drawLogicStr)
+      if (drawEffectStr) drawParts.push(drawEffectStr)
+      nextState = withLog(nextState, `${toLGNToken('player', caster.id)} DRAW ${drawParts.join(' + ')}`)
+    }
+
+    // Terse player mapping with named net score logs
+    const netDetails = base.players.map((p) => {
+      let playerNet = 0
+      for (const [id, current] of currentStructuresMap.entries()) {
+        if (current.owner !== p.id) continue
+        const nextStruct = nextStructuresMap.get(id)
+        if (!nextStruct) {
+          playerNet -= current.level
+        } else if (nextStruct.level !== current.level) {
+          playerNet += nextStruct.level - current.level
+        }
+      }
+      const sign = playerNet >= 0 ? '+' : ''
+      return `${toLGNToken('player', p.id)}: ${sign}${playerNet}`
+    }).join(', ')
+
+    nextState = withLog(nextState, `| Net: ${netDetails}`)
+
+    return ok(advanceTurn(checkForWinner(nextState)))
   }
 
   const handler = IMMEDIATE_MAJOR_ARCANA_HANDLERS[pending.majorId]
@@ -212,7 +375,7 @@ function finalizePending(state: GameState, pending: PendingResolution): ActionRe
     : pending.params
   const result = handler(base, pending.casterId, pending.tarot, mergedParams)
   if (!result.ok) return err(result.error)
-  const logged = withLog(result.state, `${caster.name} plays ${pending.majorId}.`)
+  const logged = withLog(result.state, `${toLGNToken('player', caster.id)} PLAY_MAJOR ${toLGNToken('tarot', pending.majorId)}`)
   return ok(advanceTurn(checkForWinner(logged)))
 }
 
@@ -236,6 +399,7 @@ function handleCastSpell(
     kind: 'spell',
     casterId: player.id,
     logicCardInstanceId: logicCard.instanceId,
+    logicCardKind: logicCard.kind,
     effectCardInstanceId: effectCard.instanceId,
     effectCardKind: effectCard.kind,
     tarot,
@@ -249,7 +413,7 @@ function handleEndTurn(state: GameState, playerId: string): ActionResult {
   const player = requireActivePlayer(state, playerId)
   if (!player) return err('Not the active player')
   if (state.phase !== 'cast') return err(`Cannot pass phase 2 during phase '${state.phase}'`)
-  return ok(advanceTurn(withLog(state, `${player.name} ends their turn without casting.`)))
+  return ok(advanceTurn(withLog(state, `${toLGNToken('player', player.id)} SKIP_CAST`)))
 }
 
 function handlePlayMajorArcana(state: GameState, action: { playerId: string; tarotId: string; params?: unknown }): ActionResult {
@@ -286,7 +450,7 @@ function handleTakeHoldCard(state: GameState, action: { playerId: string; tarotI
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...draw.drawn],
   }
   next = withPlayer(next, player.id, (p) => ({ ...p, heldMajorArcana: [...p.heldMajorArcana, tarot] }))
-  next = advanceTurn(withLog(next, `${player.name} takes ${tarot.id} to hold for later.`))
+  next = advanceTurn(withLog(next, `${toLGNToken('player', player.id)} HOLD_MAJOR ${toLGNToken('tarot', tarot.id)}`))
   return ok(next)
 }
 
@@ -317,7 +481,9 @@ function handlePlayHeldArcana(state: GameState, action: { playerId: string; card
     pendingTrigger: transformed,
     triggerQueue: state.triggerQueue.slice(1),
   }
-  next = withLog(next, `${player.name} plays ${card.id} in response.`)
+  const opponent = state.players.find((p) => p.id === state.pendingTrigger?.casterId)
+  const opponentIdStr = opponent ? toLGNToken('player', opponent.id) : 'p:?'
+  next = withLog(next, `${toLGNToken('player', player.id)} PLAY_HELD_MAJOR ${toLGNToken('tarot', card.id)} in response to ${opponentIdStr}'s CAST`)
 
   if (transformed.cancelled || next.triggerQueue!.length === 0) {
     return finalizePending(next, transformed)
@@ -334,18 +500,19 @@ function handlePassTriggerWindow(state: GameState, action: { playerId: string })
 
   const remaining = state.triggerQueue.slice(1)
   const next: GameState = { ...state, triggerQueue: remaining }
+  const logged = withLog(next, `${toLGNToken('player', action.playerId)} PASS_TRIGGER`)
   if (remaining.length === 0) {
-    return finalizePending(next, state.pendingTrigger)
+    return finalizePending(logged, state.pendingTrigger)
   }
-  return ok(next)
+  return ok(logged)
 }
 
 function handleSetAssistanceLevel(
   state: GameState,
   action: { playerId: string; assistanceLevel: AssistanceLevel },
 ): ActionResult {
-  const playerExists = state.players.some((p) => p.id === action.playerId)
-  if (!playerExists) {
+  const player = state.players.find((p) => p.id === action.playerId)
+  if (!player) {
     return err('Player not found')
   }
 
@@ -354,7 +521,8 @@ function handleSetAssistanceLevel(
     assistanceLevel: action.assistanceLevel,
   }))
 
-  return ok(next)
+  const logged = withLog(next, `${toLGNToken('player', player.id)} SET_ASSISTANCE ${action.assistanceLevel}`)
+  return ok(logged)
 }
 
 export function applyAction(state: GameState, action: GameAction): ActionResult {

@@ -239,6 +239,8 @@
   border: 2px solid;
   border-radius: 8px;
   padding: 8px 16px;
+  min-width: 450px;
+  box-sizing: border-box;
 }
 
 .turn-indicator span {
@@ -253,6 +255,7 @@
 .vp-tracker {
   display: flex;
   gap: 16px;
+  margin-left: auto;
 }
 
 .vp-row {
@@ -1270,6 +1273,58 @@
   border-radius: 10px;
   padding: 16px;
   font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--code-bg);
+}
+
+.game-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.copy-log-button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.copy-log-button:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.game-log-list-container {
+  max-height: 220px;
+  overflow-y: auto;
+  width: 100%;
+  text-align: left;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar styling for the log container */
+.game-log-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.game-log-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.game-log-list-container::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 4px;
 }
 
 .game-log ul {
@@ -1278,8 +1333,10 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   color: var(--text);
+  font-family: var(--code); /* Chess-style parseable notation benefits from monospace code font! */
+  font-size: 12px;
 }
 
 /* --- Mobile responsiveness --- */
@@ -1348,6 +1405,15 @@
   .score-row {
     gap: 8px 12px;
     margin-bottom: 12px;
+  }
+
+  .turn-indicator {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .vp-tracker {
+    margin-left: 0;
   }
 
   .action-panel {

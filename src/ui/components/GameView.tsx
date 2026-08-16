@@ -74,15 +74,6 @@ export function GameView() {
   // Suppressed completely if the active player has "No Assistance" ('none') enabled.
   const boardHighlightedIds = useMemo(() => {
     const player = state?.players[state.activePlayerIndex]
-    console.log('boardHighlightedIds check:', {
-      playerName: player?.name,
-      assistanceLevel: player?.assistanceLevel,
-      highlightedIdsSize: highlightedIds.size,
-      majorPreviewIdsSize: majorPreviewIds.size,
-      logicId: spellSelection.logicId,
-      tarotId: spellSelection.tarotId,
-      effectId: spellSelection.effectId
-    })
     if (player?.assistanceLevel === 'none') {
       return new Set<string>()
     }
@@ -133,7 +124,6 @@ export function GameView() {
       {/* Zone 2: turn / score. */}
       <div className="score-row">
         <TurnIndicator state={state} />
-        <VPTracker state={state} />
         {currentActor && !currentActor.isAI && (
           <div className="in-game-assistance">
             <span className="in-game-assistance-label">Assistance:</span>
@@ -154,6 +144,7 @@ export function GameView() {
             </select>
           </div>
         )}
+        <VPTracker state={state} />
       </div>
 
       {/* Zone 3: card selection (left) and the actual cast/spell mechanics (right) — above the

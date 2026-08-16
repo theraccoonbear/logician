@@ -1,25 +1,43 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AIDifficulty, AssistanceLevel } from '../../engine/types/state'
 import { assetUrl } from '../assetUrl'
 import { useGameEngine } from '../hooks/useGameEngine'
-import { loadSavedPlayerName, loadShowRulesOnStart, savePlayerName, saveShowRulesOnStart } from '../persistence'
-
-interface SeatDraft {
-  name: string
-  isAI: boolean
-  aiDifficulty: AIDifficulty
-  assistanceLevel: AssistanceLevel
-}
+import {
+  loadSavedPlayerName,
+  loadShowRulesOnStart,
+  savePlayerName,
+  saveShowRulesOnStart,
+  loadSavedSeats,
+  saveSeats,
+  type SeatDraft,
+} from '../persistence'
 
 const MIN_PLAYERS = 2
 const MAX_PLAYERS = 4
 
+function getAIDefaultName(difficulty: AIDifficulty): string {
+  switch (difficulty) {
+    case 'heuristic':
+      return 'Hugh'
+    case 'optimus':
+      return 'Oppy'
+    case 'random':
+      return 'Randy'
+    default:
+      return 'Hugh'
+  }
+}
+
 function defaultSeats(): SeatDraft[] {
+  const saved = loadSavedSeats()
+  if (saved && saved.length >= MIN_PLAYERS && saved.length <= MAX_PLAYERS) {
+    return saved
+  }
   return [
     // Seat 0 is the default human seat — remember whatever name they last set here
     // instead of always defaulting to the generic "You".
     { name: loadSavedPlayerName() ?? 'You', isAI: false, aiDifficulty: 'heuristic', assistanceLevel: 'full' },
-    { name: 'AI Opponent', isAI: true, aiDifficulty: 'heuristic', assistanceLevel: 'full' },
+    { name: 'Hugh', isAI: true, aiDifficulty: 'heuristic', assistanceLevel: 'full' },
   ]
 }
 
@@ -28,13 +46,31 @@ export function SetupScreen() {
   const [seats, setSeats] = useState<SeatDraft[]>(defaultSeats())
   const [showRules, setShowRules] = useState(loadShowRulesOnStart())
 
+  // Synchronize the complete seats configuration to localStorage whenever it is modified
+  useEffect(() => {
+    saveSeats(seats)
+  }, [seats])
+
   const updateSeat = (index: number, patch: Partial<SeatDraft>) => {
     if (index === 0 && patch.name !== undefined) savePlayerName(patch.name)
-    setSeats((prev) => prev.map((seat, i) => (i === index ? { ...seat, ...patch } : seat)))
+    setSeats((prev) =>
+      prev.map((seat, i) => {
+        if (i !== index) return seat
+        const nextSeat = { ...seat, ...patch }
+        if (patch.isAI === true) {
+          nextSeat.name = getAIDefaultName(nextSeat.aiDifficulty)
+        } else if (nextSeat.isAI && patch.aiDifficulty !== undefined) {
+          nextSeat.name = getAIDefaultName(patch.aiDifficulty)
+        } else if (patch.isAI === false) {
+          nextSeat.name = i === 0 ? (loadSavedPlayerName() ?? 'You') : `Player ${i + 1}`
+        }
+        return nextSeat
+      })
+    )
   }
   const addSeat = () => {
     if (seats.length >= MAX_PLAYERS) return
-    setSeats((prev) => [...prev, { name: `AI Opponent ${prev.length}`, isAI: true, aiDifficulty: 'heuristic', assistanceLevel: 'full' }])
+    setSeats((prev) => [...prev, { name: 'Hugh', isAI: true, aiDifficulty: 'heuristic', assistanceLevel: 'full' }])
   }
   const removeSeat = () => {
     if (seats.length <= MIN_PLAYERS) return
@@ -56,6 +92,7 @@ export function SetupScreen() {
               {seat.isAI && (
                 <select value={seat.aiDifficulty} onChange={(e) => updateSeat(i, { aiDifficulty: e.target.value as AIDifficulty })}>
                   <option value="heuristic">Heuristic</option>
+                  <option value="optimus">Optimus</option>
                   <option value="random">Random</option>
                 </select>
               )}
