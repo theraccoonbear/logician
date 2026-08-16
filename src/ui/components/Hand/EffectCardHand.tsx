@@ -19,6 +19,8 @@ export function EffectCardHand({
         {cards.map((card) => (
           <GameCard
             key={card.instanceId}
+            cardId={card.instanceId}
+            cardType="effect"
             frame={EFFECT_FRAME}
             label={EFFECT_CARD_LABELS[card.kind]}
             artStyle={effectArtStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}

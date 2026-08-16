@@ -9,10 +9,14 @@ export function TarotCardView({
   tarot,
   selected,
   onSelect,
+  isPoofed = false,
+  isDragSource = false,
 }: {
   tarot: TarotCard
   selected: boolean
   onSelect: (instanceId: string) => void
+  isPoofed?: boolean
+  isDragSource?: boolean
 }) {
   const art = tarotArtUrl(tarot)
 
@@ -22,9 +26,11 @@ export function TarotCardView({
     const description = MAJOR_ARCANA_DESCRIPTIONS[tarot.id]
     return (
       <button
-        className={`tarot-card tarot-major ${selected ? 'is-selected' : ''} ${!implemented ? 'is-disabled' : ''}`}
+        className={`tarot-card tarot-major ${selected ? 'is-selected' : ''} ${!implemented ? 'is-disabled' : ''} ${isPoofed ? 'is-poofed' : ''} ${isDragSource ? 'is-drag-source' : ''}`}
         disabled={!implemented}
         title={description}
+        data-tarot-id={tarot.instanceId}
+        data-tarot-kind="major"
         onClick={() => onSelect(tarot.instanceId)}
       >
         <img className="tarot-art" src={art} alt={describeMajorArcana(tarot.id)} />
@@ -37,7 +43,9 @@ export function TarotCardView({
 
   return (
     <button
-      className={`tarot-card tarot-minor ${selected ? 'is-selected' : ''}`}
+      className={`tarot-card tarot-minor ${selected ? 'is-selected' : ''} ${isPoofed ? 'is-poofed' : ''} ${isDragSource ? 'is-drag-source' : ''}`}
+      data-tarot-id={tarot.instanceId}
+      data-tarot-kind="minor"
       onClick={() => onSelect(tarot.instanceId)}
     >
       <img className="tarot-art" src={art} alt={`${tarot.rank} of ${tarot.suit}`} />
