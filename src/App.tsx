@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import './App.css'
 import { GameProvider } from './ui/GameProvider'
 import { GameView } from './ui/components/GameView'
@@ -10,6 +11,16 @@ function Root() {
 }
 
 function App() {
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener('contextmenu', handleContextMenu)
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu)
+    }
+  }, [])
+
   return (
     <GameProvider>
       <Root />
