@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/img/title-card.jpg" alt="Logician" width="720">
+  <img src="src-assets/img/title-card.jpg" alt="Logician" width="720">
 </p>
 
 <p align="center">

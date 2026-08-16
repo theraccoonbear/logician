@@ -106,6 +106,28 @@ no test coverage**. `npm run test` runs the suite (Vitest).
   push to `main`. **No CI test workflow exists** — a broken test suite currently would not block
   a deploy. Known gap, not yet fixed.
 
+### Image assets: source vs. shipped
+
+`src-assets/img/` holds full-resolution source art (committed) — the tarot deck, structure/
+fortress art, card frames/labels/operator art, terrain, UI chrome. `public/img/` is **generated**
+from it by `scripts/resize-assets.mjs` (sharp) and is gitignored, not committed — a build
+artifact, not a source. `npm run dev`/`npm run build` both regenerate it automatically via
+`predev`/`prebuild`; the script is incremental (skips anything already up to date), so repeat
+runs are near-instant. Per-directory target sizes in `resize-assets.mjs` are each asset class's
+largest actual CSS render size × a DPI ceiling — see the file's own header comment and issue #4
+for the full rationale. Result: ~45MB of source art ships as ~11MB.
+
+If you add new art, drop the full-resolution file in `src-assets/img/` (mirroring `public/img/`'s
+existing subfolder structure) — don't touch `public/img/` directly, it'll be overwritten on the
+next `dev`/`build`. If a new asset class doesn't fit an existing resize rule, add one; the script
+throws on an unmatched file rather than silently shipping it unresized.
+
+`src/ui/cardArt.ts`'s `LOGIC_BANDS`/`EFFECT_BANDS` are pixel coordinates hardcoded against the
+*shipped* (resized) sprite sheet's exact dimensions, not the source. Re-run
+`python3 scripts/scan-label-bands.py public/img/cards/logic_labels.png` (and the `effect_`
+equivalent) to get fresh values whenever the source art in `src-assets/img/cards/` changes, or
+whenever the `cards/` resize rule in `resize-assets.mjs` changes — either shifts every band.
+
 ## Conventions
 
 - **Feature branches + PRs against `main`.** Don't commit/push directly to `main` — branch first
