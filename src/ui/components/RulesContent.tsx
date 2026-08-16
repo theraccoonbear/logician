@@ -173,6 +173,24 @@ export function RulesContent() {
           structure at exactly level 3 and upgrades each of them by 2.
         </p>
       </div>
+
+      <h3>Casting Assistance & Difficulty Modes</h3>
+      <p>
+        Logician offers three assistance modes tailored to your expertise. Each player can set their own assistance
+        level independently at the start of a game to act as a custom handicap:
+      </p>
+      <ul>
+        <li>
+          <strong>Full Assistance</strong> — Recommended for learning. Highlights all targeted structures on the board in real time as you drag or click cards, and calculates a detailed <em>Point Impact Summary</em> predicting how your spell would affect your and other players' structures and net score before you commit to casting it.
+        </li>
+        <li>
+          <strong>Some Assistance (Hard Mode)</strong> — For standard competitive play. Highlights all targeted structures on the board in real time, but does not provide any point calculations or predictions. You must compute the net victory point impacts yourself!
+        </li>
+        <li>
+          <strong>No Assistance (Wizard Eyes 🧙‍♂️👀)</strong> — The ultimate test. Completely hides all board target previews and point summaries. You must analyze the board, evaluate the set-theory logic expressions, and calculate the spell's effect entirely in your head!
+        </li>
+      </ul>
+
       <p>
         Once a spell resolves, the Logic, Effect, and Tarot cards played are discarded. If a structure&apos;s level
         would drop below its floor, it&apos;s destroyed and returns to its owner&apos;s supply — a Pool specifically

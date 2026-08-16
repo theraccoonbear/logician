@@ -35,6 +35,21 @@
   margin-bottom: 24px;
 }
 
+.seat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seat-assistance-description {
+  font-size: 11px;
+  color: var(--text);
+  font-style: italic;
+  text-align: left;
+  padding-left: 4px;
+  margin-top: -2px;
+}
+
 .setup-field {
   display: flex;
   flex-direction: column;
@@ -1454,4 +1469,148 @@
 /* Cast Spell button drop target highlight when dragging */
 [data-cast-target] {
   transition: all 0.2s ease;
+}
+
+/* --- Spell Impact Summary --- */
+
+.spell-impact-summary {
+  margin-top: 16px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.summary-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.summary-comparison-table {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.summary-column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-column-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.summary-change-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.summary-assets {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.summary-asset-terrain {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.summary-asset-structure {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.summary-asset-fallback {
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.summary-delta {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.delta-positive {
+  color: #10b981; /* Emerald green */
+}
+
+.delta-negative {
+  color: #ef4444; /* Red */
+}
+
+.summary-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
+
+.summary-column-footer {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin-top: 8px;
+  border-top: 1px dashed var(--border);
+  width: 100%;
+  text-align: center;
+  padding-top: 4px;
+}
+
+.summary-comparison-outcome {
+  font-size: 11px;
+  text-align: center;
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+}
+
+.summary-no-changes,
+.summary-empty-text {
+  font-size: 11px;
+  color: var(--text);
+  font-style: italic;
+  text-align: center;
+  margin: 4px 0;
 }
