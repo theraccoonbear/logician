@@ -4,7 +4,7 @@ import { resolveSpell, setFortressedForHex } from './spellResolution'
 import { HOLD_CARD_HANDLERS, computeTriggerQueue, isHoldCard } from './triggers'
 import { drawCards } from './decks'
 import type { ActionResult, GameAction } from './types/actions'
-import type { GameState, PendingResolution, Player } from './types/state'
+import type { GameState, PendingResolution, Player, AssistanceLevel } from './types/state'
 import type { Structure } from './types/structure'
 import { LEVEL_BOUNDS } from './types/structure'
 
@@ -340,6 +340,23 @@ function handlePassTriggerWindow(state: GameState, action: { playerId: string })
   return ok(next)
 }
 
+function handleSetAssistanceLevel(
+  state: GameState,
+  action: { playerId: string; assistanceLevel: AssistanceLevel },
+): ActionResult {
+  const playerExists = state.players.some((p) => p.id === action.playerId)
+  if (!playerExists) {
+    return err('Player not found')
+  }
+
+  const next = withPlayer(state, action.playerId, (p) => ({
+    ...p,
+    assistanceLevel: action.assistanceLevel,
+  }))
+
+  return ok(next)
+}
+
 export function applyAction(state: GameState, action: GameAction): ActionResult {
   switch (action.type) {
     case 'BUILD_STRUCTURE':
@@ -356,7 +373,9 @@ export function applyAction(state: GameState, action: GameAction): ActionResult 
       return handleTakeHoldCard(state, action)
     case 'PLAY_HELD_ARCANA':
       return handlePlayHeldArcana(state, action)
-    case 'PASS_TRIGGER_WINDOW':
-      return handlePassTriggerWindow(state, action)
+      case 'PASS_TRIGGER_WINDOW':
+        return handlePassTriggerWindow(state, action)
+      case 'SET_ASSISTANCE_LEVEL':
+        return handleSetAssistanceLevel(state, action)
   }
 }
