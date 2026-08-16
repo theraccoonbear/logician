@@ -38,7 +38,7 @@ function playFullGame(ai: AIStrategy, maxTurns = 500): GameState {
       const responderId = state.triggerQueue![0]
       const action = ai.respondToTriggerWindow(state, responderId)
       const result = applyAction(state, action)
-      expect(result.ok).toBe(true)
+      expect(result.ok, `illegal trigger action: ${JSON.stringify(action)}${result.ok ? '' : ` (${result.error})`}`).toBe(true)
       if (!result.ok) break
       state = result.state
     }

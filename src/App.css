@@ -239,6 +239,8 @@
   border: 2px solid;
   border-radius: 8px;
   padding: 8px 16px;
+  min-width: 450px;
+  box-sizing: border-box;
 }
 
 .turn-indicator span {
@@ -253,6 +255,7 @@
 .vp-tracker {
   display: flex;
   gap: 16px;
+  margin-left: auto;
 }
 
 .vp-row {
@@ -1402,6 +1405,15 @@
   .score-row {
     gap: 8px 12px;
     margin-bottom: 12px;
+  }
+
+  .turn-indicator {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .vp-tracker {
+    margin-left: 0;
   }
 
   .action-panel {

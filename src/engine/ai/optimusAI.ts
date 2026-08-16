@@ -1,6 +1,5 @@
 import { getLegalBuildActions, getLegalCastActions } from '../legalActions'
 import { applyAction } from '../reducer'
-import { isHoldCard } from '../triggers'
 import type { GameAction } from '../types/actions'
 import type { PlayerId } from '../types/ids'
 import type { GameState } from '../types/state'
@@ -62,11 +61,12 @@ function getExpectedScore(state: GameState, playerId: PlayerId, action: GameActi
 
   let finalScore = totalScore / SAMPLES
 
-  // Hand Churn Incentive: Add a slightly higher strategic nudge (+0.25) to cast spells/actions.
-  // This motivates the high-IQ Optimus AI to burn dead cards to cycle and draw fresh, high-value cards
-  // rather than skipping casting, which is a major tactical advantage in card games.
+  // Hand Churn Incentive: Add a strategic nudge (+1.25) to cast spells/actions.
+  // This motivates the high-IQ Optimus AI to burn dead or low-utility cards to cycle and draw
+  // fresh, high-value cards (even at the cost of a -1.0 score sacrifice such as downgrading a Lvl 1
+  // basic structure) rather than skipping casting, which avoids a build-only deadlock.
   if (action.type === 'CAST_SPELL' || action.type === 'PLAY_MAJOR_ARCANA') {
-    finalScore += 0.25
+    finalScore += 1.25
   }
 
   return finalScore
@@ -99,24 +99,6 @@ function chooseBest2PlyBuild(state: GameState, playerId: PlayerId, candidates: G
 
     // Otherwise, simulate the best subsequent cast-phase action for ourselves
     const castCandidates = getLegalCastActions(simulatedState, playerId)
-
-    // Add Major Arcana draft/hold options if applicable
-    const player = simulatedState.players.find((p) => p.id === playerId)
-    if (player && player.heldMajorArcana.length < 3) {
-      const holdTarots = simulatedState.tarotRow.filter(
-        (t) => t.kind === 'major' && (isHoldCard(t.id) || t.id === 'HIGH_PRIESTESS')
-      )
-      for (const tarot of holdTarots) {
-        castCandidates.push({
-          type: 'TAKE_HOLD_CARD',
-          playerId,
-          tarotId: tarot.instanceId,
-        })
-      }
-    }
-
-    // Include the default ending turn option
-    castCandidates.push({ type: 'END_TURN', playerId })
 
     let bestCastScore = -Infinity
     for (const castAction of castCandidates) {
@@ -163,21 +145,6 @@ export const OptimusAI: AIStrategy = {
 
   chooseCastAction: (state, playerId) => {
     const candidates = getLegalCastActions(state, playerId)
-
-    // 1. Major Arcana Hold Strategy: If a hold-card (Fool, Empress, Emperor, Hierophant, High Priestess) is in the row,
-    // evaluate the utility of taking it versus casting a minor spell.
-    const player = state.players.find((p) => p.id === playerId)
-    const holdTarots = state.tarotRow.filter((t) => t.kind === 'major' && (isHoldCard(t.id) || t.id === 'HIGH_PRIESTESS'))
-
-    if (player && player.heldMajorArcana.length < 3) {
-      for (const tarot of holdTarots) {
-        candidates.push({
-          type: 'TAKE_HOLD_CARD',
-          playerId,
-          tarotId: tarot.instanceId,
-        })
-      }
-    }
 
     let bestAction = candidates[0] || { type: 'END_TURN', playerId }
     let bestScore = -Infinity

@@ -124,7 +124,6 @@ export function GameView() {
       {/* Zone 2: turn / score. */}
       <div className="score-row">
         <TurnIndicator state={state} />
-        <VPTracker state={state} />
         {currentActor && !currentActor.isAI && (
           <div className="in-game-assistance">
             <span className="in-game-assistance-label">Assistance:</span>
@@ -145,6 +144,7 @@ export function GameView() {
             </select>
           </div>
         )}
+        <VPTracker state={state} />
       </div>
 
       {/* Zone 3: card selection (left) and the actual cast/spell mechanics (right) — above the

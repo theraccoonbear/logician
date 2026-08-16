@@ -133,4 +133,30 @@ describe('OptimusAI Strategic Improvements', () => {
       expect(action.cardId).toBe('emp-1')
     }
   })
+
+  it('chooses to burn a low-utility card to cycle/churn hand instead of skip-casting', () => {
+    // Alice has a Lvl 1 Pool on Forests hex-1.
+    // Hand has DOWNGRADE_1 and A logic card (which will match the Pool on Forests).
+    // Casting this downgrades her own Lvl 1 Pool to destroyed (a -1.0 relative board score hit).
+    // But she gets to cycle her hand by drawing from non-empty decks, preserving card advantage.
+    // The hand churn incentive of +1.25 should overcome the -1.0 loss,
+    // making her choose to CAST_SPELL instead of END_TURN.
+    const structures: Structure[] = [{ id: 's1', type: 'Pool', owner: 'p1', hexId: 'hex-1', level: 1, fortressed: false }]
+    const state = makeState({
+      phase: 'cast',
+      structures,
+      tarotRow: [
+        { kind: 'minor', instanceId: 't1', suit: 'Cups', rank: '2', operandA: { kind: 'terrain', value: 'Forests' }, operandB: { kind: 'structureType', value: 'Pool' } }
+      ],
+      logicDeck: [{ instanceId: 'l2', kind: 'B' }],
+      effectDeck: [{ instanceId: 'e2', kind: 'UPGRADE_1' }],
+      players: [
+        { id: 'p1', name: 'Alice', isAI: true, logicHand: [{ instanceId: 'l1', kind: 'A' }], effectHand: [{ instanceId: 'e1', kind: 'DOWNGRADE_1' }], heldMajorArcana: [] },
+        { id: 'p2', name: 'Bob', isAI: true, logicHand: [], effectHand: [], heldMajorArcana: [] },
+      ],
+    })
+
+    const action = OptimusAI.chooseCastAction(state, 'p1')
+    expect(action.type).toBe('CAST_SPELL')
+  })
 })
