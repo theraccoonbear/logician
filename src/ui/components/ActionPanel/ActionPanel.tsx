@@ -26,8 +26,12 @@ export function ActionPanel({
   onPreviewTargetsChange: (ids: Set<string>) => void
 }) {
   const { state } = useGameEngine()
+  const activePlayer = state?.players[state.activePlayerIndex]
+  const logicHand = activePlayer ? activePlayer.logicHand : []
+
   const gesture = useCastingGesture({
     tarotRow: state?.tarotRow || [],
+    logicHand,
     spellSelection,
     onSpellSelectionChange,
     enabled: state?.phase === 'cast',

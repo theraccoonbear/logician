@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { LogicCard } from '../../engine/types/cards'
 import type { TarotCard } from '../../engine/types/tarot'
 import type { SpellSelection } from '../components/ActionPanel/SpellBuilder'
 
@@ -10,6 +11,7 @@ export interface Point {
 
 export interface UseCastingGestureOptions {
   tarotRow: TarotCard[]
+  logicHand?: LogicCard[]
   spellSelection: SpellSelection
   onSpellSelectionChange: (next: SpellSelection) => void
   enabled: boolean
@@ -19,12 +21,14 @@ export interface CastingGestureState {
   isDragging: boolean
   activeTarotId: string | null
   activeTarotCard: TarotCard | null
+  activeLogicCard: LogicCard | null
   pointerPos: { x: number; y: number }
   points: Point[]
 }
 
 export function useCastingGesture({
   tarotRow,
+  logicHand = [],
   spellSelection,
   onSpellSelectionChange,
   enabled,
@@ -190,10 +194,15 @@ export function useCastingGesture({
     ? tarotRow.find((t) => t.instanceId === (activeTarotId || spellSelection.tarotId)) || null
     : null
 
+  const activeLogicCard = isDragging && spellSelection.logicId
+    ? logicHand.find((c) => c.instanceId === spellSelection.logicId) || null
+    : null
+
   return {
     isDragging,
     activeTarotId,
     activeTarotCard,
+    activeLogicCard,
     pointerPos,
     points,
   }

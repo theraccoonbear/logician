@@ -1382,12 +1382,37 @@
 }
 
 .gesture-floating-card,
-.gesture-floating-card * {
-  position: fixed;
+.gesture-floating-card *,
+.gesture-floating-cards,
+.gesture-floating-cards * {
   pointer-events: none !important;
+}
+
+.gesture-floating-card {
+  position: fixed;
   z-index: 10000;
-  transform: translate(-50%, -50%) rotate(-12deg) scale(1.08);
-  filter: drop-shadow(0 8px 24px rgba(255, 59, 154, 0.6)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
+  transform: translate(-50%, -50%) rotate(-8deg) scale(1.04);
+  filter: drop-shadow(0 4px 12px rgba(103, 232, 249, 0.45)) drop-shadow(0 0 6px rgba(103, 232, 249, 0.6));
   transition: transform 0.05s ease-out;
   will-change: left, top, transform;
+}
+
+.gesture-floating-cards {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%) rotate(-4deg) scale(1.02);
+  filter: drop-shadow(0 4px 12px rgba(103, 232, 249, 0.45)) drop-shadow(0 0 6px rgba(103, 232, 249, 0.6));
+  transition: transform 0.05s ease-out;
+  will-change: left, top, transform;
+}
+
+.gesture-card-tarot {
+  transform: rotate(-6deg);
+}
+
+.gesture-card-logic {
+  transform: rotate(6deg);
 }
