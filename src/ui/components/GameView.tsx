@@ -74,15 +74,6 @@ export function GameView() {
   // Suppressed completely if the active player has "No Assistance" ('none') enabled.
   const boardHighlightedIds = useMemo(() => {
     const player = state?.players[state.activePlayerIndex]
-    console.log('boardHighlightedIds check:', {
-      playerName: player?.name,
-      assistanceLevel: player?.assistanceLevel,
-      highlightedIdsSize: highlightedIds.size,
-      majorPreviewIdsSize: majorPreviewIds.size,
-      logicId: spellSelection.logicId,
-      tarotId: spellSelection.tarotId,
-      effectId: spellSelection.effectId
-    })
     if (player?.assistanceLevel === 'none') {
       return new Set<string>()
     }
