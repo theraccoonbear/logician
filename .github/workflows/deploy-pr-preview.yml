@@ -1,0 +1,80 @@
+name: Deploy PR preview
+
+# Each open PR gets a live preview at gh-pages/pr-<N>/, alongside the live site at gh-pages's
+# root (deploy-pages.yml) — see issue #12 for why both have to share the same gh-pages-branch
+# mechanism rather than PR previews using something like actions/deploy-pages independently.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Same shared group as deploy-pages.yml — see that file's comment. Deliberately not scoped
+# per-PR: a per-PR group would let two DIFFERENT PRs' deploys race each other on the shared
+# gh-pages branch even though neither would cancel the other.
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # --base overrides vite.config.ts's own base for this build only (CLI flag wins over
+      # config) — every asset reference in the app already goes through assetUrl(), which
+      # reads import.meta.env.BASE_URL, so nothing else needs to know this is a PR build.
+      - run: npx tsc -b && npx vite build --base=/logician/pr-${{ github.event.pull_request.number }}/
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          destination_dir: pr-${{ github.event.pull_request.number }}
+          keep_files: true
+      - uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-preview
+          message: |
+            🔍 **Preview deployed:** https://theraccoonbear.github.io/logician/pr-${{ github.event.pull_request.number }}/
+
+            Updates automatically on every push to this PR.
+
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      # Tolerant of gh-pages not existing yet, or this PR never having deployed a preview
+      # (e.g. closed immediately) — continue-on-error here plus `if: success()` below skip the
+      # rest of the job cleanly instead of a red X for a directory that was never created.
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        id: checkout
+        with:
+          ref: gh-pages
+      - if: steps.checkout.outcome == 'success'
+        run: |
+          if [ ! -d "pr-${{ github.event.pull_request.number }}" ]; then
+            echo "Nothing to clean up."
+            exit 0
+          fi
+          rm -rf "pr-${{ github.event.pull_request.number }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: remove preview for closed PR #${{ github.event.pull_request.number }}"
+          git push
+      - uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-preview
+          message: |
+            🧹 Preview removed (PR closed).

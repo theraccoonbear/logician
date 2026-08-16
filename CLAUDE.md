@@ -102,9 +102,17 @@ no test coverage**. `npm run test` runs the suite (Vitest).
   screenshots.
 - `tools/gimp-asset-producer.scm` — GIMP script-fu helper for producing card/structure art.
 - `vite.config.ts` — `base: '/logician/'` only on production builds (GitHub Pages subpath).
-- `.github/workflows/deploy-pages.yml` — the only workflow: build + deploy to GitHub Pages on
-  push to `main`. **No CI test workflow exists** — a broken test suite currently would not block
-  a deploy. Known gap, not yet fixed.
+- `.github/workflows/deploy-pages.yml` — build + deploy to GitHub Pages on push to `main`.
+  `.github/workflows/deploy-pr-preview.yml` — every open PR gets a live preview at
+  `gh-pages/pr-<N>/`, updated on every push, removed when the PR closes; posts/updates a sticky
+  comment on the PR with the link. Both deploy to the **same `gh-pages` branch** (live site at
+  its root, `keep_files: true` so neither wipes the other's content) — GitHub Pages only
+  supports one source per repo, so PR previews couldn't use a separate mechanism like
+  `actions/deploy-pages` without conflicting with the live site. Both workflows share one
+  `concurrency` group (`gh-pages-deploy`, queued not cancelled) since anything pushing to that
+  branch needs to be mutually exclusive with everything else pushing to it. **No CI test
+  workflow exists** — a broken test suite currently would not block a deploy or a PR preview.
+  Known gap, not yet fixed.
 
 ## Conventions
 

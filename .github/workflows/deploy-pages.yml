@@ -1,22 +1,29 @@
 name: Deploy live demo to GitHub Pages
 
+# Deploys to the gh-pages branch (root), not the actions/deploy-pages "environments" flow —
+# switched deliberately (issue #12) so PR previews (deploy-pr-preview.yml) can live alongside
+# the live site as gh-pages/pr-<N>/ subdirectories. GitHub Pages only supports one source per
+# repo, so this and the PR-preview workflow must agree on the same mechanism.
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# Only one deployment at a time; a new push cancels an in-flight one rather than queuing.
+# Shared with deploy-pr-preview.yml's deploy/cleanup jobs, not just this workflow: every job
+# that pushes to the gh-pages branch needs to be mutually exclusive with every other one, or
+# two concurrent pushes (e.g. a main deploy and a PR preview landing at the same moment) can
+# race. Queue rather than cancel — cancel-in-progress would drop a legitimate PR preview or
+# live deploy just because something else touched gh-pages at the same time.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: gh-pages-deploy
+  cancel-in-progress: false
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,16 +33,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: peaceiris/actions-gh-pages@v4
         with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          # Without this, every live deploy would wipe out every PR preview subdirectory
+          # sitting alongside it on the gh-pages branch.
+          keep_files: true
