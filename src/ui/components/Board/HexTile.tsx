@@ -77,9 +77,10 @@ export function HexTile({
             // never intercept clicks meant for the structures they're wrapped around.
             const fortress = ownerStructures.find((s) => s.type === 'Fortress')
             const fortressArt = fortress ? fortressArtUrls(fortress.level) : undefined
+            const fortressHighlighted = fortress ? (highlightedIds.has(fortress.id) || Boolean(selectedStructureIds?.has(fortress.id))) : false
             return (
               <div className="hex-owner-band" key={owner}>
-                {fortressArt && <img className="fortress-back" src={fortressArt.back} alt="" />}
+                {fortressArt && <img className={`fortress-back ${fortressHighlighted ? 'is-highlighted' : ''}`} src={fortressArt.back} alt="" />}
                 {TYPE_SLOTS.filter((type) => ownerStructures.some((s) => s.type === type)).map((type) => (
                   <div className={`hex-type-slot hex-type-slot-${type.toLowerCase()}`} key={type}>
                     {ownerStructures
@@ -103,7 +104,7 @@ export function HexTile({
                       ))}
                   </div>
                 ))}
-                {fortressArt && <img className="fortress-fore" src={fortressArt.fore} alt="" />}
+                {fortressArt && <img className={`fortress-fore ${fortressHighlighted ? 'is-highlighted' : ''}`} src={fortressArt.fore} alt="" />}
               </div>
             )
         })}
