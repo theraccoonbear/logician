@@ -32,6 +32,7 @@ const spellPending = {
   kind: 'spell' as const,
   casterId: 'p1',
   logicCardInstanceId: 'l1',
+  logicCardKind: 'AND',
   effectCardInstanceId: 'e1',
   effectCardKind: 'UPGRADE_1' as const,
   tarot: { kind: 'minor', instanceId: 't1', suit: 'Cups', rank: '3', operandA: { kind: 'terrain', value: 'Forests' }, operandB: { kind: 'level', value: 3 } } as const,
