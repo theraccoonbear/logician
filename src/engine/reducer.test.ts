@@ -460,3 +460,27 @@ describe('High Priestess build boost', () => {
     ).toMatch(/not holding/)
   })
 })
+
+describe('SET_ASSISTANCE_LEVEL action', () => {
+  it('updates the assistanceLevel of a valid player', () => {
+    let state = makeState({})
+    expect(state.players[0].assistanceLevel).toBeUndefined()
+
+    state = expectOk(applyAction(state, {
+      type: 'SET_ASSISTANCE_LEVEL',
+      playerId: 'p1',
+      assistanceLevel: 'full'
+    }))
+
+    expect(state.players[0].assistanceLevel).toBe('full')
+  })
+
+  it('rejects updating an invalid/unknown player id', () => {
+    const state = makeState({})
+    expectErr(applyAction(state, {
+      type: 'SET_ASSISTANCE_LEVEL',
+      playerId: 'invalid-id',
+      assistanceLevel: 'full'
+    }))
+  })
+})

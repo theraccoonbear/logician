@@ -32,7 +32,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - name: Run Linter
+        run: npm run lint
+      - name: Run Unit Tests
+        run: npx vitest run
+      - name: Build Application
+        run: npm run build
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

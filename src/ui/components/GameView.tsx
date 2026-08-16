@@ -13,11 +13,13 @@ import { RulesModal } from './RulesModal'
 import { TurnIndicator } from './TurnIndicator'
 import { VPTracker } from './VPTracker'
 
+import type { AssistanceLevel } from '../../engine/types/state'
+
 const EMPTY_SELECTION: SpellSelection = { logicId: null, effectId: null, tarotId: null }
 const MAX_WHEEL_TARGETS = 3
 
 export function GameView() {
-  const { state, newGame, pendingRulesOnStart, clearPendingRulesOnStart } = useGameEngine()
+  const { state, newGame, pendingRulesOnStart, clearPendingRulesOnStart, dispatch } = useGameEngine()
   useAITurns()
   const { containerRef: fieldRef, contentRef: boardRef, scale: boardScale } = useFitScale<HTMLDivElement, HTMLDivElement>()
   const [selectedHexId, setSelectedHexId] = useState<string | null>(null)
@@ -69,10 +71,23 @@ export function GameView() {
   // Union, not either/or: minor-spell highlighting and major-arcana preview highlighting
   // correspond to mutually exclusive selection states (a minor tarot+logic pair vs. a major
   // arcana form/trigger in progress), so at most one side is ever non-empty at once.
-  const boardHighlightedIds = useMemo(
-    () => new Set([...highlightedIds, ...majorPreviewIds]),
-    [highlightedIds, majorPreviewIds],
-  )
+  // Suppressed completely if the active player has "No Assistance" ('none') enabled.
+  const boardHighlightedIds = useMemo(() => {
+    const player = state?.players[state.activePlayerIndex]
+    console.log('boardHighlightedIds check:', {
+      playerName: player?.name,
+      assistanceLevel: player?.assistanceLevel,
+      highlightedIdsSize: highlightedIds.size,
+      majorPreviewIdsSize: majorPreviewIds.size,
+      logicId: spellSelection.logicId,
+      tarotId: spellSelection.tarotId,
+      effectId: spellSelection.effectId
+    })
+    if (player?.assistanceLevel === 'none') {
+      return new Set<string>()
+    }
+    return new Set([...highlightedIds, ...majorPreviewIds])
+  }, [state, highlightedIds, majorPreviewIds, spellSelection])
 
   if (!state) return null
 
@@ -119,6 +134,26 @@ export function GameView() {
       <div className="score-row">
         <TurnIndicator state={state} />
         <VPTracker state={state} />
+        {currentActor && !currentActor.isAI && (
+          <div className="in-game-assistance">
+            <span className="in-game-assistance-label">Assistance:</span>
+            <select
+              className="in-game-assistance-select"
+              value={currentActor.assistanceLevel ?? 'none'}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_ASSISTANCE_LEVEL',
+                  playerId: currentActor.id,
+                  assistanceLevel: e.target.value as AssistanceLevel,
+                })
+              }
+            >
+              <option value="none">None (Wizard Eyes 🧙‍♂️👀)</option>
+              <option value="some">Some</option>
+              <option value="full">Full</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Zone 3: card selection (left) and the actual cast/spell mechanics (right) — above the

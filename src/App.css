@@ -35,6 +35,21 @@
   margin-bottom: 24px;
 }
 
+.seat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seat-assistance-description {
+  font-size: 11px;
+  color: var(--text);
+  font-style: italic;
+  text-align: left;
+  padding-left: 4px;
+  margin-top: -2px;
+}
+
 .setup-field {
   display: flex;
   flex-direction: column;
@@ -186,6 +201,36 @@
   flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 20px;
+}
+
+.in-game-assistance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.in-game-assistance-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.in-game-assistance-select {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+  max-width: 100%;
 }
 
 .turn-indicator {
@@ -719,11 +764,14 @@
   gap: 2px;
 }
 
-/* Re-enables clicks specifically on the actual interactive tokens — everything else in
-   .hex-structures (the owner-band/type-slot wrapper divs, the fortress ring images) stays
-   pointer-events: none so clicks in the empty space around the art still reach .hex-tile's
-   own onClick underneath instead of this overlay silently swallowing them. */
+/* Enables clicks specifically on the actual interactive tokens only when they are clickable —
+   if they are not clickable (e.g. during build phase), pointer-events: none lets clicks pass
+   straight through to the underlying .hex-tile so selecting a hex is never blocked by built assets. */
 .structure-token {
+  pointer-events: none;
+}
+
+.structure-token.is-clickable {
   pointer-events: auto;
 }
 
@@ -904,37 +952,65 @@
 /* Structures a pending spell would hit — pulses rather than sitting as a
    static ring, so "these are the targets" reads at a glance instead of
    blending into the other borders/glows already on the board. */
+/* Animate both a bold accent color on the token's edge and a scaling factor —
+   since clip-path clips out any outer box-shadow, we pulse the border color,
+   flash the background, and scale up slightly rather than drawing a shadow. */
 @keyframes highlight-throb {
   0%,
   100% {
-    box-shadow: 0 0 0 3px #ff3b9a;
-  }
-  50% {
-    box-shadow:
-      0 0 0 5px #ff3b9a,
-      0 0 14px 4px #ff3b9a;
-  }
-}
-
-@keyframes highlight-throb-art {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 3px #ff3b9a) drop-shadow(0 0 3px #ff3b9a);
+    border-color: var(--owner-color, var(--border));
+    background: var(--bg);
     transform: scale(1);
   }
   50% {
-    filter: drop-shadow(0 0 8px #ff3b9a) drop-shadow(0 0 8px #ff3b9a) drop-shadow(0 0 8px #ff3b9a);
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.35);
+    transform: scale(1.18);
+  }
+}
+
+/* For full-illustration assets, we can use a drop-shadow overlay along with
+   scaling since they are transparent PNG silhouettes rather than clipped shapes. */
+@keyframes highlight-throb-art {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px #10b981) drop-shadow(0 0 3px #10b981);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 8px #10b981) drop-shadow(0 0 8px #10b981) drop-shadow(0 0 8px #10b981);
     transform: scale(1.08);
   }
 }
 
 .structure-token.is-highlighted {
   animation: highlight-throb 1.1s ease-in-out infinite;
+  z-index: 10;
 }
 
 .structure-token-art.is-highlighted {
   box-shadow: none;
   animation: highlight-throb-art 1.1s ease-in-out infinite;
+}
+
+/* Highlight the actual fortress walls on the hex when targeted.
+   Because the fortress images utilize translate(-50%, -50%) for centering,
+   we define a dedicated animation that preserves their base translation transform. */
+@keyframes highlight-throb-fortress {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px #10b981) drop-shadow(0 0 3px #10b981);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 8px #10b981) drop-shadow(0 0 8px #10b981) drop-shadow(0 0 8px #10b981);
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+.fortress-back.is-highlighted,
+.fortress-fore.is-highlighted {
+  animation: highlight-throb-fortress 1.1s ease-in-out infinite;
 }
 
 .structure-token.is-clickable {
@@ -1454,4 +1530,148 @@
 /* Cast Spell button drop target highlight when dragging */
 [data-cast-target] {
   transition: all 0.2s ease;
+}
+
+/* --- Spell Impact Summary --- */
+
+.spell-impact-summary {
+  margin-top: 16px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.summary-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.summary-comparison-table {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.summary-column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-column-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.summary-change-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.summary-assets {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.summary-asset-terrain {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.summary-asset-structure {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.summary-asset-fallback {
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.summary-delta {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.delta-positive {
+  color: #10b981; /* Emerald green */
+}
+
+.delta-negative {
+  color: #ef4444; /* Red */
+}
+
+.summary-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
+
+.summary-column-footer {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin-top: 8px;
+  border-top: 1px dashed var(--border);
+  width: 100%;
+  text-align: center;
+  padding-top: 4px;
+}
+
+.summary-comparison-outcome {
+  font-size: 11px;
+  text-align: center;
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+}
+
+.summary-no-changes,
+.summary-empty-text {
+  font-size: 11px;
+  color: var(--text);
+  font-style: italic;
+  text-align: center;
+  margin: 4px 0;
 }

@@ -110,9 +110,7 @@ no test coverage**. `npm run test` runs the suite (Vitest).
   supports one source per repo, so PR previews couldn't use a separate mechanism like
   `actions/deploy-pages` without conflicting with the live site. Both workflows share one
   `concurrency` group (`gh-pages-deploy`, queued not cancelled) since anything pushing to that
-  branch needs to be mutually exclusive with everything else pushing to it. **No CI test
-  workflow exists** — a broken test suite currently would not block a deploy or a PR preview.
-  Known gap, not yet fixed.
+  branch needs to be mutually exclusive with everything else pushing to it. **CI test validation is enforced** — test suites, lint checks, and compilations are run on pull requests via `.github/workflows/ci.yml` and directly block deployments/previews upon failure. Corrected gap.
 
 ### Image assets: source vs. shipped
 

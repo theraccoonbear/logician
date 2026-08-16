@@ -8,6 +8,7 @@ import type { MajorArcanaCard, MajorArcanaId, MinorArcanaCard, Operand, TarotCar
 export type Phase = 'setup' | 'build' | 'cast' | 'awaitingTrigger'
 
 export type AIDifficulty = 'random' | 'heuristic'
+export type AssistanceLevel = 'none' | 'some' | 'full'
 
 export interface Player {
   id: PlayerId
@@ -15,6 +16,8 @@ export interface Player {
   isAI: boolean
   /** Ignored for human seats. Defaults to 'heuristic' when isAI and unset. */
   aiDifficulty?: AIDifficulty
+  /** Ignored for AI seats. Defaults to 'none' when human and unset. */
+  assistanceLevel?: AssistanceLevel
   logicHand: LogicCard[]
   effectHand: EffectCard[]
   heldMajorArcana: MajorArcanaCard[]

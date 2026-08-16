@@ -1,12 +1,13 @@
 import { createBoard } from './board'
 import { createEffectDeck, createLogicDeck, createTarotDeck, drawCards } from './decks'
 import { HAND_SIZE } from './types/cards'
-import type { AIDifficulty, GameState, Player } from './types/state'
+import type { AIDifficulty, AssistanceLevel, GameState, Player } from './types/state'
 
 export interface PlayerConfig {
   name: string
   isAI: boolean
   aiDifficulty?: AIDifficulty
+  assistanceLevel?: AssistanceLevel
 }
 
 /**
@@ -35,6 +36,7 @@ export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState
       name: config.name,
       isAI: config.isAI,
       aiDifficulty: config.isAI ? (config.aiDifficulty ?? 'heuristic') : undefined,
+      assistanceLevel: config.isAI ? undefined : (config.assistanceLevel ?? 'none'),
       logicHand: logicDraw.drawn,
       effectHand: effectDraw.drawn,
       heldMajorArcana: [],

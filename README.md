@@ -48,6 +48,10 @@ structures' levels — wins.
 - **AI opponents**: any seat can be human or AI (a one-ply heuristic bot or
   a random baseline), so you can play solo, hotseat with friends, or mix
   both.
+- **Tiered Difficulty/Assistance**: Customize your assistance levels independently per player:
+  - **Full Assistance (Default)**: Previews affected board hexes and calculates a comprehensive *Point Impact Summary* before casting.
+  - **Some Assistance (Hard Mode)**: Visual highlights only; you do your own point mathematics.
+  - **No Assistance (Wizard Eyes 🧙‍♂️👀)**: No previews or calculations whatsoever — relies entirely on your own brain and sight!
 
 The full tabletop ruleset this prototype implements lives in
 [`docs/rules.md`](docs/rules.md).

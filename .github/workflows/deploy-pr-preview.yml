@@ -31,10 +31,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Run Linter
+        run: npm run lint
+      - name: Run Unit Tests
+        run: npx vitest run
       # --base overrides vite.config.ts's own base for this build only (CLI flag wins over
       # config) — every asset reference in the app already goes through assetUrl(), which
       # reads import.meta.env.BASE_URL, so nothing else needs to know this is a PR build.
-      - run: npm run build -- --base=/logician/pr-${{ github.event.pull_request.number }}/
+      - name: Build Application
+        run: npm run build -- --base=/logician/pr-${{ github.event.pull_request.number }}/
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
