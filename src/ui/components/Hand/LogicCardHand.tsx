@@ -19,6 +19,8 @@ export function LogicCardHand({
         {cards.map((card) => (
           <GameCard
             key={card.instanceId}
+            cardId={card.instanceId}
+            cardType="logic"
             frame={LOGIC_FRAME}
             label={LOGIC_CARD_LABELS[card.kind]}
             artStyle={logicArtStyle(card.kind, CARD_WIDTH, CARD_HEIGHT)}

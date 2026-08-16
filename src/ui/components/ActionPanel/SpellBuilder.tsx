@@ -49,7 +49,7 @@ export function SpellBuilder({
       </div>
       <div className="cast-divider" />
       <div className="action-buttons">
-        <button className="action-button" disabled={!canCast} onClick={cast}>
+        <button className="action-button" disabled={!canCast} onClick={cast} data-cast-target="true">
           Cast Spell
         </button>
         <button className="action-button secondary" onClick={() => dispatch({ type: 'END_TURN', playerId: player.id })}>

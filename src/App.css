@@ -789,11 +789,11 @@
   z-index: 1;
 }
 
-.hex-type-slot-pool {
+.hex-type-slot-pool:has(+ .hex-type-slot-tower) {
   margin-right: -16px;
 }
 
-.hex-type-slot-pyramid {
+.hex-type-slot-tower + .hex-type-slot-pyramid {
   margin-left: -16px;
 }
 
@@ -1053,6 +1053,9 @@
   border: none;
   background: none;
   cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .game-card-frame {
@@ -1084,6 +1087,9 @@
   cursor: pointer;
   font-size: 13px;
   text-align: left;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .tarot-card.is-selected {
@@ -1342,4 +1348,110 @@
     max-width: 100%;
     box-sizing: border-box;
   }
+}
+/* --- Drag/Swipe Casting Gesture --- */
+
+.tarot-card.is-poofed {
+  opacity: 0.2;
+  transform: scale(0.88);
+  filter: blur(1px);
+  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+  pointer-events: none;
+}
+
+.tarot-card.is-drag-source {
+  opacity: 0.35;
+  border-style: dashed;
+  border-color: var(--accent);
+}
+
+.gesture-overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.gesture-trail-svg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.gesture-floating-card,
+.gesture-floating-card *,
+.gesture-floating-cards,
+.gesture-floating-cards * {
+  pointer-events: none !important;
+}
+
+.gesture-floating-card {
+  position: fixed;
+  z-index: 10000;
+  transform: translate(-50%, -100%) translateY(-16px) rotate(-6deg) scale(1.06);
+  filter: drop-shadow(0 6px 16px rgba(103, 232, 249, 0.5)) drop-shadow(0 0 8px rgba(103, 232, 249, 0.7));
+  transition: transform 0.05s ease-out;
+  will-change: left, top, transform;
+}
+
+.gesture-floating-cards {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-50%, -100%) translateY(-16px) rotate(-3deg) scale(1.04);
+  filter: drop-shadow(0 6px 16px rgba(103, 232, 249, 0.5)) drop-shadow(0 0 8px rgba(103, 232, 249, 0.7));
+  transition: transform 0.05s ease-out;
+  will-change: left, top, transform;
+}
+
+/* Explicit size for cards in drag overlay to prevent mobile max-width flex collapse */
+.gesture-floating-card .tarot-card,
+.gesture-floating-card .game-card,
+.gesture-floating-cards .tarot-card,
+.gesture-floating-cards .game-card {
+  width: 80px !important;
+  height: 115px !important;
+  max-width: none !important;
+  min-width: 80px !important;
+  flex: 0 0 80px !important;
+  box-sizing: border-box !important;
+}
+
+.gesture-card-tarot {
+  transform: rotate(-10deg) translateY(-2px);
+}
+
+.gesture-card-logic {
+  transform: rotate(0deg) translateY(-6px);
+}
+
+.gesture-card-effect {
+  transform: rotate(10deg) translateY(-2px);
+}
+
+.tarot-card.tarot-art-only {
+  padding: 4px;
+  width: 80px !important;
+  height: 115px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarot-card.tarot-art-only .tarot-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  margin: 0;
+}
+
+/* Cast Spell button drop target highlight when dragging */
+[data-cast-target] {
+  transition: all 0.2s ease;
 }

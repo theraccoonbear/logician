@@ -13,6 +13,8 @@ export function GameCard({
   captionStyle,
   selected,
   onClick,
+  cardId,
+  cardType,
 }: {
   frame: string
   label: string
@@ -21,10 +23,19 @@ export function GameCard({
   captionStyle: CSSProperties
   selected: boolean
   onClick: () => void
+  cardId?: string
+  cardType?: 'logic' | 'effect'
 }) {
   return (
-    <button className={`game-card ${selected ? 'is-selected' : ''}`} onClick={onClick} title={label} aria-label={label}>
-      <img className="game-card-frame" src={frame} alt="" />
+    <button
+      className={`game-card ${selected ? 'is-selected' : ''}`}
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      data-logic-id={cardType === 'logic' ? cardId : undefined}
+      data-effect-id={cardType === 'effect' ? cardId : undefined}
+    >
+      <img className="game-card-frame" src={frame} alt="" draggable={false} />
       {artStyle && <div className="game-card-art" style={artStyle} />}
       <div className="game-card-caption" style={captionStyle} />
     </button>

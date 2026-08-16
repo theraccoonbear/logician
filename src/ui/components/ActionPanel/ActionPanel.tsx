@@ -1,6 +1,8 @@
+import { useCastingGesture } from '../../hooks/useCastingGesture'
 import { useGameEngine } from '../../hooks/useGameEngine'
 import { TarotRow } from '../TarotRow/TarotRow'
 import { BuildPanel } from './BuildPanel'
+import { CastingGestureOverlay } from './CastingGestureOverlay'
 import { MajorArcanaPanel } from './MajorArcanaPanel'
 import { SpellBuilder, type SpellSelection } from './SpellBuilder'
 import { TriggerWindowPanel } from './TriggerWindowPanel'
@@ -23,7 +25,34 @@ export function ActionPanel({
   /** Reports which structures a Major Arcana form/trigger in progress would target, for board highlighting. */
   onPreviewTargetsChange: (ids: Set<string>) => void
 }) {
-  const { state } = useGameEngine()
+  const { state, dispatch } = useGameEngine()
+  const activePlayer = state?.players[state.activePlayerIndex]
+  const logicHand = activePlayer ? activePlayer.logicHand : []
+  const effectHand = activePlayer ? activePlayer.effectHand : []
+
+  const handleCastSpell = () => {
+    if (spellSelection.logicId && spellSelection.effectId && spellSelection.tarotId && activePlayer) {
+      dispatch({
+        type: 'CAST_SPELL',
+        playerId: activePlayer.id,
+        logicCardId: spellSelection.logicId,
+        effectCardId: spellSelection.effectId,
+        tarotId: spellSelection.tarotId,
+      })
+      onSpellSelectionChange(EMPTY_SELECTION)
+    }
+  }
+
+  const gesture = useCastingGesture({
+    tarotRow: state?.tarotRow || [],
+    logicHand,
+    effectHand,
+    spellSelection,
+    onSpellSelectionChange,
+    onCastSpell: handleCastSpell,
+    enabled: state?.phase === 'cast',
+  })
+
   if (!state) return null
 
   if (state.phase === 'setup' || state.phase === 'build') {
@@ -39,6 +68,7 @@ export function ActionPanel({
 
     return (
       <>
+        <CastingGestureOverlay {...gesture} />
         {/* Left: which tarot card you're casting against/playing. */}
         <div className="action-panel tarot-pane">
           <TarotRow
@@ -51,6 +81,8 @@ export function ActionPanel({
             // so carrying them through a major selection is harmless (they're just waiting for
             // the next minor).
             onSelect={(id) => onSpellSelectionChange({ ...spellSelection, tarotId: id })}
+            activeTarotId={gesture.activeTarotId}
+            isDragging={gesture.isDragging}
           />
         </div>
 
