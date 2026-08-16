@@ -18,7 +18,16 @@ function pickBest(state: GameState, playerId: PlayerId, candidates: GameAction[]
   for (const action of candidates) {
     const result = applyAction(state, action)
     if (!result.ok) continue
-    const score = evaluate(result.state, playerId)
+    let score = evaluate(result.state, playerId)
+    
+    // Hand Churn Incentive: Add a small strategic nudge (+0.15) to cast spells.
+    // This replicates human play by encouraging the AI to "burn" dead or low-utility
+    // card combinations to cycle/churn their hand and draw fresh cards rather than
+    // ending their turn with unplayable cards forever (avoiding a build-only deadlock).
+    if (action.type === 'CAST_SPELL') {
+      score += 0.15
+    }
+
     if (score > bestScore) {
       bestScore = score
       best = action

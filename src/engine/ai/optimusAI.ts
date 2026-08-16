@@ -37,7 +37,16 @@ function getExpectedScore(state: GameState, playerId: PlayerId, action: GameActi
     }
   }
 
-  return totalScore / SAMPLES
+  let finalScore = totalScore / SAMPLES
+
+  // Hand Churn Incentive: Add a slightly higher strategic nudge (+0.25) to cast spells/actions.
+  // This motivates the high-IQ Optimus AI to burn dead cards to cycle and draw fresh, high-value cards
+  // rather than skipping casting, which is a major tactical advantage in card games.
+  if (action.type === 'CAST_SPELL' || action.type === 'PLAY_MAJOR_ARCANA') {
+    finalScore += 0.25
+  }
+
+  return finalScore
 }
 
 /**
