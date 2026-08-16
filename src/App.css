@@ -1381,9 +1381,10 @@
   z-index: 9999;
 }
 
-.gesture-floating-card {
+.gesture-floating-card,
+.gesture-floating-card * {
   position: fixed;
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: 10000;
   transform: translate(-50%, -50%) rotate(-12deg) scale(1.08);
   filter: drop-shadow(0 8px 24px rgba(255, 59, 154, 0.6)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));

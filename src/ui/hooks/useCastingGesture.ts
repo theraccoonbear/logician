@@ -59,6 +59,8 @@ export function useCastingGesture({
       return
     }
 
+    const preventDragStart = (e: Event) => e.preventDefault()
+
     const handlePointerDown = (e: PointerEvent) => {
       if (e.button !== undefined && e.button !== 0) return
 
@@ -73,6 +75,8 @@ export function useCastingGesture({
         const kind = tarotEl.getAttribute('data-tarot-kind')
         const id = tarotEl.getAttribute('data-tarot-id')
         if (kind === 'minor' && id) {
+          if (typeof e.preventDefault === 'function') e.preventDefault()
+          window.addEventListener('dragstart', preventDragStart)
           setIsDragging(true)
           setActiveTarotId(id)
           setPointerPos({ x: e.clientX, y: e.clientY })
@@ -85,6 +89,8 @@ export function useCastingGesture({
       } else if (logicEl) {
         const id = logicEl.getAttribute('data-logic-id')
         if (id) {
+          if (typeof e.preventDefault === 'function') e.preventDefault()
+          window.addEventListener('dragstart', preventDragStart)
           setIsDragging(true)
           setPointerPos({ x: e.clientX, y: e.clientY })
           setPoints([{ x: e.clientX, y: e.clientY, t: Date.now() }])
@@ -96,6 +102,8 @@ export function useCastingGesture({
       } else if (effectEl) {
         const id = effectEl.getAttribute('data-effect-id')
         if (id) {
+          if (typeof e.preventDefault === 'function') e.preventDefault()
+          window.addEventListener('dragstart', preventDragStart)
           setIsDragging(true)
           setPointerPos({ x: e.clientX, y: e.clientY })
           setPoints([{ x: e.clientX, y: e.clientY, t: Date.now() }])
@@ -110,11 +118,15 @@ export function useCastingGesture({
     window.addEventListener('pointerdown', handlePointerDown)
     return () => {
       window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('dragstart', preventDragStart)
     }
   }, [enabled, isDragging])
 
   useEffect(() => {
     if (!isDragging) return
+
+    const preventDragStart = (e: Event) => e.preventDefault()
+    window.addEventListener('dragstart', preventDragStart)
 
     const handlePointerMove = (e: PointerEvent) => {
       const x = e.clientX
@@ -154,6 +166,7 @@ export function useCastingGesture({
     }
 
     const handlePointerUp = () => {
+      window.removeEventListener('dragstart', preventDragStart)
       setIsDragging(false)
       setActiveTarotId(null)
       setTimeout(() => {
@@ -166,14 +179,16 @@ export function useCastingGesture({
     window.addEventListener('pointercancel', handlePointerUp)
 
     return () => {
+      window.removeEventListener('dragstart', preventDragStart)
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
       window.removeEventListener('pointercancel', handlePointerUp)
     }
   }, [isDragging])
 
-  const activeTarotCard =
-    tarotRow.find((t) => t.instanceId === (activeTarotId || spellSelection.tarotId)) || null
+  const activeTarotCard = isDragging
+    ? tarotRow.find((t) => t.instanceId === (activeTarotId || spellSelection.tarotId)) || null
+    : null
 
   return {
     isDragging,

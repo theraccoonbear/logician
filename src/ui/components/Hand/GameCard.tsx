@@ -35,7 +35,7 @@ export function GameCard({
       data-logic-id={cardType === 'logic' ? cardId : undefined}
       data-effect-id={cardType === 'effect' ? cardId : undefined}
     >
-      <img className="game-card-frame" src={frame} alt="" />
+      <img className="game-card-frame" src={frame} alt="" draggable={false} />
       {artStyle && <div className="game-card-art" style={artStyle} />}
       <div className="game-card-caption" style={captionStyle} />
     </button>

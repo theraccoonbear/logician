@@ -33,7 +33,7 @@ export function TarotCardView({
         data-tarot-kind="major"
         onClick={() => onSelect(tarot.instanceId)}
       >
-        <img className="tarot-art" src={art} alt={describeMajorArcana(tarot.id)} />
+        <img className="tarot-art" src={art} alt={describeMajorArcana(tarot.id)} draggable={false} />
         <div className="tarot-name">{describeMajorArcana(tarot.id)}</div>
         <p className="tarot-major-description">{description}</p>
         <div className="tarot-note">{holdable ? 'hold for later ↓' : implemented ? 'cast below ↓' : 'coming soon'}</div>
@@ -48,7 +48,7 @@ export function TarotCardView({
       data-tarot-kind="minor"
       onClick={() => onSelect(tarot.instanceId)}
     >
-      <img className="tarot-art" src={art} alt={`${tarot.rank} of ${tarot.suit}`} />
+      <img className="tarot-art" src={art} alt={`${tarot.rank} of ${tarot.suit}`} draggable={false} />
       <div className="tarot-name">
         {tarot.rank} of {tarot.suit}
       </div>
