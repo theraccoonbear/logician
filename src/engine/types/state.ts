@@ -33,6 +33,7 @@ export type PendingResolution =
       kind: 'spell'
       casterId: PlayerId
       logicCardInstanceId: string
+      logicCardKind: string
       effectCardInstanceId: string
       /** Denormalized from the Effect card instance at declare time, so Hierophant eligibility doesn't need a hand lookup. */
       effectCardKind: EffectCardId

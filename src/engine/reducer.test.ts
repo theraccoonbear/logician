@@ -238,7 +238,7 @@ describe('PLAY_MAJOR_ARCANA dispatch', () => {
     expect(next.structures.map((s) => s.id)).toEqual(['strong'])
     expect(next.activePlayerIndex).toBe(1)
     expect(next.phase).toBe('build')
-    expect(next.log.at(-1)?.message).toMatch(/plays DEATH/)
+    expect(next.log.at(-1)?.message).toMatch(/PLAY_MAJOR \[DEATH\]/)
   })
 })
 

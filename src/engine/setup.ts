@@ -46,6 +46,13 @@ export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState
   const tarotRowDraw = drawCards(tarotDeck, [], 3)
   tarotDeck = tarotRowDraw.remaining
 
+  const initMessage = `GAME_INIT: ` + players.map((p) => {
+    if (p.isAI) {
+      return `[${p.name}] (AI: ${p.aiDifficulty})`
+    }
+    return `[${p.name}] (Human, Assist: ${p.assistanceLevel ?? 'none'})`
+  }).join(', ')
+
   return {
     players,
     activePlayerIndex: 0,
@@ -59,6 +66,6 @@ export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState
     logicDiscard: [],
     effectDeck,
     effectDiscard: [],
-    log: [],
+    log: [{ message: initMessage }],
   }
 }
