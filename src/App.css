@@ -789,11 +789,11 @@
   z-index: 1;
 }
 
-.hex-type-slot-pool {
+.hex-type-slot-pool:has(+ .hex-type-slot-tower) {
   margin-right: -16px;
 }
 
-.hex-type-slot-pyramid {
+.hex-type-slot-tower + .hex-type-slot-pyramid {
   margin-left: -16px;
 }
 
