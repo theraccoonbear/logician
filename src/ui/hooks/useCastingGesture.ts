@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { LogicCard } from '../../engine/types/cards'
+import type { EffectCard, LogicCard } from '../../engine/types/cards'
 import type { TarotCard } from '../../engine/types/tarot'
 import type { SpellSelection } from '../components/ActionPanel/SpellBuilder'
 
@@ -12,16 +12,20 @@ export interface Point {
 export interface UseCastingGestureOptions {
   tarotRow: TarotCard[]
   logicHand?: LogicCard[]
+  effectHand?: EffectCard[]
   spellSelection: SpellSelection
   onSpellSelectionChange: (next: SpellSelection) => void
+  onCastSpell?: () => void
   enabled: boolean
 }
 
 export interface CastingGestureState {
   isDragging: boolean
+  isOverCastTarget: boolean
   activeTarotId: string | null
   activeTarotCard: TarotCard | null
   activeLogicCard: LogicCard | null
+  activeEffectCard: EffectCard | null
   pointerPos: { x: number; y: number }
   points: Point[]
 }
@@ -29,11 +33,14 @@ export interface CastingGestureState {
 export function useCastingGesture({
   tarotRow,
   logicHand = [],
+  effectHand = [],
   spellSelection,
   onSpellSelectionChange,
+  onCastSpell,
   enabled,
 }: UseCastingGestureOptions): CastingGestureState {
   const [isDragging, setIsDragging] = useState(false)
+  const [isOverCastTarget, setIsOverCastTarget] = useState(false)
   const [activeTarotId, setActiveTarotId] = useState<string | null>(null)
   const [pointerPos, setPointerPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const [points, setPoints] = useState<Point[]>([])
@@ -43,10 +50,10 @@ export function useCastingGesture({
     spellSelectionRef.current = spellSelection
   }, [spellSelection])
 
-  const tarotRowRef = useRef(tarotRow)
+  const onCastSpellRef = useRef(onCastSpell)
   useEffect(() => {
-    tarotRowRef.current = tarotRow
-  }, [tarotRow])
+    onCastSpellRef.current = onCastSpell
+  }, [onCastSpell])
 
   const onSpellSelectionChangeRef = useRef(onSpellSelectionChange)
   useEffect(() => {
@@ -145,6 +152,9 @@ export function useCastingGesture({
 
       const elementUnder = document.elementFromPoint(x, y)
       if (elementUnder) {
+        const castTarget = elementUnder.closest('[data-cast-target]')
+        setIsOverCastTarget(Boolean(castTarget))
+
         const logicTarget = elementUnder.closest('[data-logic-id]')
         if (logicTarget) {
           const logicId = logicTarget.getAttribute('data-logic-id')
@@ -166,12 +176,23 @@ export function useCastingGesture({
             })
           }
         }
+      } else {
+        setIsOverCastTarget(false)
       }
     }
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
       window.removeEventListener('dragstart', preventDragStart)
+
+      const elementUnder = document.elementFromPoint(e.clientX, e.clientY)
+      const isOverCast = Boolean(elementUnder?.closest('[data-cast-target]'))
+
+      if (isOverCast && onCastSpellRef.current) {
+        onCastSpellRef.current()
+      }
+
       setIsDragging(false)
+      setIsOverCastTarget(false)
       setActiveTarotId(null)
       setTimeout(() => {
         setPoints([])
@@ -198,11 +219,17 @@ export function useCastingGesture({
     ? logicHand.find((c) => c.instanceId === spellSelection.logicId) || null
     : null
 
+  const activeEffectCard = isDragging && spellSelection.effectId
+    ? effectHand.find((c) => c.instanceId === spellSelection.effectId) || null
+    : null
+
   return {
     isDragging,
+    isOverCastTarget,
     activeTarotId,
     activeTarotCard,
     activeLogicCard,
+    activeEffectCard,
     pointerPos,
     points,
   }

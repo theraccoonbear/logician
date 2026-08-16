@@ -25,15 +25,31 @@ export function ActionPanel({
   /** Reports which structures a Major Arcana form/trigger in progress would target, for board highlighting. */
   onPreviewTargetsChange: (ids: Set<string>) => void
 }) {
-  const { state } = useGameEngine()
+  const { state, dispatch } = useGameEngine()
   const activePlayer = state?.players[state.activePlayerIndex]
   const logicHand = activePlayer ? activePlayer.logicHand : []
+  const effectHand = activePlayer ? activePlayer.effectHand : []
+
+  const handleCastSpell = () => {
+    if (spellSelection.logicId && spellSelection.effectId && spellSelection.tarotId && activePlayer) {
+      dispatch({
+        type: 'CAST_SPELL',
+        playerId: activePlayer.id,
+        logicCardId: spellSelection.logicId,
+        effectCardId: spellSelection.effectId,
+        tarotId: spellSelection.tarotId,
+      })
+      onSpellSelectionChange(EMPTY_SELECTION)
+    }
+  }
 
   const gesture = useCastingGesture({
     tarotRow: state?.tarotRow || [],
     logicHand,
+    effectHand,
     spellSelection,
     onSpellSelectionChange,
+    onCastSpell: handleCastSpell,
     enabled: state?.phase === 'cast',
   })
 

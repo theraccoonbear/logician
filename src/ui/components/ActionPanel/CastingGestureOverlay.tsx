@@ -1,23 +1,34 @@
 import { createPortal } from 'react-dom'
-import type { LogicCard } from '../../../engine/types/cards'
+import type { EffectCard, LogicCard } from '../../../engine/types/cards'
 import type { TarotCard } from '../../../engine/types/tarot'
-import { LOGIC_FRAME, logicArtStyle, logicCaptionStyle } from '../../cardArt'
-import { LOGIC_CARD_LABELS } from '../../cardLabels'
+import {
+  EFFECT_FRAME,
+  LOGIC_FRAME,
+  effectArtStyle,
+  effectCaptionStyle,
+  logicArtStyle,
+  logicCaptionStyle,
+} from '../../cardArt'
+import { EFFECT_CARD_LABELS, LOGIC_CARD_LABELS } from '../../cardLabels'
 import { CARD_HEIGHT, CARD_WIDTH, GameCard } from '../Hand/GameCard'
 import { TarotCardView } from '../TarotRow/TarotCardView'
 
 export interface CastingGestureOverlayProps {
   isDragging: boolean
+  isOverCastTarget?: boolean
   activeTarotCard: TarotCard | null
   activeLogicCard: LogicCard | null
+  activeEffectCard: EffectCard | null
   pointerPos: { x: number; y: number }
   points: Array<{ x: number; y: number; t: number }>
 }
 
 export function CastingGestureOverlay({
   isDragging,
+  isOverCastTarget,
   activeTarotCard,
   activeLogicCard,
+  activeEffectCard,
   pointerPos,
   points,
 }: CastingGestureOverlayProps) {
@@ -28,7 +39,7 @@ export function CastingGestureOverlay({
       ? `M ${points[0].x} ${points[0].y} ` + points.slice(1).map((p) => `L ${p.x} ${p.y}`).join(' ')
       : ''
 
-  const overlayContent = (
+  return createPortal(
     <div className="gesture-overlay-root">
       <svg className="gesture-trail-svg">
         <defs>
@@ -59,23 +70,25 @@ export function CastingGestureOverlay({
         <circle
           cx={pointerPos.x}
           cy={pointerPos.y}
-          r="8"
+          r={isOverCastTarget ? '12' : '8'}
           fill="#67e8f9"
           filter="url(#trailGlow)"
         />
       </svg>
 
-      {activeTarotCard && activeLogicCard ? (
-        <div
-          className="gesture-floating-cards"
-          style={{
-            left: `${pointerPos.x}px`,
-            top: `${pointerPos.y}px`,
-          }}
-        >
+      <div
+        className="gesture-floating-cards"
+        style={{
+          left: `${pointerPos.x}px`,
+          top: `${pointerPos.y}px`,
+        }}
+      >
+        {activeTarotCard && (
           <div className="gesture-card-tarot">
-            <TarotCardView tarot={activeTarotCard} selected={false} onSelect={() => {}} />
+            <TarotCardView tarot={activeTarotCard} selected={false} onSelect={() => {}} artOnly={true} />
           </div>
+        )}
+        {activeLogicCard && (
           <div className="gesture-card-logic">
             <GameCard
               cardId={activeLogicCard.instanceId}
@@ -88,39 +101,23 @@ export function CastingGestureOverlay({
               onClick={() => {}}
             />
           </div>
-        </div>
-      ) : activeTarotCard ? (
-        <div
-          className="gesture-floating-card"
-          style={{
-            left: `${pointerPos.x}px`,
-            top: `${pointerPos.y}px`,
-          }}
-        >
-          <TarotCardView tarot={activeTarotCard} selected={false} onSelect={() => {}} />
-        </div>
-      ) : activeLogicCard ? (
-        <div
-          className="gesture-floating-card"
-          style={{
-            left: `${pointerPos.x}px`,
-            top: `${pointerPos.y}px`,
-          }}
-        >
-          <GameCard
-            cardId={activeLogicCard.instanceId}
-            cardType="logic"
-            frame={LOGIC_FRAME}
-            label={LOGIC_CARD_LABELS[activeLogicCard.kind]}
-            artStyle={logicArtStyle(activeLogicCard.kind, CARD_WIDTH, CARD_HEIGHT)}
-            captionStyle={logicCaptionStyle(activeLogicCard.kind, CARD_WIDTH, CARD_HEIGHT)}
-            selected={false}
-            onClick={() => {}}
-          />
-        </div>
-      ) : null}
-    </div>
+        )}
+        {activeEffectCard && (
+          <div className="gesture-card-effect">
+            <GameCard
+              cardId={activeEffectCard.instanceId}
+              cardType="effect"
+              frame={EFFECT_FRAME}
+              label={EFFECT_CARD_LABELS[activeEffectCard.kind]}
+              artStyle={effectArtStyle(activeEffectCard.kind, CARD_WIDTH, CARD_HEIGHT)}
+              captionStyle={effectCaptionStyle(activeEffectCard.kind, CARD_WIDTH, CARD_HEIGHT)}
+              selected={false}
+              onClick={() => {}}
+            />
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
   )
-
-  return createPortal(overlayContent, document.body)
 }

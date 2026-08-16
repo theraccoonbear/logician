@@ -11,14 +11,28 @@ export function TarotCardView({
   onSelect,
   isPoofed = false,
   isDragSource = false,
+  artOnly = false,
 }: {
   tarot: TarotCard
   selected: boolean
   onSelect: (instanceId: string) => void
   isPoofed?: boolean
   isDragSource?: boolean
+  artOnly?: boolean
 }) {
   const art = tarotArtUrl(tarot)
+
+  if (artOnly) {
+    return (
+      <button
+        className={`tarot-card ${tarot.kind === 'major' ? 'tarot-major' : 'tarot-minor'} tarot-art-only`}
+        data-tarot-id={tarot.instanceId}
+        onClick={() => onSelect(tarot.instanceId)}
+      >
+        <img className="tarot-art" src={art} alt="" draggable={false} />
+      </button>
+    )
+  }
 
   if (tarot.kind === 'major') {
     const holdable = isHoldCard(tarot.id) || tarot.id === 'HIGH_PRIESTESS'
