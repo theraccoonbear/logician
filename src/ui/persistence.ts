@@ -1,5 +1,12 @@
-import type { GameState } from '../engine/types/state'
+import type { AIDifficulty, AssistanceLevel, GameState } from '../engine/types/state'
 import { safeGet, safeRemove, safeSet } from './storage'
+
+export interface SeatDraft {
+  name: string
+  isAI: boolean
+  aiDifficulty: AIDifficulty
+  assistanceLevel: AssistanceLevel
+}
 
 const SAVE_KEY = 'logician-save-v1'
 
@@ -42,4 +49,20 @@ export function loadShowRulesOnStart(): boolean {
 
 export function saveShowRulesOnStart(value: boolean): void {
   safeSet(SHOW_RULES_KEY, String(value))
+}
+
+const SEATS_DRAFT_KEY = 'logician-seats-draft-v1'
+
+export function loadSavedSeats(): SeatDraft[] | null {
+  const raw = safeGet(SEATS_DRAFT_KEY)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as SeatDraft[]
+  } catch {
+    return null
+  }
+}
+
+export function saveSeats(seats: SeatDraft[]): void {
+  safeSet(SEATS_DRAFT_KEY, JSON.stringify(seats))
 }

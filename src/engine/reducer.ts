@@ -266,13 +266,23 @@ function finalizePending(state: GameState, pending: PendingResolution): ActionRe
       nextState = withLog(nextState, change)
     }
 
-    if (changes.length > 0) {
-      const signCaster = casterNet >= 0 ? '+' : ''
-      const signOpponent = opponentNet >= 0 ? '+' : ''
-      nextState = withLog(nextState, `| Net: ${signCaster}${casterNet} vs ${signOpponent}${opponentNet}`)
-    } else {
-      nextState = withLog(nextState, `| Net: +0 vs +0`)
-    }
+    // Rather than a vague "+X vs -Y", we explicitly list each player's net change by name (standardized LGN)
+    const netDetails = base.players.map((p) => {
+      let playerNet = 0
+      for (const [id, current] of currentStructuresMap.entries()) {
+        if (current.owner !== p.id) continue
+        const nextStruct = nextStructuresMap.get(id)
+        if (!nextStruct) {
+          playerNet -= current.level
+        } else if (nextStruct.level !== current.level) {
+          playerNet += nextStruct.level - current.level
+        }
+      }
+      const sign = playerNet >= 0 ? '+' : ''
+      return `[${p.name}]: ${sign}${playerNet}`
+    }).join(', ')
+
+    nextState = withLog(nextState, `| Net: ${netDetails}`)
 
     return ok(advanceTurn(checkForWinner(nextState)))
   }
