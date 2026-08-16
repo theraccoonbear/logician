@@ -38,6 +38,18 @@ describe('createInitialGameState', () => {
     expect(state.players[1].isAI).toBe(true)
   })
 
+  it('correctly sets and carries over assistance level configurations', () => {
+    expect(state.players[0].assistanceLevel).toBe('none')
+    expect(state.players[1].assistanceLevel).toBeUndefined()
+
+    const customState = createInitialGameState([
+      { name: 'Alice', isAI: false, assistanceLevel: 'some' },
+      { name: 'Bob', isAI: true, assistanceLevel: 'full' },
+    ])
+    expect(customState.players[0].assistanceLevel).toBe('some')
+    expect(customState.players[1].assistanceLevel).toBeUndefined()
+  })
+
   it('deals a 3-card face-up tarot row', () => {
     expect(state.tarotRow).toHaveLength(3)
   })

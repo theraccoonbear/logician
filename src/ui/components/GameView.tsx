@@ -69,10 +69,14 @@ export function GameView() {
   // Union, not either/or: minor-spell highlighting and major-arcana preview highlighting
   // correspond to mutually exclusive selection states (a minor tarot+logic pair vs. a major
   // arcana form/trigger in progress), so at most one side is ever non-empty at once.
-  const boardHighlightedIds = useMemo(
-    () => new Set([...highlightedIds, ...majorPreviewIds]),
-    [highlightedIds, majorPreviewIds],
-  )
+  // Suppressed completely if the active player has "No Assistance" ('none') enabled.
+  const boardHighlightedIds = useMemo(() => {
+    const player = state?.players[state.activePlayerIndex]
+    if (player?.assistanceLevel === 'none') {
+      return new Set<string>()
+    }
+    return new Set([...highlightedIds, ...majorPreviewIds])
+  }, [state, highlightedIds, majorPreviewIds])
 
   if (!state) return null
 
