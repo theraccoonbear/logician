@@ -34,7 +34,7 @@ jobs:
       # --base overrides vite.config.ts's own base for this build only (CLI flag wins over
       # config) — every asset reference in the app already goes through assetUrl(), which
       # reads import.meta.env.BASE_URL, so nothing else needs to know this is a PR build.
-      - run: npx tsc -b && npx vite build --base=/logician/pr-${{ github.event.pull_request.number }}/
+      - run: npm run build -- --base=/logician/pr-${{ github.event.pull_request.number }}/
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
