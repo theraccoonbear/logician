@@ -1391,8 +1391,8 @@
 .gesture-floating-card {
   position: fixed;
   z-index: 10000;
-  transform: translate(-50%, -50%) rotate(-8deg) scale(1.04);
-  filter: drop-shadow(0 4px 12px rgba(103, 232, 249, 0.45)) drop-shadow(0 0 6px rgba(103, 232, 249, 0.6));
+  transform: translate(-50%, -100%) translateY(-16px) rotate(-6deg) scale(1.06);
+  filter: drop-shadow(0 6px 16px rgba(103, 232, 249, 0.5)) drop-shadow(0 0 8px rgba(103, 232, 249, 0.7));
   transition: transform 0.05s ease-out;
   will-change: left, top, transform;
 }
@@ -1402,11 +1402,24 @@
   z-index: 10000;
   display: flex;
   align-items: center;
-  gap: 4px;
-  transform: translate(-50%, -50%) rotate(-4deg) scale(1.02);
-  filter: drop-shadow(0 4px 12px rgba(103, 232, 249, 0.45)) drop-shadow(0 0 6px rgba(103, 232, 249, 0.6));
+  gap: 6px;
+  transform: translate(-50%, -100%) translateY(-16px) rotate(-3deg) scale(1.04);
+  filter: drop-shadow(0 6px 16px rgba(103, 232, 249, 0.5)) drop-shadow(0 0 8px rgba(103, 232, 249, 0.7));
   transition: transform 0.05s ease-out;
   will-change: left, top, transform;
+}
+
+/* Explicit size for cards in drag overlay to prevent mobile max-width flex collapse */
+.gesture-floating-card .tarot-card,
+.gesture-floating-card .game-card,
+.gesture-floating-cards .tarot-card,
+.gesture-floating-cards .game-card {
+  width: 80px !important;
+  height: 115px !important;
+  max-width: none !important;
+  min-width: 80px !important;
+  flex: 0 0 80px !important;
+  box-sizing: border-box !important;
 }
 
 .gesture-card-tarot {
@@ -1414,7 +1427,7 @@
 }
 
 .gesture-card-logic {
-  transform: rotate(0deg) translateY(-4px);
+  transform: rotate(0deg) translateY(-6px);
 }
 
 .gesture-card-effect {
@@ -1423,8 +1436,8 @@
 
 .tarot-card.tarot-art-only {
   padding: 4px;
-  width: 86px;
-  height: 120px;
+  width: 80px !important;
+  height: 115px !important;
   display: flex;
   align-items: center;
   justify-content: center;
