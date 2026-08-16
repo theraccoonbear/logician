@@ -1,6 +1,8 @@
+import { useCastingGesture } from '../../hooks/useCastingGesture'
 import { useGameEngine } from '../../hooks/useGameEngine'
 import { TarotRow } from '../TarotRow/TarotRow'
 import { BuildPanel } from './BuildPanel'
+import { CastingGestureOverlay } from './CastingGestureOverlay'
 import { MajorArcanaPanel } from './MajorArcanaPanel'
 import { SpellBuilder, type SpellSelection } from './SpellBuilder'
 import { TriggerWindowPanel } from './TriggerWindowPanel'
@@ -24,6 +26,13 @@ export function ActionPanel({
   onPreviewTargetsChange: (ids: Set<string>) => void
 }) {
   const { state } = useGameEngine()
+  const gesture = useCastingGesture({
+    tarotRow: state?.tarotRow || [],
+    spellSelection,
+    onSpellSelectionChange,
+    enabled: state?.phase === 'cast',
+  })
+
   if (!state) return null
 
   if (state.phase === 'setup' || state.phase === 'build') {
@@ -39,6 +48,7 @@ export function ActionPanel({
 
     return (
       <>
+        <CastingGestureOverlay {...gesture} />
         {/* Left: which tarot card you're casting against/playing. */}
         <div className="action-panel tarot-pane">
           <TarotRow
@@ -51,6 +61,8 @@ export function ActionPanel({
             // so carrying them through a major selection is harmless (they're just waiting for
             // the next minor).
             onSelect={(id) => onSpellSelectionChange({ ...spellSelection, tarotId: id })}
+            activeTarotId={gesture.activeTarotId}
+            isDragging={gesture.isDragging}
           />
         </div>
 
