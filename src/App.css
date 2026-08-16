@@ -764,11 +764,14 @@
   gap: 2px;
 }
 
-/* Re-enables clicks specifically on the actual interactive tokens — everything else in
-   .hex-structures (the owner-band/type-slot wrapper divs, the fortress ring images) stays
-   pointer-events: none so clicks in the empty space around the art still reach .hex-tile's
-   own onClick underneath instead of this overlay silently swallowing them. */
+/* Enables clicks specifically on the actual interactive tokens only when they are clickable —
+   if they are not clickable (e.g. during build phase), pointer-events: none lets clicks pass
+   straight through to the underlying .hex-tile so selecting a hex is never blocked by built assets. */
 .structure-token {
+  pointer-events: none;
+}
+
+.structure-token.is-clickable {
   pointer-events: auto;
 }
 
