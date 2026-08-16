@@ -1,14 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { GameEvent } from '../../engine/types/state'
 
 export function GameLog({ log }: { log: GameEvent[] }) {
   const [copied, setCopied] = useState(false)
-  const listEndRef = useRef<HTMLDivElement>(null)
-
-  // Auto-scroll to the bottom of the log when new events arrive
-  useEffect(() => {
-    listEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [log.length])
 
   const copyToClipboard = () => {
     const text = log.map((event) => event.message).join('\n')
@@ -32,7 +26,6 @@ export function GameLog({ log }: { log: GameEvent[] }) {
             <li key={i}>{event.message}</li>
           ))}
         </ul>
-        <div ref={listEndRef} />
       </div>
     </div>
   )
