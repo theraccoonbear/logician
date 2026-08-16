@@ -6,10 +6,14 @@ import { assetUrl } from './assetUrl'
 // per row, at varying heights (short labels like "A" render in a much bigger font than long
 // ones like "A NOT B"). Rather than pre-cropping each label into its own file, every card
 // reads a window into the same sheet via CSS background-position — see labelStyle().
-// Band Y-ranges below are raw pixel coordinates in the SOURCE sheet, found by scanning for
-// contiguous rows of non-transparent pixels. Re-scan and update these if either sheet is
-// ever re-exported at a different size — the coordinates are tied to the exact source pixels,
-// not proportional to sheet size, so a re-export shifts every band.
+// Band Y-ranges below are raw pixel coordinates in the SHIPPED sheet (public/img/cards/, the
+// resize-assets.mjs output — see scripts/scan-label-bands.py), found by scanning for
+// contiguous rows of non-transparent pixels. Re-scan and update these — via
+// `python3 scripts/scan-label-bands.py public/img/cards/logic_labels.png` (after
+// `npm run dev`/`build` has generated it) — if either sheet is ever re-exported at a different
+// size in src-assets/img/, OR if the `cards/` resize rule in scripts/resize-assets.mjs ever
+// changes: the coordinates are tied to the exact shipped pixels, not proportional to sheet
+// size, so either kind of change shifts every band.
 
 interface Sheet {
   url: string
@@ -17,31 +21,31 @@ interface Sheet {
   naturalHeight: number
 }
 
-const LOGIC_SHEET: Sheet = { url: assetUrl('/img/cards/logic_labels.png'), naturalWidth: 650, naturalHeight: 1150 }
+const LOGIC_SHEET: Sheet = { url: assetUrl('/img/cards/logic_labels.png'), naturalWidth: 170, naturalHeight: 300 }
 const LOGIC_BANDS: Record<LogicCardId, [number, number]> = {
-  A: [27, 121],
-  B: [143, 234],
-  NOT_A: [255, 349],
-  NOT_B: [368, 461],
-  A_AND_B: [481, 572],
-  A_OR_B: [592, 685],
-  A_NOT_B: [704, 797],
-  B_NOT_A: [816, 909],
-  A_NOR_B: [928, 1022],
-  A_XOR_B: [1041, 1135],
+  A: [6, 32],
+  B: [37, 62],
+  NOT_A: [66, 92],
+  NOT_B: [95, 121],
+  A_AND_B: [125, 150],
+  A_OR_B: [154, 179],
+  A_NOT_B: [183, 208],
+  B_NOT_A: [212, 238],
+  A_NOR_B: [242, 267],
+  A_XOR_B: [271, 297],
 }
 
-const EFFECT_SHEET: Sheet = { url: assetUrl('/img/cards/effect_labels.png'), naturalWidth: 868, naturalHeight: 1343 }
+const EFFECT_SHEET: Sheet = { url: assetUrl('/img/cards/effect_labels.png'), naturalWidth: 194, naturalHeight: 300 }
 const EFFECT_BANDS: Record<EffectCardId, [number, number]> = {
-  UPGRADE_1: [16, 151],
-  UPGRADE_2: [165, 299],
-  UPGRADE_3: [314, 447],
-  DOWNGRADE_1: [463, 596],
-  DOWNGRADE_2: [611, 743],
-  DOWNGRADE_3: [758, 890],
-  MAXIMIZE: [905, 1011],
-  RANDOMIZE: [1051, 1160],
-  COMBO: [1198, 1306],
+  UPGRADE_1: [3, 34],
+  UPGRADE_2: [36, 67],
+  UPGRADE_3: [70, 100],
+  DOWNGRADE_1: [103, 134],
+  DOWNGRADE_2: [136, 167],
+  DOWNGRADE_3: [169, 199],
+  MAXIMIZE: [202, 226],
+  RANDOMIZE: [234, 260],
+  COMBO: [267, 292],
 }
 
 export const LOGIC_FRAME = assetUrl('/img/cards/logic.png')
