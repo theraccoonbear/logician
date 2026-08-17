@@ -18,13 +18,13 @@ const MAX_PLAYERS = 4
 function getAIDefaultName(difficulty: AIDifficulty): string {
   switch (difficulty) {
     case 'heuristic':
-      return 'Hugh'
+      return 'Hughie'
     case 'optimus':
-      return 'Oppy'
+      return 'Poppy'
     case 'random':
       return 'Randy'
     default:
-      return 'Hugh'
+      return 'Hughie'
   }
 }
 
@@ -85,32 +85,45 @@ export function SetupScreen() {
         {seats.map((seat, i) => (
           <div key={i} className="seat-container">
             <div className="setup-field seat-row">
-              <input value={seat.name} onChange={(e) => updateSeat(i, { name: e.target.value })} />
               <label>
                 <input type="checkbox" checked={seat.isAI} onChange={(e) => updateSeat(i, { isAI: e.target.checked })} /> AI
               </label>
+              <input value={seat.name} onChange={(e) => updateSeat(i, { name: e.target.value })} />
               {seat.isAI && (
-                <select value={seat.aiDifficulty} onChange={(e) => updateSeat(i, { aiDifficulty: e.target.value as AIDifficulty })}>
-                  <option value="heuristic">Heuristic</option>
-                  <option value="optimus">Optimus</option>
-                  <option value="random">Random</option>
-                </select>
+                <div>
+                  <label>
+                    Difficulty:&nbsp;
+                    <select value={seat.aiDifficulty} onChange={(e) => updateSeat(i, { aiDifficulty: e.target.value as AIDifficulty })}>
+                      <option value="random">Randy 👶 (level 1)</option>
+                      <option value="heuristic" defaultChecked>Hughie ⚖️ (level 2)</option>
+                      <option value="optimus">Poppy 😭 (level 3)</option>
+                    </select>
+                  </label>
+                  <div className="seat-assistance-description">
+                    {seat.aiDifficulty === 'random' && "Randy is a rookie 👶.  You've probably got a good chance besting him."}
+                    {seat.aiDifficulty === 'heuristic' && "Hugie is more experienced ⚖️.  He can still slip up on big moves when stakes are high."}
+                    {seat.aiDifficulty === 'optimus' && "Poppy is very experienced and very dangerous 😭. She will punish you."}
+                  </div>
+                </div>
               )}
               {!seat.isAI && (
-                <select value={seat.assistanceLevel} onChange={(e) => updateSeat(i, { assistanceLevel: e.target.value as AssistanceLevel })}>
-                  <option value="none">No Assistance (Wizard Eyes 🧙‍♂️👀)</option>
-                  <option value="some">Some Assistance</option>
-                  <option value="full">Full Assistance</option>
-                </select>
+                <div>
+                  <label>
+                    Assistance:&nbsp;
+                    <select value={seat.assistanceLevel} onChange={(e) => updateSeat(i, { assistanceLevel: e.target.value as AssistanceLevel })}>
+                      <option value="full" defaultChecked>Wizard Nursery 🍼</option>
+                      <option value="some">Wizard Glasses 👓</option>
+                      <option value="none">Wizard Eyes 👀</option>
+                    </select>
+                  </label>
+                  <div className="seat-assistance-description">
+                    {seat.assistanceLevel === 'full' && "Full Assistance: Previews target hexes and calculates exact structure/point changes before casting.  Use this one first!"}
+                    {seat.assistanceLevel === 'some' && "Some Assistance: Previews target hexes, but you do your own point calculations."}
+                    {seat.assistanceLevel === 'none' && "Wizard Eyes Mode 🧙‍♂️👀: No previews, no calculations. Rely purely on your own sight and intellect!"}
+                  </div>
+                </div>
               )}
             </div>
-            {!seat.isAI && (
-              <div className="seat-assistance-description">
-                {seat.assistanceLevel === 'full' && "Full Assistance: Previews target hexes and calculates exact structure/point changes before casting."}
-                {seat.assistanceLevel === 'some' && "Some Assistance: Previews target hexes, but you do your own point calculations."}
-                {seat.assistanceLevel === 'none' && "Wizard Eyes Mode 🧙‍♂️👀: No previews, no calculations. Rely purely on your own sight and intellect!"}
-              </div>
-            )}
           </div>
         ))}
       </div>
