@@ -1,5 +1,6 @@
 import { createBoard } from './board'
 import { createEffectDeck, createLogicDeck, createTarotDeck, drawCards } from './decks'
+import { createPRNG, generateSeed } from './prng'
 import { HAND_SIZE } from './types/cards'
 import type { AIDifficulty, AssistanceLevel, GameState, Player } from './types/state'
 
@@ -16,20 +17,34 @@ export interface PlayerConfig {
  * means each player still needs to place their initial Pool+Pyramid+Tower via
  * the normal BUILD_STRUCTURE action before real turns begin (see reducer.ts).
  */
-export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState {
+export function createInitialGameState(playerConfigs: PlayerConfig[], seed?: number): GameState {
   if (playerConfigs.length < 2) {
     throw new Error('Logician requires at least 2 players')
   }
 
-  let logicDeck = createLogicDeck()
-  let effectDeck = createEffectDeck()
-  let tarotDeck = createTarotDeck()
+  const actualSeed = seed ?? generateSeed()
+  let prng = createPRNG(actualSeed)
+
+  let logicDeckResult = createLogicDeck(prng)
+  let logicDeck = logicDeckResult.deck
+  prng = logicDeckResult.prng
+
+  let effectDeckResult = createEffectDeck(prng)
+  let effectDeck = effectDeckResult.deck
+  prng = effectDeckResult.prng
+
+  let tarotDeckResult = createTarotDeck(prng)
+  let tarotDeck = tarotDeckResult.deck
+  prng = tarotDeckResult.prng
 
   const players: Player[] = playerConfigs.map((config, index) => {
-    const logicDraw = drawCards(logicDeck, [], HAND_SIZE)
+    const logicDraw = drawCards(logicDeck, [], HAND_SIZE, prng)
     logicDeck = logicDraw.remaining
-    const effectDraw = drawCards(effectDeck, [], HAND_SIZE)
+    prng = logicDraw.prng
+
+    const effectDraw = drawCards(effectDeck, [], HAND_SIZE, prng)
     effectDeck = effectDraw.remaining
+    prng = effectDraw.prng
 
     return {
       id: `player-${index + 1}`,
@@ -43,12 +58,18 @@ export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState
     }
   })
 
-  const tarotRowDraw = drawCards(tarotDeck, [], 3)
+  const tarotRowDraw = drawCards(tarotDeck, [], 3, prng)
   tarotDeck = tarotRowDraw.remaining
+  prng = tarotRowDraw.prng
 
-  const initMessage = `GAME_INIT: ` + players.map((p, index) => {
+  const initMessage = `GAME_INIT SEED:${actualSeed}: ` + players.map((p, index) => {
     return `p:${index + 1} = ${p.name} (${p.isAI ? `AI: ${p.aiDifficulty}` : `Human, Assist: ${p.assistanceLevel ?? 'none'}`})`
   }).join(', ')
+
+  const tarotRowMessage = `TAROT_ROW ${tarotRowDraw.drawn.map((c) => {
+    if (c.kind === 'minor') return `t:${c.rank}_OF_${c.suit.toUpperCase()}`
+    return `t:${c.id}`
+  }).join(', ')}`
 
   const handLogs = players.map((p, index) => {
     const logicKinds = p.logicHand.map((c) => `l:${c.kind}`).join(', ')
@@ -58,6 +79,7 @@ export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState
 
   const initialLog = [
     { message: initMessage },
+    { message: tarotRowMessage },
     ...handLogs.map((msg) => ({ message: msg }))
   ]
 
@@ -75,5 +97,6 @@ export function createInitialGameState(playerConfigs: PlayerConfig[]): GameState
     effectDeck,
     effectDiscard: [],
     log: initialLog,
+    prng,
   }
 }

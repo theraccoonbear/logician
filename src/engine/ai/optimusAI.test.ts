@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyAction } from '../reducer'
 import { createInitialGameState } from '../setup'
+import { TEST_PRNG } from '../testHelpers'
 import type { GameState } from '../types/state'
 import type { Structure } from '../types/structure'
 import type { Hex } from '../board'
@@ -66,6 +67,7 @@ function makeState(overrides: Partial<GameState>): GameState {
     effectDeck: [],
     effectDiscard: [],
     log: [],
+    prng: TEST_PRNG,
     ...overrides,
   }
 }

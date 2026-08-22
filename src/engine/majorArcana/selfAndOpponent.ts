@@ -6,11 +6,12 @@ import type { MajorArcanaCard } from '../types/tarot'
 import type { MajorArcanaResult } from './handlers'
 
 function discardAndRefill(state: GameState, tarot: MajorArcanaCard) {
-  const draw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+  const draw = drawCards(state.tarotDeck, state.tarotDiscard, 1, state.prng)
   return {
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...draw.drawn],
     tarotDeck: draw.remaining,
     tarotDiscard: [...draw.remainingDiscard, tarot],
+    prng: draw.prng,
   }
 }
 

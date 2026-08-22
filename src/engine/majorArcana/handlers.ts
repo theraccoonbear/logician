@@ -17,12 +17,13 @@ function err(error: string): MajorArcanaResult {
 }
 
 /** Shared by every single-card major: discard the played card, draw one replacement into the row. */
-function discardAndRefill(state: GameState, tarot: TarotCard): Pick<GameState, 'tarotRow' | 'tarotDeck' | 'tarotDiscard'> {
-  const draw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+function discardAndRefill(state: GameState, tarot: TarotCard): Pick<GameState, 'tarotRow' | 'tarotDeck' | 'tarotDiscard' | 'prng'> {
+  const draw = drawCards(state.tarotDeck, state.tarotDiscard, 1, state.prng)
   return {
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...draw.drawn],
     tarotDeck: draw.remaining,
     tarotDiscard: [...draw.remainingDiscard, tarot],
+    prng: draw.prng,
   }
 }
 

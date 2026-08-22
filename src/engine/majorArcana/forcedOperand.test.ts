@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { designatedOpponentId, resolveForcedOperandSpell } from './forcedOperand'
 import type { Hex } from '../board'
+import { TEST_PRNG } from '../testHelpers'
 import { LEVEL_BOUNDS } from '../types/structure'
 import type { GameState, Player } from '../types/state'
 import type { Structure } from '../types/structure'
@@ -26,6 +27,7 @@ function makeState(overrides: Partial<GameState>): GameState {
     effectDeck: [],
     effectDiscard: [],
     log: [],
+    prng: TEST_PRNG,
     ...overrides,
   }
 }

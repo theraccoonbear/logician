@@ -45,8 +45,8 @@ export function resolveDevil(state: GameState, casterId: PlayerId, tarot: MajorA
   const affectedIds = new Set(affected.map((s) => s.id))
   const structures = state.structures.filter((s) => !affectedIds.has(s.id))
 
-  const logicDraw = drawCards(state.logicDeck, state.logicDiscard, 1)
-  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+  const logicDraw = drawCards(state.logicDeck, state.logicDiscard, 1, state.prng)
+  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1, logicDraw.prng)
 
   const next: GameState = {
     ...state,
@@ -56,6 +56,7 @@ export function resolveDevil(state: GameState, casterId: PlayerId, tarot: MajorA
     tarotDeck: tarotDraw.remaining,
     tarotDiscard: [...tarotDraw.remainingDiscard, tarot],
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...tarotDraw.drawn],
+    prng: tarotDraw.prng,
     players: state.players.map((p) =>
       p.id === caster.id
         ? { ...p, logicHand: [...p.logicHand.filter((c) => c.instanceId !== logicCard.instanceId), ...logicDraw.drawn] }

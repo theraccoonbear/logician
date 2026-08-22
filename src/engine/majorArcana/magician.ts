@@ -27,13 +27,14 @@ export function resolveMagician(state: GameState, casterId: PlayerId, tarot: Maj
     return { ok: false, error: 'One or more chosen cards are not in the expected hand' }
   }
 
-  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1, state.prng)
 
   const next: GameState = {
     ...state,
     tarotDeck: tarotDraw.remaining,
     tarotDiscard: [...tarotDraw.remainingDiscard, tarot],
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...tarotDraw.drawn],
+    prng: tarotDraw.prng,
     players: state.players.map((p) => {
       if (p.id === caster.id) {
         return {

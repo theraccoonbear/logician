@@ -1,5 +1,6 @@
 import { drawCards } from './decks'
 import { applyEffect } from './levelResolution'
+import { nextRandom } from './prng'
 import { getAffectedStructures } from './selectors'
 import type { EffectCard, LogicCard } from './types/cards'
 import type { PlayerId } from './types/ids'
@@ -53,7 +54,8 @@ export function resolveSpell(state: GameState, input: SpellResolutionInput): Spe
     operandB: input.operandB,
   })
 
-  const comboOutcome: 'upgrade' | 'downgrade' = Math.random() < 0.5 ? 'upgrade' : 'downgrade'
+  const { value: comboRandom, prng: prng1 } = nextRandom(state.prng)
+  const comboOutcome: 'upgrade' | 'downgrade' = comboRandom < 0.5 ? 'upgrade' : 'downgrade'
   const affectedIds = new Set(affected.map((s) => s.id))
   const destroyedIds = new Set<string>()
   const levelUpdates = new Map<string, number>()
@@ -82,9 +84,9 @@ export function resolveSpell(state: GameState, input: SpellResolutionInput): Spe
     }
   }
 
-  const logicDraw = drawCards(state.logicDeck, state.logicDiscard, 1)
-  const effectDraw = drawCards(state.effectDeck, state.effectDiscard, 1)
-  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+  const logicDraw = drawCards(state.logicDeck, state.logicDiscard, 1, prng1)
+  const effectDraw = drawCards(state.effectDeck, state.effectDiscard, 1, logicDraw.prng)
+  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1, effectDraw.prng)
 
   let next: GameState = {
     ...state,
@@ -96,6 +98,7 @@ export function resolveSpell(state: GameState, input: SpellResolutionInput): Spe
     tarotDeck: tarotDraw.remaining,
     tarotDiscard: [...tarotDraw.remainingDiscard, input.tarot],
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== input.tarot.instanceId), ...tarotDraw.drawn],
+    prng: tarotDraw.prng,
   }
 
   next = {

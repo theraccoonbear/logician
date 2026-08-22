@@ -40,7 +40,7 @@ export function resolveWorld(state: GameState, _casterId: PlayerId, tarot: Major
     return result.destroyed ? s : { ...s, level: result.newLevel }
   })
 
-  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+  const tarotDraw = drawCards(state.tarotDeck, state.tarotDiscard, 1, state.prng)
 
   const next: GameState = {
     ...state,
@@ -48,6 +48,7 @@ export function resolveWorld(state: GameState, _casterId: PlayerId, tarot: Major
     tarotDeck: tarotDraw.remaining,
     tarotDiscard: [...tarotDraw.remainingDiscard, tarot],
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...tarotDraw.drawn],
+    prng: tarotDraw.prng,
   }
 
   return { ok: true, state: next }
