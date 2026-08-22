@@ -10,6 +10,7 @@ import { Board } from './Board/Board'
 import { GameLog } from './GameLog'
 import { MenuBar } from './MenuBar'
 import { RulesModal } from './RulesModal'
+import { SpellCastOverlay } from './SpellCastOverlay'
 import { TurnIndicator } from './TurnIndicator'
 import { VPTracker } from './VPTracker'
 
@@ -19,13 +20,13 @@ const EMPTY_SELECTION: SpellSelection = { logicId: null, effectId: null, tarotId
 const MAX_WHEEL_TARGETS = 3
 
 export function GameView() {
-  const { state, newGame, pendingRulesOnStart, clearPendingRulesOnStart, dispatch } = useGameEngine()
-  useAITurns()
+  const { state, newGame, pendingRulesOnStart, clearPendingRulesOnStart, dispatch, spellAnimation } = useGameEngine()
   const { containerRef: fieldRef, contentRef: boardRef, scale: boardScale } = useFitScale<HTMLDivElement, HTMLDivElement>()
   const [selectedHexId, setSelectedHexId] = useState<string | null>(null)
   const [spellSelection, setSpellSelection] = useState<SpellSelection>(EMPTY_SELECTION)
   const [wheelTargets, setWheelTargets] = useState<Set<string>>(new Set())
   const [helpOpen, setHelpOpen] = useState(false)
+  useAITurns(Boolean(spellAnimation) || helpOpen)
   // Live target preview for whichever Major Arcana form/trigger is currently being filled
   // out — reported up from ActionPanel via useTargetPreview. Minor-arcana spells have their
   // own highlightedIds below; the two are unioned when passed to Board, since only one is
@@ -107,6 +108,7 @@ export function GameView() {
   return (
     <div className="game-view">
       {helpOpen && <RulesModal onClose={() => setHelpOpen(false)} />}
+      {spellAnimation && <SpellCastOverlay />}
       {state.winner && (
         <div className="winner-banner">{state.players.find((p) => p.id === state.winner)?.name} wins!</div>
       )}
@@ -179,6 +181,7 @@ export function GameView() {
             onHexClick={hexSelectionEnabled ? setSelectedHexId : undefined}
             selectedStructureIds={activeMajorId === 'WHEEL' ? wheelTargets : undefined}
             onStructureClick={activeMajorId === 'WHEEL' ? handleStructureClick : undefined}
+            structureDeltas={spellAnimation?.structureDeltas}
           />
         </div>
       </div>

@@ -5,11 +5,11 @@ import { useGameEngine } from './useGameEngine'
 const AI_MOVE_DELAY_MS = 600
 
 /** Drives AI-controlled seats automatically: build/cast on their turn, or respond to a trigger window. */
-export function useAITurns() {
+export function useAITurns(blocked = false) {
   const { state, dispatch } = useGameEngine()
 
   useEffect(() => {
-    if (!state || state.winner) return
+    if (!state || state.winner || blocked) return
 
     const actor =
       state.phase === 'awaitingTrigger'
@@ -30,5 +30,5 @@ export function useAITurns() {
     }, AI_MOVE_DELAY_MS)
 
     return () => clearTimeout(timer)
-  }, [state, dispatch])
+  }, [state, dispatch, blocked])
 }

@@ -1741,3 +1741,189 @@
   text-align: center;
   margin: 4px 0;
 }
+
+/* ─── Spell cast overlay ─── */
+
+.spell-cast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: overlay-fade-in 0.3s ease-out;
+}
+
+.spell-cast-overlay.is-exiting {
+  animation: overlay-fade-out 0.4s ease-in forwards;
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlay-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.spell-cast-content {
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 20px 28px;
+  max-width: 420px;
+  width: 90%;
+  cursor: default;
+  animation: overlay-content-in 0.3s ease-out;
+}
+
+@keyframes overlay-content-in {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.spell-cast-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-h);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.spell-caster-name {
+  color: var(--accent);
+}
+
+.spell-cards-display {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.spell-card-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.spell-card-tarot {
+  width: 90px;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.spell-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  max-width: 80px;
+}
+
+.spell-summary {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.spell-summary-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.spell-summary-header {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.spell-summary-net {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.spell-summary-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
+
+.spell-cast-hint {
+  font-size: 10px;
+  color: var(--text);
+  text-align: center;
+  opacity: 0.6;
+}
+
+/* ─── Floating deltas on structures ─── */
+
+.hex-deltas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.floating-delta {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 0 6px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.floating-delta.is-visible {
+  animation: float-up-fade 2s ease-out forwards;
+}
+
+.floating-delta-positive {
+  color: #10b981;
+}
+
+.floating-delta-negative {
+  color: #ef4444;
+}
+
+.floating-delta-destroyed {
+  color: #f59e0b;
+  font-size: 12px;
+}
+
+@keyframes float-up-fade {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-28px);
+  }
+}
