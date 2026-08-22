@@ -12,8 +12,7 @@ import {
   type SeatDraft,
 } from '../persistence'
 
-const MIN_PLAYERS = 2
-const MAX_PLAYERS = 4
+const PLAYER_COUNT = 2
 
 function getAIDefaultName(difficulty: AIDifficulty): string {
   switch (difficulty) {
@@ -30,7 +29,7 @@ function getAIDefaultName(difficulty: AIDifficulty): string {
 
 function defaultSeats(): SeatDraft[] {
   const saved = loadSavedSeats()
-  if (saved && saved.length >= MIN_PLAYERS && saved.length <= MAX_PLAYERS) {
+  if (saved && saved.length === PLAYER_COUNT) {
     return saved
   }
   return [
@@ -67,14 +66,6 @@ export function SetupScreen() {
         return nextSeat
       })
     )
-  }
-  const addSeat = () => {
-    if (seats.length >= MAX_PLAYERS) return
-    setSeats((prev) => [...prev, { name: 'Hugh', isAI: true, aiDifficulty: 'heuristic', assistanceLevel: 'full' }])
-  }
-  const removeSeat = () => {
-    if (seats.length <= MIN_PLAYERS) return
-    setSeats((prev) => prev.slice(0, -1))
   }
 
   return (
@@ -126,14 +117,6 @@ export function SetupScreen() {
             </div>
           </div>
         ))}
-      </div>
-      <div className="action-buttons" style={{ justifyContent: 'center', marginBottom: 16 }}>
-        <button className="action-button secondary" disabled={seats.length <= MIN_PLAYERS} onClick={removeSeat}>
-          Remove Player
-        </button>
-        <button className="action-button secondary" disabled={seats.length >= MAX_PLAYERS} onClick={addSeat}>
-          Add Player
-        </button>
       </div>
       <label className="setup-field show-rules-field">
         <input
