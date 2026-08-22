@@ -90,7 +90,6 @@ export function SpellCastOverlay() {
 
   const caster = state.players.find((p) => p.id === spellAnimation.casterId)
   const casterName = caster?.name ?? 'Player'
-  const showBreakdown = caster?.assistanceLevel === 'full'
 
   const casterNet = spellAnimation.playerDeltas[spellAnimation.casterId] ?? 0
   const opponentEntries = Object.entries(spellAnimation.playerDeltas).filter(
@@ -187,7 +186,7 @@ export function SpellCastOverlay() {
           )}
         </div>
 
-        {showBreakdown && spellAnimation.structureDeltas.length > 0 && (
+        {spellAnimation.structureDeltas.length > 0 && (
           <div className="overlay-breakdown">
             <div className="overlay-breakdown-columns">
               <div className="overlay-breakdown-col">
@@ -223,31 +222,6 @@ export function SpellCastOverlay() {
             </div>
             <div className="overlay-breakdown-relative">
               Relative: <span className={relativeNet >= 0 ? 'delta-positive' : 'delta-negative'}>{relativeNet >= 0 ? '+' : ''}{relativeNet}</span>
-            </div>
-          </div>
-        )}
-
-        {!showBreakdown && (
-          <div className="spell-summary">
-            <div className="spell-summary-column">
-              <div className="spell-summary-header">{casterName}</div>
-              <div className={`spell-summary-net ${casterNet >= 0 ? 'delta-positive' : 'delta-negative'}`}>
-                {casterNet >= 0 ? '+' : ''}{casterNet}
-              </div>
-            </div>
-            <div className="spell-summary-divider" />
-            <div className="spell-summary-column">
-              <div className="spell-summary-header">Others</div>
-              <div className={`spell-summary-net ${opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}`}>
-                {opponentNet >= 0 ? '+' : ''}{opponentNet}
-              </div>
-            </div>
-            <div className="spell-summary-divider" />
-            <div className="spell-summary-column">
-              <div className="spell-summary-header">Net</div>
-              <div className={`spell-summary-net ${relativeNet >= 0 ? 'delta-positive' : 'delta-negative'}`}>
-                {relativeNet >= 0 ? '+' : ''}{relativeNet}
-              </div>
             </div>
           </div>
         )}
