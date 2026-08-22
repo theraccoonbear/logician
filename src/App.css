@@ -1931,34 +1931,30 @@
 /* ─── Mobile: spell cast overlay ─── */
 
 @media (max-width: 640px) {
+  .spell-cast-overlay {
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
   .spell-cast-content {
     padding: 14px 16px;
     width: 95%;
     max-width: none;
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+
+  .spell-cast-content .game-card {
+    width: 90px;
+    height: 129px;
+    max-width: none;
+    flex: none;
+    aspect-ratio: auto;
   }
 
   .spell-cast-header {
     font-size: 13px;
     margin-bottom: 10px;
-  }
-
-  .spell-cards-display {
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-
-  .spell-card-slot {
-    transform: scale(0.78);
-    transform-origin: top center;
-  }
-
-  .spell-card-tarot {
-    width: 70px;
-  }
-
-  .spell-card-label {
-    font-size: 9px;
-    max-width: 70px;
   }
 
   .spell-summary {
