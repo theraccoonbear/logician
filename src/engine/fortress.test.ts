@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getAffectedStructures } from './selectors'
+import { TEST_PRNG } from './testHelpers'
 import type { Hex } from './board'
 import type { GameState } from './types/state'
 import type { Structure } from './types/structure'
@@ -19,6 +20,7 @@ function makeState(structures: Structure[], board: Hex[]): GameState {
     effectDeck: [],
     effectDiscard: [],
     log: [],
+    prng: TEST_PRNG,
   }
 }
 

@@ -279,12 +279,13 @@ function finalizePending(state: GameState, pending: PendingResolution): ActionRe
   if (!caster) return err('Unknown caster')
 
   if (pending.cancelled) {
-    const draw = drawCards(base.tarotDeck, base.tarotDiscard, 1)
+    const draw = drawCards(base.tarotDeck, base.tarotDiscard, 1, base.prng)
     const next: GameState = {
       ...base,
       tarotDeck: draw.remaining,
       tarotDiscard: [...draw.remainingDiscard, pending.tarot],
       tarotRow: [...base.tarotRow.filter((t) => t.instanceId !== pending.tarot.instanceId), ...draw.drawn],
+      prng: draw.prng,
     }
     const logged = withLog(next, `-> Negated by ${toLGNToken('tarot', 'EMPEROR')}`)
     return ok(advanceTurn(checkForWinner(logged)))
@@ -443,11 +444,12 @@ function handleTakeHoldCard(state: GameState, action: { playerId: string; tarotI
   if (tarot.kind !== 'major') return err('Only Major Arcana can be held')
   if (!isHoldCard(tarot.id) && tarot.id !== 'HIGH_PRIESTESS') return err(`${tarot.id} resolves immediately and cannot be held`)
 
-  const draw = drawCards(state.tarotDeck, state.tarotDiscard, 1)
+  const draw = drawCards(state.tarotDeck, state.tarotDiscard, 1, state.prng)
   let next: GameState = {
     ...state,
     tarotDeck: draw.remaining,
     tarotRow: [...state.tarotRow.filter((t) => t.instanceId !== tarot.instanceId), ...draw.drawn],
+    prng: draw.prng,
   }
   next = withPlayer(next, player.id, (p) => ({ ...p, heldMajorArcana: [...p.heldMajorArcana, tarot] }))
   next = advanceTurn(withLog(next, `${toLGNToken('player', player.id)} HOLD_MAJOR ${toLGNToken('tarot', tarot.id)}`))

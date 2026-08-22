@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { resolveStar, resolveTemperance } from './starTemperance'
+import { TEST_PRNG } from '../testHelpers'
 import type { Hex } from '../board'
 import { LEVEL_BOUNDS } from '../types/structure'
 import type { GameState, Player } from '../types/state'
@@ -26,6 +27,7 @@ function makeState(overrides: Partial<GameState>): GameState {
     effectDeck: [],
     effectDiscard: [],
     log: [],
+    prng: TEST_PRNG,
     ...overrides,
   }
 }

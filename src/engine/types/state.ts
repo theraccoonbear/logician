@@ -1,6 +1,7 @@
 import type { Hex } from '../board'
 import type { EffectCard, EffectCardId, LogicCard } from './cards'
 import type { HexId, PlayerId } from './ids'
+import type { PRNGState } from '../prng'
 import type { Structure } from './structure'
 import type { MajorArcanaCard, MajorArcanaId, MinorArcanaCard, Operand, TarotCard } from './tarot'
 
@@ -75,6 +76,8 @@ export interface GameState {
   triggerQueue?: PlayerId[]
   log: GameEvent[]
   winner?: PlayerId
+  /** Seeded PRNG state for deterministic random events. */
+  prng: PRNGState
 }
 
 export type { HexId, PlayerId }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { HOLD_CARD_HANDLERS, computeTriggerQueue, isHoldCard } from './triggers'
+import { TEST_PRNG } from './testHelpers'
 import type { Hex } from './board'
 import type { GameState, PendingResolution, Player } from './types/state'
 import type { MajorArcanaCard } from './types/tarot'
@@ -24,6 +25,7 @@ function makeState(overrides: Partial<GameState>): GameState {
     effectDeck: [],
     effectDiscard: [],
     log: [],
+    prng: TEST_PRNG,
     ...overrides,
   }
 }

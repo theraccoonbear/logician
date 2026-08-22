@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { resolveMagician } from './magician'
+import { TEST_PRNG } from '../testHelpers'
 import type { Hex } from '../board'
 import type { GameState, Player } from '../types/state'
 import type { MajorArcanaCard } from '../types/tarot'
@@ -24,6 +25,7 @@ function makeState(overrides: Partial<GameState>): GameState {
     effectDeck: [],
     effectDiscard: [],
     log: [],
+    prng: TEST_PRNG,
     ...overrides,
   }
 }

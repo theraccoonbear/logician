@@ -66,3 +66,14 @@ export function loadSavedSeats(): SeatDraft[] | null {
 export function saveSeats(seats: SeatDraft[]): void {
   safeSet(SEATS_DRAFT_KEY, JSON.stringify(seats))
 }
+
+const AUTO_DISMISS_KEY = 'logician-auto-dismiss-overlay-v1'
+
+export function loadAutoDismissOverlay(): boolean {
+  const raw = safeGet(AUTO_DISMISS_KEY)
+  return raw === null ? true : raw === 'true'
+}
+
+export function saveAutoDismissOverlay(value: boolean): void {
+  safeSet(AUTO_DISMISS_KEY, String(value))
+}
