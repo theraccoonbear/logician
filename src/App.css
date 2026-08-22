@@ -1927,3 +1927,50 @@
     transform: translate(-50%, -50%) translateY(-28px);
   }
 }
+
+/* ─── Mobile: spell cast overlay ─── */
+
+@media (max-width: 640px) {
+  .spell-cast-content {
+    padding: 14px 16px;
+    width: 95%;
+    max-width: none;
+  }
+
+  .spell-cast-header {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .spell-cards-display {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .spell-card-slot {
+    transform: scale(0.78);
+    transform-origin: top center;
+  }
+
+  .spell-card-tarot {
+    width: 70px;
+  }
+
+  .spell-card-label {
+    font-size: 9px;
+    max-width: 70px;
+  }
+
+  .spell-summary {
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .spell-summary-net {
+    font-size: 16px;
+  }
+
+  .spell-cast-hint {
+    font-size: 9px;
+  }
+}
