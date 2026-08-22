@@ -1,9 +1,9 @@
 import type { Hex } from '../board'
 import type { EffectCard, EffectCardId, LogicCard } from './cards'
 import type { HexId, PlayerId } from './ids'
+import type { PRNGState } from '../prng'
 import type { Structure } from './structure'
 import type { MajorArcanaCard, MajorArcanaId, MinorArcanaCard, Operand, TarotCard } from './tarot'
-import type { PRNGState } from '../prng'
 
 // 'setup': each player is still placing their initial Pool+Pyramid+Tower trio.
 export type Phase = 'setup' | 'build' | 'cast' | 'awaitingTrigger'
@@ -77,7 +77,7 @@ export interface GameState {
   log: GameEvent[]
   winner?: PlayerId
   /** Seeded PRNG state for deterministic random events. */
-  prng: import('../prng').PRNGState
+  prng: PRNGState
 }
 
 export type { HexId, PlayerId }
