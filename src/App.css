@@ -1976,4 +1976,189 @@
   .spell-cast-hint {
     font-size: 9px;
   }
+
+  .trigger-context {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .trigger-target-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── Trigger window context ─────────────────────────────────────────── */
+
+.trigger-context {
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.trigger-context-header {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--fg);
+}
+
+.trigger-context-spell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.trigger-context-card {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.trigger-context-major {
+  background: rgba(255, 215, 0, 0.12);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.trigger-context-op {
+  font-weight: 700;
+  opacity: 0.5;
+  font-size: 11px;
+}
+
+.trigger-context-operands {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.trigger-context-desc {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.trigger-context-targets {
+  font-size: 12px;
+}
+
+.trigger-context-targets-empty {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.trigger-target-group {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.trigger-target-label {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+.trigger-target-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.trigger-target-row-uncertain {
+  opacity: 0.85;
+}
+
+.trigger-target-terrain {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  object-fit: contain;
+}
+
+.trigger-target-struct {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.trigger-target-struct-fallback {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trigger-target-info {
+  font-size: 12px;
+  flex: 1;
+}
+
+.trigger-target-delta {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.trigger-target-delta-uncertain {
+  background: rgba(255, 165, 0, 0.12);
+  color: #a57000;
+  font-style: italic;
+}
+
+.trigger-context-net {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.trigger-context-net-uncertain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.trigger-context-uncertain-badge {
+  font-size: 10px;
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.6;
+  padding: 2px 6px;
+  background: rgba(255, 165, 0, 0.08);
+  border-radius: 3px;
+}
+
+/* Held card name styling */
+
+.held-card-name {
+  font-weight: 700;
+  color: var(--tarot-gold);
+  cursor: help;
+  border-bottom: 1px dashed var(--tarot-gold);
+  position: relative;
+}
+
+.held-card-header {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
