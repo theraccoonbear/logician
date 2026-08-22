@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameEngine } from '../hooks/useGameEngine'
 import { GameCard } from './Hand/GameCard'
-import { LOGIC_FRAME, EFFECT_FRAME, logicArtStyle, logicCaptionStyle, effectCaptionStyle } from '../cardArt'
+import { LOGIC_FRAME, EFFECT_FRAME, logicArtStyle, effectArtStyle, logicCaptionStyle, effectCaptionStyle } from '../cardArt'
 import { CARD_WIDTH, CARD_HEIGHT } from './Hand/GameCard'
 
 const DISMISS_MS = 5000
@@ -87,6 +87,7 @@ export function SpellCastOverlay() {
               <GameCard
                 frame={EFFECT_FRAME}
                 label={spellAnimation.effectCard.label}
+                artStyle={effectArtStyle(spellAnimation.effectCard.kind, CARD_WIDTH, CARD_HEIGHT)}
                 captionStyle={effectCaptionStyle(spellAnimation.effectCard.kind, CARD_WIDTH, CARD_HEIGHT)}
                 selected={false}
                 onClick={() => {}}

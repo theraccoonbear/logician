@@ -92,7 +92,7 @@ export function GameView() {
   // Selecting a hex only does something during build (choosing where to place) or when the
   // Chariot major arcana is active (choosing which hex to redistribute) — otherwise it's just
   // a clickable-looking tile that does nothing, which reads as a bug rather than a no-op.
-  const hexSelectionEnabled = state.phase === 'setup' || state.phase === 'build' || activeMajorId === 'CHARIOT'
+  const hexSelectionEnabled = !state.winner && (state.phase === 'setup' || state.phase === 'build' || activeMajorId === 'CHARIOT')
 
   const handleStructureClick = (structure: { id: string; fortressed: boolean }) => {
     if (activeMajorId !== 'WHEEL' || structure.fortressed) return
@@ -108,7 +108,7 @@ export function GameView() {
   return (
     <div className="game-view">
       {helpOpen && <RulesModal onClose={() => setHelpOpen(false)} />}
-      {spellAnimation && <SpellCastOverlay />}
+      {spellAnimation && !state.winner && <SpellCastOverlay />}
       {state.winner && (
         <div className="winner-banner">{state.players.find((p) => p.id === state.winner)?.name} wins!</div>
       )}
@@ -153,7 +153,9 @@ export function GameView() {
           board now, right under turn/score, and stacked into a single column on narrow/portrait
           screens instead of side by side (see .cards-row in App.css). */}
       <div className="cards-row">
-        {waitingOnAI ? (
+        {state.winner ? (
+          <div className="action-panel game-over-panel">Game over — {state.players.find((p) => p.id === state.winner)?.name} wins!</div>
+        ) : waitingOnAI ? (
           <div className="action-panel ai-thinking">🤖 {currentActor?.name} is thinking…</div>
         ) : (
           <ActionPanel

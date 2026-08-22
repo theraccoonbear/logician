@@ -1260,6 +1260,13 @@
   color: var(--text);
 }
 
+.game-over-panel {
+  font-size: 15px;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .action-error {
   color: #e0455c;
   font-size: 13px;
