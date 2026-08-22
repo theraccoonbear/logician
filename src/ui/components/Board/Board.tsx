@@ -1,5 +1,6 @@
 import type { GameState } from '../../../engine/types/state'
 import type { Structure } from '../../../engine/types/structure'
+import type { StructureDelta } from '../../GameProvider'
 import { useOrientation } from '../../hooks/useOrientation'
 import { getPlayerColor } from '../../playerColors'
 import { HexTile } from './HexTile'
@@ -45,6 +46,7 @@ export function Board({
   onHexClick,
   selectedStructureIds,
   onStructureClick,
+  structureDeltas,
 }: {
   state: GameState
   highlightedIds: Set<string>
@@ -52,6 +54,7 @@ export function Board({
   onHexClick?: (hexId: string) => void
   selectedStructureIds?: Set<string>
   onStructureClick?: (structure: Structure) => void
+  structureDeltas?: StructureDelta[]
 }) {
   const orientation = useOrientation()
 
@@ -68,6 +71,7 @@ export function Board({
       colorOf={colorOf}
       highlightedIds={highlightedIds}
       selectedStructureIds={selectedStructureIds}
+      structureDeltas={structureDeltas?.filter((d) => d.hexId === hex.id)}
       selected={selectedHexId === hex.id}
       onClick={() => onHexClick?.(hex.id)}
       onStructureClick={onStructureClick}

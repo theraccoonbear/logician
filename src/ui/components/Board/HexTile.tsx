@@ -1,7 +1,9 @@
 import type { Hex } from '../../../engine/board'
 import type { Structure, StructureType } from '../../../engine/types/structure'
+import type { StructureDelta } from '../../GameProvider'
 import { fortressArtUrls } from '../../fortressArt'
 import { terrainArtUrl } from '../../terrainArt'
+import { FloatingDelta } from './FloatingDelta'
 import { StructureToken } from './StructureToken'
 
 // Fixed left-to-right spot per structure type, rather than grouping by owner —
@@ -19,6 +21,7 @@ export function HexTile({
   colorOf,
   highlightedIds,
   selectedStructureIds,
+  structureDeltas,
   selected,
   onClick,
   onStructureClick,
@@ -28,6 +31,7 @@ export function HexTile({
   colorOf: (ownerId: string) => string
   highlightedIds: Set<string>
   selectedStructureIds?: Set<string>
+  structureDeltas?: StructureDelta[]
   selected: boolean
   onClick?: () => void
   onStructureClick?: (structure: Structure) => void
@@ -109,6 +113,18 @@ export function HexTile({
             )
         })}
       </div>
+      {structureDeltas && structureDeltas.length > 0 && (
+        <div className="hex-deltas">
+          {structureDeltas.map((d) => (
+            <FloatingDelta
+              key={d.structureId}
+              delta={d.delta}
+              newLevel={d.newLevel}
+              structureType={structures.find((s) => s.id === d.structureId)?.type ?? ''}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
