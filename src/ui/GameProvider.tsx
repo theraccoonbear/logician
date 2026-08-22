@@ -4,6 +4,7 @@ import { createInitialGameState, type PlayerConfig } from '../engine/setup'
 import type { GameAction } from '../engine/types/actions'
 import type { GameState } from '../engine/types/state'
 import type { LogicCardId, EffectCardId } from '../engine/types/cards'
+import type { Operand } from '../engine/types/tarot'
 import { LOGIC_CARD_LABELS, EFFECT_CARD_LABELS } from './cardLabels'
 import { tarotArtUrl } from './tarotArt'
 import { clearSavedGame, loadSavedGame, saveGame } from './persistence'
@@ -23,7 +24,7 @@ export interface SpellAnimationData {
   casterId: string
   logicCard: { kind: LogicCardId; label: string } | null
   effectCard: { kind: EffectCardId; label: string } | null
-  tarotCard: { label: string; artUrl: string } | null
+  tarotCard: { label: string; artUrl: string; operandA: Operand | null; operandB: Operand | null } | null
   structureDeltas: StructureDelta[]
   playerDeltas: Record<string, number>
 }
@@ -128,7 +129,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
           const tc = preState.tarotRow.find((t) => t.instanceId === action.tarotId)
           if (lc) logicCard = { kind: lc.kind, label: LOGIC_CARD_LABELS[lc.kind] }
           if (ec) effectCard = { kind: ec.kind, label: EFFECT_CARD_LABELS[ec.kind] }
-          if (tc) tarotCard = { label: `${tc.kind === 'minor' ? `${tc.suit} ${tc.rank}` : tc.id}`, artUrl: tarotArtUrl(tc) }
+          if (tc) tarotCard = {
+          label: `${tc.kind === 'minor' ? `${tc.suit} ${tc.rank}` : tc.id}`,
+          artUrl: tarotArtUrl(tc),
+          operandA: tc.kind === 'minor' ? tc.operandA : null,
+          operandB: tc.kind === 'minor' ? tc.operandB : null,
+        }
         }
 
         setSpellAnimation({

@@ -8,6 +8,7 @@ import { structureArtUrl } from '../structureArt'
 import { terrainArtUrl } from '../terrainArt'
 import { getPlayerColor } from '../playerColors'
 import { loadAutoDismissOverlay, saveAutoDismissOverlay } from '../persistence'
+import { describeOperand } from '../operandLabels'
 import type { StructureDelta } from '../GameProvider'
 
 const DISMISS_MS = 5000
@@ -150,6 +151,12 @@ export function SpellCastOverlay() {
                 draggable={false}
               />
               <div className="spell-card-label">{spellAnimation.tarotCard.label}</div>
+              {spellAnimation.tarotCard.operandA && spellAnimation.tarotCard.operandB && (
+                <div className="tarot-operands">
+                  <span>A: {describeOperand(spellAnimation.tarotCard.operandA)}</span>
+                  <span>B: {describeOperand(spellAnimation.tarotCard.operandB)}</span>
+                </div>
+              )}
             </div>
           )}
           {spellAnimation.logicCard && (
