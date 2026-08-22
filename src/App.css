@@ -1879,6 +1879,172 @@
   opacity: 0.6;
 }
 
+/* ── Overlay structure breakdown (Wizard Eyes mode) ── */
+
+.overlay-breakdown {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-bottom: 10px;
+}
+
+.overlay-breakdown-columns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.overlay-breakdown-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.overlay-breakdown-header {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.overlay-breakdown-player-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.overlay-breakdown-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overlay-delta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.overlay-delta-assets {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.overlay-delta-terrain {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.overlay-delta-structure {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.overlay-delta-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--border);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.overlay-delta-value {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.overlay-breakdown-footer {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.overlay-breakdown-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
+
+.overlay-breakdown-empty {
+  font-size: 10px;
+  color: var(--text);
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.overlay-breakdown-relative {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Overlay footer: auto-dismiss + dismiss button ── */
+
+.overlay-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.overlay-auto-dismiss {
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.overlay-auto-dismiss input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.overlay-dismiss-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  min-width: 100px;
+  text-align: center;
+}
+
+.overlay-dismiss-btn:hover {
+  opacity: 0.85;
+}
+
 /* ─── Floating deltas on structures ─── */
 
 .hex-deltas {
@@ -1975,6 +2141,30 @@
 
   .spell-cast-hint {
     font-size: 9px;
+  }
+
+  .overlay-breakdown-columns {
+    gap: 8px;
+  }
+
+  .overlay-delta-terrain,
+  .overlay-delta-structure,
+  .overlay-delta-fallback {
+    width: 15px;
+    height: 15px;
+  }
+
+  .overlay-delta-value {
+    font-size: 11px;
+  }
+
+  .overlay-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .overlay-dismiss-btn {
+    width: 100%;
   }
 
   .trigger-context {

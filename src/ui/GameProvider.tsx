@@ -12,6 +12,8 @@ export interface StructureDelta {
   structureId: string
   hexId: string
   owner: string
+  structureType: string
+  terrain: string
   oldLevel: number
   newLevel: number | null
   delta: number
@@ -78,17 +80,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
         const preStructuresMap = new Map(preState.structures.map((s) => [s.id, s]))
         const postStructuresMap = new Map(result.state.structures.map((s) => [s.id, s]))
+        const hexMap = new Map(preState.board.map((h) => [h.id, h]))
 
         const structureDeltas: StructureDelta[] = []
         const playerDeltas: Record<string, number> = {}
 
         for (const [id, pre] of preStructuresMap.entries()) {
           const post = postStructuresMap.get(id)
+          const terrain = hexMap.get(pre.hexId)?.terrain ?? 'Prairies'
           if (!post) {
             structureDeltas.push({
               structureId: id,
               hexId: pre.hexId,
               owner: pre.owner,
+              structureType: pre.type,
+              terrain,
               oldLevel: pre.level,
               newLevel: null,
               delta: -pre.level,
@@ -100,6 +106,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
               structureId: id,
               hexId: pre.hexId,
               owner: pre.owner,
+              structureType: pre.type,
+              terrain,
               oldLevel: pre.level,
               newLevel: post.level,
               delta,
