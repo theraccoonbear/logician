@@ -5,6 +5,7 @@ import { MAJOR_ARCANA_DESCRIPTIONS } from '../../majorArcanaDescriptions'
 import { useGameEngine } from '../../hooks/useGameEngine'
 import { OperandPicker, operandKindLabel } from './majorForms/OperandPicker'
 import { ConditionPicker } from './majorForms/ConditionPicker'
+import { StarAdjustmentForm, TemperanceAdjustmentForm } from './majorForms/AdjustmentForms'
 import type { Operand } from '../../../engine/types/tarot'
 
 export function OpponentChoicePanel() {
@@ -63,6 +64,38 @@ export function OpponentChoicePanel() {
             Submit Condition
           </button>
         </div>
+        {lastError && <p className="action-error">{lastError}</p>}
+      </div>
+    )
+  }
+
+  if (pending.majorId === 'STAR') {
+    return (
+      <div className="action-panel opponent-choice-panel">
+        <div className="opponent-choice-header">
+          <span className="opponent-choice-card">{label}</span>
+          <span className="opponent-choice-desc">{description}</span>
+        </div>
+        <StarAdjustmentForm
+          responderId={responderId}
+          onConfirm={(playerAdjustments) => submitChoice({ playerAdjustments })}
+        />
+        {lastError && <p className="action-error">{lastError}</p>}
+      </div>
+    )
+  }
+
+  if (pending.majorId === 'TEMPERANCE') {
+    return (
+      <div className="action-panel opponent-choice-panel">
+        <div className="opponent-choice-header">
+          <span className="opponent-choice-card">{label}</span>
+          <span className="opponent-choice-desc">{description}</span>
+        </div>
+        <TemperanceAdjustmentForm
+          responderId={responderId}
+          onConfirm={(playerAdjustments) => submitChoice({ playerAdjustments })}
+        />
         {lastError && <p className="action-error">{lastError}</p>}
       </div>
     )

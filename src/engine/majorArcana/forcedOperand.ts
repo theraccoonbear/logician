@@ -30,7 +30,7 @@ export function isForcedOperandMajor(id: MajorArcanaId): boolean {
 
 /** Returns true for cards that require the non-active player to submit a choice before resolution. */
 export function requiresOpponentChoice(id: MajorArcanaId): boolean {
-  return id in FORCED_OPERAND_SPEC || id === 'DEVIL'
+  return id in FORCED_OPERAND_SPEC || id === 'DEVIL' || id === 'STAR' || id === 'TEMPERANCE'
 }
 
 /** Returns the OperandKind the opponent must choose for the given card, or undefined if not applicable. */

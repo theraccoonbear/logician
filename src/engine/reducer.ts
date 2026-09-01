@@ -465,6 +465,22 @@ function initiateMajorChoice(
     return ok(logged)
   }
 
+  if (majorId === 'STAR' || majorId === 'TEMPERANCE') {
+    const opponentId = state.players.find((p) => p.id !== casterId)!.id
+    const pending: PendingMajorChoice = {
+      casterId,
+      majorId,
+      tarot: tarot as PendingMajorChoice['tarot'],
+      casterParams: {},
+      opponentParams: {},
+    }
+    const logged = withLog(
+      { ...state, phase: 'awaitingMajorChoice', pendingMajorChoice: pending, majorChoiceQueue: [opponentId, casterId] },
+      `${toLGNToken('player', casterId)} played ${toLGNToken('tarot', majorId)}: awaiting adjustments`,
+    )
+    return ok(logged)
+  }
+
   const spec = getForcedOperandSpec(majorId)
   if (!spec) return err(`No forced-operand spec for ${majorId}`)
 
@@ -535,6 +551,34 @@ function handleSubmitOpponentChoice(state: GameState, action: { playerId: string
     return ok(logged)
   }
 
+  if (pending.majorId === 'STAR' || pending.majorId === 'TEMPERANCE') {
+    const adjustments = action.choice.playerAdjustments as Record<string, unknown> | undefined
+    if (!adjustments || !adjustments[responderId]) return err('Missing player adjustments')
+
+    const updatedParams = {
+      ...pending.opponentParams,
+      playerAdjustments: {
+        ...(pending.opponentParams.playerAdjustments as Record<string, unknown> ?? {}),
+        [responderId]: adjustments[responderId],
+      },
+    }
+    const remaining = state.majorChoiceQueue.slice(1)
+    const nextMajorChoice: PendingMajorChoice = {
+      ...pending,
+      opponentParams: updatedParams,
+    }
+
+    const logged = withLog(
+      { ...state, pendingMajorChoice: nextMajorChoice, majorChoiceQueue: remaining },
+      `${toLGNToken('player', responderId)} submitted adjustments for ${toLGNToken('tarot', pending.majorId)}`,
+    )
+
+    if (remaining.length === 0) {
+      return finalizeMajorChoice(logged, nextMajorChoice)
+    }
+    return ok(logged)
+  }
+
   const spec = getForcedOperandSpec(pending.majorId)
   if (!spec) return err(`No spec for ${pending.majorId}`)
 
@@ -573,6 +617,15 @@ function finalizeMajorChoice(state: GameState, pending: PendingMajorChoice): Act
       logicCardId: pending.casterParams.logicCardId,
     }
     const resolution: PendingResolution = { kind: 'majorAction', casterId: pending.casterId, majorId: 'DEVIL', tarot: pending.tarot, params: fullParams }
+    return finalizePending(base, resolution)
+  }
+
+  if (pending.majorId === 'STAR' || pending.majorId === 'TEMPERANCE') {
+    const allAdjustments = pending.opponentParams.playerAdjustments as Record<string, unknown> | undefined
+    if (!allAdjustments) return err('No player adjustments collected')
+
+    const fullParams = { playerAdjustments: allAdjustments }
+    const resolution: PendingResolution = { kind: 'majorAction', casterId: pending.casterId, majorId: pending.majorId, tarot: pending.tarot, params: fullParams }
     return finalizePending(base, resolution)
   }
 

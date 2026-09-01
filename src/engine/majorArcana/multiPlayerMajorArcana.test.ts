@@ -49,13 +49,15 @@ function makeState(overrides: Partial<GameState>): GameState {
 }
 
 describe('requiresOpponentChoice', () => {
-  it('returns true for forced-operand cards and Devil', () => {
+  it('returns true for forced-operand cards, Devil, Star, and Temperance', () => {
     expect(requiresOpponentChoice('LOVERS')).toBe(true)
     expect(requiresOpponentChoice('JUSTICE')).toBe(true)
     expect(requiresOpponentChoice('HANGED_MAN')).toBe(true)
     expect(requiresOpponentChoice('MOON')).toBe(true)
     expect(requiresOpponentChoice('SUN')).toBe(true)
     expect(requiresOpponentChoice('DEVIL')).toBe(true)
+    expect(requiresOpponentChoice('STAR')).toBe(true)
+    expect(requiresOpponentChoice('TEMPERANCE')).toBe(true)
   })
 
   it('returns false for other cards', () => {
@@ -224,5 +226,85 @@ describe('multi-player Major Arcana flow', () => {
       choice: { condition: { kind: 'terrain', value: 'Mountains' } },
     }))
     expect(err).toContain('different categories')
+  })
+
+  it('Temperance queues both players and resolves with adjustments', () => {
+    const temperance = makeMajorTarot('TEMPERANCE', 'temperance-1')
+    const p1Structure = { id: 's1', type: 'Tower' as const, owner: 'p1', hexId: 'hex-1', level: 3, fortressed: false }
+    const p2Structure = { id: 's2', type: 'Pool' as const, owner: 'p2', hexId: 'hex-2', level: 5, fortressed: false }
+    let state = makeState({
+      tarotRow: [temperance],
+      structures: [p1Structure, p2Structure],
+    })
+
+    state = expectOk(applyAction(state, {
+      type: 'PLAY_MAJOR_ARCANA',
+      playerId: 'p1',
+      tarotId: 'temperance-1',
+    }))
+
+    expect(state.phase).toBe('awaitingMajorChoice')
+    expect(state.majorChoiceQueue).toEqual(['p2', 'p1'])
+
+    // p2 submits first (leader, must lose 2 VP: 5 -> 3)
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p2',
+      choice: { playerAdjustments: { p2: [{ structureId: 's2', newLevel: 3 }] } },
+    }))
+
+    expect(state.majorChoiceQueue).toEqual(['p1'])
+
+    // p1 submits (at min, no adjustments needed)
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p1',
+      choice: { playerAdjustments: { p1: [] } },
+    }))
+
+    expect(state.phase).toBe('build')
+    expect(state.pendingMajorChoice).toBeUndefined()
+    // p2's structure should be downgraded
+    expect(state.structures.find((s) => s.id === 's2')!.level).toBe(3)
+  })
+
+  it('Star queues both players and resolves with adjustments', () => {
+    const star = makeMajorTarot('STAR', 'star-1')
+    const p1Structure = { id: 's1', type: 'Tower' as const, owner: 'p1', hexId: 'hex-1', level: 5, fortressed: false }
+    const p2Structure = { id: 's2', type: 'Tower' as const, owner: 'p2', hexId: 'hex-2', level: 2, fortressed: false }
+    let state = makeState({
+      tarotRow: [star],
+      structures: [p1Structure, p2Structure],
+    })
+
+    state = expectOk(applyAction(state, {
+      type: 'PLAY_MAJOR_ARCANA',
+      playerId: 'p1',
+      tarotId: 'star-1',
+    }))
+
+    expect(state.phase).toBe('awaitingMajorChoice')
+    expect(state.majorChoiceQueue).toEqual(['p2', 'p1'])
+
+    // p2 submits first (laggard, needs +3 VP: 2 -> 5)
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p2',
+      choice: { playerAdjustments: { p2: { upgrades: [{ structureId: 's2', newLevel: 5 }], builds: [] } } },
+    }))
+
+    expect(state.majorChoiceQueue).toEqual(['p1'])
+
+    // p1 submits (leader, no adjustments needed)
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p1',
+      choice: { playerAdjustments: { p1: { upgrades: [], builds: [] } } },
+    }))
+
+    expect(state.phase).toBe('build')
+    expect(state.pendingMajorChoice).toBeUndefined()
+    // p2's structure should be upgraded
+    expect(state.structures.find((s) => s.id === 's2')!.level).toBe(5)
   })
 })

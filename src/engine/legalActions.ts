@@ -1,5 +1,4 @@
-import { canBuildBasic, canBuildFortress, computeVP } from './selectors'
-import { LEVEL_BOUNDS } from './types/structure'
+import { canBuildBasic, canBuildFortress } from './selectors'
 import { isHoldCard } from './triggers'
 import { getForcedOperandSpec, TERRAIN_TYPES, STRUCTURE_TYPES } from './majorArcana/forcedOperand'
 import type { GameAction } from './types/actions'
@@ -275,78 +274,19 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
         break
       }
       case 'STAR': {
-        const maxVP = Math.max(...state.players.map((p) => computeVP(state, p.id)))
-        const playerAdjustments: Record<string, any> = {}
-        let valid = true
-
-        for (const p of state.players) {
-          const current = computeVP(state, p.id)
-          const required = maxVP - current
-          if (required === 0) {
-            playerAdjustments[p.id] = { upgrades: [], builds: [] }
-          } else {
-            const upgradable = state.structures.find((s) => s.owner === p.id && !s.fortressed && s.level < LEVEL_BOUNDS[s.type].max)
-            if (upgradable) {
-              const bounds = LEVEL_BOUNDS[upgradable.type]
-              const possibleGained = bounds.max - upgradable.level
-              if (possibleGained >= required) {
-                playerAdjustments[p.id] = {
-                  upgrades: [{ structureId: upgradable.id, newLevel: upgradable.level + required }],
-                  builds: []
-                }
-              } else {
-                valid = false
-              }
-            } else {
-              valid = false
-            }
-          }
-        }
-
-        if (valid) {
-          actions.push({
-            type: 'PLAY_MAJOR_ARCANA',
-            playerId,
-            tarotId: tarot.instanceId,
-            params: { playerAdjustments }
-          })
-        }
+        actions.push({
+          type: 'PLAY_MAJOR_ARCANA',
+          playerId,
+          tarotId: tarot.instanceId,
+        })
         break
       }
       case 'TEMPERANCE': {
-        const minVP = Math.min(...state.players.map((p) => computeVP(state, p.id)))
-        const playerAdjustments: Record<string, any> = {}
-        let valid = true
-
-        for (const p of state.players) {
-          const current = computeVP(state, p.id)
-          const required = current - minVP
-          if (required === 0) {
-            playerAdjustments[p.id] = []
-          } else {
-            const downgradable = state.structures.find((s) => {
-              if (s.owner !== p.id || s.fortressed) return false
-              const bounds = LEVEL_BOUNDS[s.type]
-              const newLevel = s.level - required
-              return newLevel === 0 || (newLevel >= bounds.floor && newLevel < s.level)
-            })
-            if (downgradable) {
-              const newLevel = downgradable.level - required
-              playerAdjustments[p.id] = [{ structureId: downgradable.id, newLevel }]
-            } else {
-              valid = false
-            }
-          }
-        }
-
-        if (valid) {
-          actions.push({
-            type: 'PLAY_MAJOR_ARCANA',
-            playerId,
-            tarotId: tarot.instanceId,
-            params: { playerAdjustments }
-          })
-        }
+        actions.push({
+          type: 'PLAY_MAJOR_ARCANA',
+          playerId,
+          tarotId: tarot.instanceId,
+        })
         break
       }
       default:
