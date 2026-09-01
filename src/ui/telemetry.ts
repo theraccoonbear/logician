@@ -29,7 +29,7 @@ export function initTelemetry(): void {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return
 
   const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined
-  const host = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) ?? 'https://us.i.posthog.com'
+  const host = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) ?? 'https://app.posthog.com'
   if (!key) {
     console.warn('[telemetry] VITE_POSTHOG_KEY not set, skipping init')
     return
