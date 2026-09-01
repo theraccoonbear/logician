@@ -458,8 +458,9 @@ function initiateMajorChoice(
       opponentParams: {},
       devilConditionIndex: 0,
     }
+    const responderIdx = state.players.findIndex((p) => p.id === queue[0])
     const logged = withLog(
-      { ...state, phase: 'awaitingMajorChoice', pendingMajorChoice: pending, majorChoiceQueue: queue },
+      { ...state, phase: 'awaitingMajorChoice', activePlayerIndex: responderIdx, pendingMajorChoice: pending, majorChoiceQueue: queue },
       `${toLGNToken('player', casterId)} played ${toLGNToken('tarot', majorId)}: awaiting opponent condition`,
     )
     return ok(logged)
@@ -474,8 +475,9 @@ function initiateMajorChoice(
       casterParams: {},
       opponentParams: {},
     }
+    const responderIdx = state.players.findIndex((p) => p.id === opponentId)
     const logged = withLog(
-      { ...state, phase: 'awaitingMajorChoice', pendingMajorChoice: pending, majorChoiceQueue: [opponentId, casterId] },
+      { ...state, phase: 'awaitingMajorChoice', activePlayerIndex: responderIdx, pendingMajorChoice: pending, majorChoiceQueue: [opponentId, casterId] },
       `${toLGNToken('player', casterId)} played ${toLGNToken('tarot', majorId)}: awaiting adjustments`,
     )
     return ok(logged)
@@ -492,8 +494,9 @@ function initiateMajorChoice(
     casterParams: { casterValue: params.casterValue, logicCardId: params.logicCardId, effectCardId: params.effectCardId },
     opponentParams: {},
   }
+  const responderIdx = state.players.findIndex((p) => p.id === opponentId)
   const logged = withLog(
-    { ...state, phase: 'awaitingMajorChoice', pendingMajorChoice: pending, majorChoiceQueue: [opponentId] },
+    { ...state, phase: 'awaitingMajorChoice', activePlayerIndex: responderIdx, pendingMajorChoice: pending, majorChoiceQueue: [opponentId] },
     `${toLGNToken('player', casterId)} played ${toLGNToken('tarot', majorId)}: awaiting ${toLGNToken('player', opponentId)}'s choice`,
   )
   return ok(logged)
@@ -548,7 +551,8 @@ function handleSubmitOpponentChoice(state: GameState, action: { playerId: string
     if (remaining.length === 0) {
       return finalizeMajorChoice(logged, nextMajorChoice)
     }
-    return ok(logged)
+    const nextIdx = logged.players.findIndex((p) => p.id === remaining[0])
+    return ok({ ...logged, activePlayerIndex: nextIdx })
   }
 
   if (pending.majorId === 'STAR' || pending.majorId === 'TEMPERANCE') {
@@ -576,7 +580,8 @@ function handleSubmitOpponentChoice(state: GameState, action: { playerId: string
     if (remaining.length === 0) {
       return finalizeMajorChoice(logged, nextMajorChoice)
     }
-    return ok(logged)
+    const nextIdx = logged.players.findIndex((p) => p.id === remaining[0])
+    return ok({ ...logged, activePlayerIndex: nextIdx })
   }
 
   const spec = getForcedOperandSpec(pending.majorId)
@@ -600,11 +605,13 @@ function handleSubmitOpponentChoice(state: GameState, action: { playerId: string
   if (remaining.length === 0) {
     return finalizeMajorChoice(logged, updatedPending)
   }
-  return ok(logged)
+  const nextIdx = logged.players.findIndex((p) => p.id === remaining[0])
+  return ok({ ...logged, activePlayerIndex: nextIdx })
 }
 
 function finalizeMajorChoice(state: GameState, pending: PendingMajorChoice): ActionResult {
-  let base: GameState = { ...state, pendingMajorChoice: undefined, majorChoiceQueue: undefined }
+  const casterIdx = state.players.findIndex((p) => p.id === pending.casterId)
+  let base: GameState = { ...state, activePlayerIndex: casterIdx, pendingMajorChoice: undefined, majorChoiceQueue: undefined }
 
   if (pending.majorId === 'DEVIL') {
     const c1 = pending.opponentParams.condition1 as { kind: string; value: unknown } | undefined
