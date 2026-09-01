@@ -308,3 +308,69 @@ describe('multi-player Major Arcana flow', () => {
     expect(state.structures.find((s) => s.id === 's2')!.level).toBe(5)
   })
 })
+
+describe('activePlayerIndex tracking during major choice', () => {
+  it('sets activePlayerIndex to responder on entering awaitingMajorChoice', () => {
+    const lovers = makeMajorTarot('LOVERS', 'lovers-1')
+    let state = makeState({ tarotRow: [lovers] })
+
+    state = expectOk(applyAction(state, {
+      type: 'PLAY_MAJOR_ARCANA',
+      playerId: 'p1',
+      tarotId: 'lovers-1',
+      params: { casterValue: 3, logicCardId: 'l1', effectCardId: 'e1' },
+    }))
+
+    expect(state.phase).toBe('awaitingMajorChoice')
+    expect(state.majorChoiceQueue).toEqual(['p2'])
+    expect(state.activePlayerIndex).toBe(1)
+  })
+
+  it('advances activePlayerIndex through queue on multi-step Devil', () => {
+    const devil = makeMajorTarot('DEVIL', 'devil-1')
+    let state = makeState({ tarotRow: [devil] })
+
+    state = expectOk(applyAction(state, {
+      type: 'PLAY_MAJOR_ARCANA',
+      playerId: 'p1',
+      tarotId: 'devil-1',
+      params: { logicCardId: 'l1' },
+    }))
+
+    expect(state.phase).toBe('awaitingMajorChoice')
+    expect(state.majorChoiceQueue).toEqual(['p2', 'p2'])
+    expect(state.activePlayerIndex).toBe(1)
+
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p2',
+      choice: { condition: { kind: 'terrain', value: 'Forests' } },
+    }))
+
+    expect(state.majorChoiceQueue).toEqual(['p2'])
+    expect(state.activePlayerIndex).toBe(1)
+  })
+
+  it('resets activePlayerIndex to caster before advanceTurn on resolution', () => {
+    const lovers = makeMajorTarot('LOVERS', 'lovers-1')
+    let state = makeState({ tarotRow: [lovers] })
+
+    state = expectOk(applyAction(state, {
+      type: 'PLAY_MAJOR_ARCANA',
+      playerId: 'p1',
+      tarotId: 'lovers-1',
+      params: { casterValue: 3, logicCardId: 'l1', effectCardId: 'e1' },
+    }))
+
+    expect(state.activePlayerIndex).toBe(1)
+
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p2',
+      choice: { opponentValue: 'Forests' },
+    }))
+
+    expect(state.phase).toBe('build')
+    expect(state.activePlayerIndex).toBe(1)
+  })
+})

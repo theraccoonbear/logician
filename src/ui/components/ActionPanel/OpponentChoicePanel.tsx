@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getForcedOperandSpec } from '../../../engine/majorArcana/forcedOperand'
+import { getAffectedStructures } from '../../../engine/selectors'
 import { describeMajorArcana } from '../../operandLabels'
 import { MAJOR_ARCANA_DESCRIPTIONS } from '../../majorArcanaDescriptions'
 import { useGameEngine } from '../../hooks/useGameEngine'
@@ -8,30 +9,47 @@ import { ConditionPicker } from './majorForms/ConditionPicker'
 import { StarAdjustmentForm, TemperanceAdjustmentForm } from './majorForms/AdjustmentForms'
 import type { Operand } from '../../../engine/types/tarot'
 
-export function OpponentChoicePanel() {
+export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTargetsChange?: (ids: Set<string>) => void }) {
   const { state, dispatch, lastError } = useGameEngine()
   const [opponentValue, setOpponentValue] = useState<string | number | ''>('')
   const [condition, setCondition] = useState<Operand | null>(null)
 
-  if (!state || state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice || !state.majorChoiceQueue?.length) {
-    return null
-  }
+  const pending = state?.pendingMajorChoice
+  const responderId = state?.majorChoiceQueue?.[0]
+  const responder = state?.players.find((p) => p.id === responderId)
+  const caster = state?.players.find((p) => p.id === pending?.casterId)
+  const spec = pending ? getForcedOperandSpec(pending.majorId) : undefined
 
-  const pending = state.pendingMajorChoice
-  const responderId = state.majorChoiceQueue[0]
-  const responder = state.players.find((p) => p.id === responderId)
-  const caster = state.players.find((p) => p.id === pending.casterId)
+  const casterValue = pending?.casterParams.casterValue
+  const logicCardId = pending?.casterParams.logicCardId
 
-  if (!responder || !caster) return null
+  const previewTargets = useMemo(() => {
+    if (!state || !spec || !logicCardId || casterValue === undefined || opponentValue === '') return new Set<string>()
+    const operandA: Operand = { kind: spec.casterCategory, value: casterValue }
+    const operandB: Operand = { kind: spec.opponentCategory, value: opponentValue }
+    const affected = getAffectedStructures(state, { logicCardId, operandA, operandB })
+    return new Set(affected.map((s) => s.id))
+  }, [state, spec, logicCardId, casterValue, opponentValue])
 
-  const label = describeMajorArcana(pending.majorId)
-  const description = MAJOR_ARCANA_DESCRIPTIONS[pending.majorId]
+  useEffect(() => {
+    onPreviewTargetsChange?.(previewTargets)
+    return () => { onPreviewTargetsChange?.(new Set()) }
+  }, [previewTargets, onPreviewTargetsChange])
 
   const submitChoice = (choice: Record<string, unknown>) => {
+    if (!responderId) return
     dispatch({ type: 'SUBMIT_OPPONENT_CHOICE', playerId: responderId, choice })
     setOpponentValue('')
     setCondition(null)
   }
+
+  if (!state || state.phase !== 'awaitingMajorChoice' || !pending || !state.majorChoiceQueue?.length) {
+    return null
+  }
+  if (!responder || !caster) return null
+
+  const label = describeMajorArcana(pending.majorId)
+  const description = MAJOR_ARCANA_DESCRIPTIONS[pending.majorId]
 
   if (pending.majorId === 'DEVIL') {
     const condIndex = pending.devilConditionIndex ?? 0
@@ -77,7 +95,7 @@ export function OpponentChoicePanel() {
           <span className="opponent-choice-desc">{description}</span>
         </div>
         <StarAdjustmentForm
-          responderId={responderId}
+          responderId={responderId!}
           onConfirm={(playerAdjustments) => submitChoice({ playerAdjustments })}
         />
         {lastError && <p className="action-error">{lastError}</p>}
@@ -93,7 +111,7 @@ export function OpponentChoicePanel() {
           <span className="opponent-choice-desc">{description}</span>
         </div>
         <TemperanceAdjustmentForm
-          responderId={responderId}
+          responderId={responderId!}
           onConfirm={(playerAdjustments) => submitChoice({ playerAdjustments })}
         />
         {lastError && <p className="action-error">{lastError}</p>}
@@ -101,7 +119,6 @@ export function OpponentChoicePanel() {
     )
   }
 
-  const spec = getForcedOperandSpec(pending.majorId)
   if (!spec) return null
 
   return (
