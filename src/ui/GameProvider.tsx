@@ -79,10 +79,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const dispatch = (action: GameAction) => {
     const preState = stateRef.current
     if (!preState) return
-    console.log(`[dispatch] ${action.type}`, 'playerId' in action ? action.playerId : '', 'phase=' + preState.phase, 'activeIdx=' + preState.activePlayerIndex)
     const result = applyAction(preState, action)
     if (result.ok) {
-      console.log(`[dispatch] -> OK`, 'phase=' + result.state.phase, 'activeIdx=' + result.state.activePlayerIndex, result.state.majorChoiceQueue ? 'queue=' + JSON.stringify(result.state.majorChoiceQueue) : '', result.state.pendingMajorChoice ? 'pending=' + result.state.pendingMajorChoice.majorId : '')
       stateRef.current = result.state
       setState(result.state)
       setLastError(null)
@@ -218,7 +216,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         })
       }
     } else {
-      console.log(`[dispatch] -> ERROR:`, result.error)
       setLastError(result.error)
     }
   }

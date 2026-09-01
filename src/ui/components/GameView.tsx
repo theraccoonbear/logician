@@ -91,8 +91,6 @@ export function GameView() {
         : state.players[state.activePlayerIndex]
   const waitingOnAI = Boolean(currentActor?.isAI) && !state.winner
 
-  console.log(`[GameView] phase=${state.phase} activeIdx=${state.activePlayerIndex} currentActor=${currentActor?.name}(${currentActor?.id}) waitingOnAI=${waitingOnAI}`)
-
   // Selecting a hex only does something during build (choosing where to place) or when the
   // Chariot major arcana is active (choosing which hex to redistribute) — otherwise it's just
   // a clickable-looking tile that does nothing, which reads as a bug rather than a no-op.

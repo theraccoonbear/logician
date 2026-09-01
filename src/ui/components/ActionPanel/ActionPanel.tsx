@@ -112,7 +112,6 @@ export function ActionPanel({
 
   if (state.phase === 'awaitingMajorChoice') {
     const isResponder = state.majorChoiceQueue?.[0] === activePlayer?.id
-    console.log(`[ActionPanel] awaitingMajorChoice: activePlayer=${activePlayer?.name}(${activePlayer?.id}) queue0=${state.majorChoiceQueue?.[0]} isResponder=${isResponder}`)
     if (isResponder) {
       return <OpponentChoicePanel onPreviewTargetsChange={onPreviewTargetsChange} />
     }

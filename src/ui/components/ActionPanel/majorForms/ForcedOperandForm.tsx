@@ -84,9 +84,9 @@ export function ForcedOperandForm({
   }, [canConfirm, opponentIsAI, state, player, tarot, casterValue, logicId, effectId, spec])
 
   const previewTargets = useMemo(() => {
-    if (!state || !spec || !logicId || casterValue === '' || !player) return new Set<string>()
+    if (!state || !spec || casterValue === '' || !player) return new Set<string>()
 
-    if (opponentIsAI && aiChoice) {
+    if (opponentIsAI && aiChoice && logicId) {
       return computePreview(state, { casterCategory: spec.casterCategory, opponentCategory: spec.opponentCategory }, casterValue, aiChoice.opponentValue, logicId)
     }
 
@@ -135,9 +135,11 @@ export function ForcedOperandForm({
       </div>
       <div className="redistribute-row major-arcana-opponent-waiting">
         <span className="opponent-waiting-label">
-          {opponentIsAI
-            ? `${opponent!.name} will choose the ${operandKindLabel(spec.opponentCategory)}.`
-            : `Opponent will choose the ${operandKindLabel(spec.opponentCategory)} next.`}
+          {opponentIsAI && aiChoice
+            ? `${opponent!.name} will choose ${operandKindLabel(spec.opponentCategory)}: ${String(aiChoice.opponentValue)}.`
+            : opponentIsAI
+              ? `${opponent!.name} will choose the ${operandKindLabel(spec.opponentCategory)}.`
+              : `Opponent will choose the ${operandKindLabel(spec.opponentCategory)} next.`}
         </span>
       </div>
       <LogicCardHand cards={player.logicHand} selectedId={logicId} onSelect={setLogicId} />
