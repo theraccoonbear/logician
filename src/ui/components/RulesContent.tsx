@@ -77,45 +77,45 @@ export function RulesContent() {
   return (
     <div className="rules-content">
       <p>
-        Logician blends logic — in a pure, mathematical, set-theory sense — with the tarot and a bit of random chance.
+        Logician blends logic (in a pure, mathematical, set-theory sense) with the tarot and a bit of random chance.
         You and your opponent(s) build structures on a 10-hex board and cast spells to upgrade your own structures and
-        downgrade theirs. First to <strong>40 victory points</strong> — the sum of all your structures&apos; levels —
+        downgrade theirs. First to <strong>40 victory points</strong> (the sum of all your structures&apos; levels)
         wins.
       </p>
 
       <h3>The Board</h3>
       <p>
-        Each hex is one of four terrain types — Prairies, Forests, Mountains, or Swamps — which correspond to the four
+        Each hex is one of four terrain types (Prairies, Forests, Mountains, or Swamps), which correspond to the four
         tarot suits: Swords, Wands, Cups, and Pentacles, respectively. Each hex can hold at most one of each structure
         type per player: a Pool, a Pyramid, a Tower, and (once you have all three) a Fortress.
       </p>
       <div className="rules-structure-list">
         <div className="rules-structure-item">
           <p>
-            <strong>Pool</strong> — a 2-sided coin. Enters play at level {LEVEL_BOUNDS.Pool.floor}, maxes out at{' '}
+            <strong>Pool</strong>: a 2-sided coin. Enters play at level {LEVEL_BOUNDS.Pool.floor}, maxes out at{' '}
             {LEVEL_BOUNDS.Pool.max}.
           </p>
           <StructureLevelRow type="Pool" />
         </div>
         <div className="rules-structure-item">
           <p>
-            <strong>Pyramid</strong> — a 4-sided die. Enters play at level {LEVEL_BOUNDS.Pyramid.floor}, maxes out at{' '}
+            <strong>Pyramid</strong>: a 4-sided die. Enters play at level {LEVEL_BOUNDS.Pyramid.floor}, maxes out at{' '}
             {LEVEL_BOUNDS.Pyramid.max}.
           </p>
           <StructureLevelRow type="Pyramid" />
         </div>
         <div className="rules-structure-item">
           <p>
-            <strong>Tower</strong> — a 6-sided die. Enters play at level {LEVEL_BOUNDS.Tower.floor}, maxes out at{' '}
+            <strong>Tower</strong>: a 6-sided die. Enters play at level {LEVEL_BOUNDS.Tower.floor}, maxes out at{' '}
             {LEVEL_BOUNDS.Tower.max}.
           </p>
           <StructureLevelRow type="Tower" />
         </div>
         <div className="rules-structure-item">
           <p>
-            <strong>Fortress</strong> — a hexagonal wall around your other structures on that hex. Enters play at
+            <strong>Fortress</strong>: a hexagonal wall around your other structures on that hex. Enters play at
             level {LEVEL_BOUNDS.Fortress.floor}, maxes out at {LEVEL_BOUNDS.Fortress.max}. Requires a Pool, Pyramid,
-            and Tower already on the hex to build. While it stands, the structures inside are immune to downgrades —
+            and Tower already on the hex to build. While it stands, the structures inside are immune to downgrades,
             but also to your own upgrades.
           </p>
           <FortressLevelRow />
@@ -131,22 +131,22 @@ export function RulesContent() {
 
       <h3>Your Turn</h3>
       <p>
-        <strong>Phase 1 — Build.</strong> Optionally build one new structure (Pool, Pyramid, or Tower) on a hex where
+        <strong>Phase 1: Build.</strong> Optionally build one new structure (Pool, Pyramid, or Tower) on a hex where
         you don&apos;t already have one of that type, or build a Fortress if you have all three there already.
-        Building a Fortress ends your turn immediately — you skip Phase 2.
+        Building a Fortress ends your turn immediately; you skip Phase 2.
       </p>
       <p>
-        <strong>Phase 2 — Cast.</strong> Do one of the following:
+        <strong>Phase 2: Cast.</strong> Do one of the following:
       </p>
       <ul>
         <li>
-          <strong>Cast a Logic spell</strong> — play one Logic card and one Effect card against one of the three
+          <strong>Cast a Logic spell</strong>: play one Logic card and one Effect card against one of the three
           tarot cards in the row. The tarot card supplies the two operands (terrain/level, or terrain/structure-type)
           that get substituted into your Logic card&apos;s expression; every structure that satisfies the resulting
           logical condition has the Effect card&apos;s effect applied to it.
         </li>
         <li>
-          <strong>Play a Major Arcana action</strong> — if one is face up in the tarot row, you may play it instead
+          <strong>Play a Major Arcana action</strong>: if one is face up in the tarot row, you may play it instead
           of casting a spell. See the gallery below for what each one does.
         </li>
       </ul>
@@ -181,19 +181,19 @@ export function RulesContent() {
       </p>
       <ul>
         <li>
-          <strong>Full Assistance</strong> — Recommended for learning. Highlights all targeted structures on the board in real time as you drag or click cards, and calculates a detailed <em>Point Impact Summary</em> predicting how your spell would affect your and other players' structures and net score before you commit to casting it.
+          <strong>Full Assistance</strong>: recommended for learning. Highlights all targeted structures on the board in real time as you drag or click cards, and calculates a detailed <em>Point Impact Summary</em> predicting how your spell would affect your and other players' structures and net score before you commit to casting it.
         </li>
         <li>
-          <strong>Some Assistance (Hard Mode)</strong> — For standard competitive play. Highlights all targeted structures on the board in real time, but does not provide any point calculations or predictions. You must compute the net victory point impacts yourself!
+          <strong>Some Assistance (Hard Mode)</strong>: for standard competitive play. Highlights all targeted structures on the board in real time, but does not provide any point calculations or predictions. You must compute the net victory point impacts yourself!
         </li>
         <li>
-          <strong>No Assistance (Wizard Eyes 🧙‍♂️👀)</strong> — The ultimate test. Completely hides all board target previews and point summaries. You must analyze the board, evaluate the set-theory logic expressions, and calculate the spell's effect entirely in your head!
+          <strong>No Assistance (Wizard Eyes 🧙‍♂️👀)</strong>: the ultimate test. Completely hides all board target previews and point summaries. You must analyze the board, evaluate the set-theory logic expressions, and calculate the spell's effect entirely in your head!
         </li>
       </ul>
 
       <p>
         Once a spell resolves, the Logic, Effect, and Tarot cards played are discarded. If a structure&apos;s level
-        would drop below its floor, it&apos;s destroyed and returns to its owner&apos;s supply — a Pool specifically
+        would drop below its floor, it&apos;s destroyed and returns to its owner&apos;s supply; a Pool specifically
         can only be destroyed by a Downgrade 2 or stronger effect, since its floor is level 2, not 0.
       </p>
 
@@ -273,7 +273,7 @@ export function RulesContent() {
         </table>
       </div>
       <p className="rules-note">
-        Note the Swords court cards: Page and Knight name a Fortress, but Queen and King name a Tower instead — the
+        Note the Swords court cards: Page and Knight name a Fortress, but Queen and King name a Tower instead, the
         one place the pattern isn&apos;t uniform across all four ranks.
       </p>
 

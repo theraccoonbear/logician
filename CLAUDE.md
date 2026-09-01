@@ -143,3 +143,5 @@ whenever the `cards/` resize rule in `resize-assets.mjs` changes — either shif
   Omit the trailing issue number only when the branch has no corresponding issue.
 - **Pure engine, no exceptions.** New rules/effects belong in `src/engine/`, expressed as
   reducer logic with no side effects and no UI dependency — the AI depends on this.
+- **No emdashes in user-facing copy.** Use colons, semicolons, commas, or parentheses instead.
+  Emdashes are an AI writing tell. Code comments can use them freely.

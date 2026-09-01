@@ -113,7 +113,7 @@ async function run() {
     const p2Id = state.players[1].id
 
     let turns = 0
-    let gameEnded = false
+    let _gameEnded = false
     let aborted = false
 
     while (!state.winner && turns < maxTurns) {
@@ -167,7 +167,7 @@ async function run() {
 
     let winnerName = ''
     if (state.winner) {
-      gameEnded = true
+      _gameEnded = true
       if (state.winner === p1Id) {
         p1Wins++
         winnerName = 'P1'

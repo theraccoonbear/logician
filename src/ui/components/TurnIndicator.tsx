@@ -3,9 +3,9 @@ import { describeMajorArcana } from '../operandLabels'
 import { getPlayerColor } from '../playerColors'
 
 const PHASE_LABELS: Record<GameState['phase'], string> = {
-  setup: 'Setup — place your Pool, Pyramid, and Tower',
-  build: 'Phase 1 — Build',
-  cast: 'Phase 2 — Cast a Spell',
+  setup: 'Setup: place your Pool, Pyramid, and Tower',
+  build: 'Phase 1: Build',
+  cast: 'Phase 2: Cast a Spell',
   awaitingTrigger: 'Waiting on a trigger response',
 }
 

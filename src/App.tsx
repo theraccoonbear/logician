@@ -5,6 +5,7 @@ import { GameView } from './ui/components/GameView'
 import { SetupScreen } from './ui/components/SetupScreen'
 import { AssetPreloader } from './ui/components/AssetPreloader'
 import { useGameEngine } from './ui/hooks/useGameEngine'
+import { initTelemetry } from './ui/telemetry'
 
 function Root() {
   const { state } = useGameEngine()
@@ -12,6 +13,10 @@ function Root() {
 }
 
 function App() {
+  useEffect(() => {
+    initTelemetry()
+  }, [])
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault()

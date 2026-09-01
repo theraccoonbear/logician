@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
 
 # Build-time-resized image assets (issue #4) — generated from src-assets/img/ by
 # scripts/resize-assets.mjs, run automatically via the predev/prebuild npm scripts. Full-res

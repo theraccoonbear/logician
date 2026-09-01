@@ -31,7 +31,8 @@ export function TowerForm({
 
   const toggle = (id: string) => {
     const next = new Set(opponentIds)
-    next.has(id) ? next.delete(id) : next.add(id)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
     setOpponentIds(next)
   }
 
@@ -52,7 +53,7 @@ export function TowerForm({
         </select>
       </div>
       <p>
-        Opponent structures to destroy (must total {own ? own.level : 'X'} — currently {total}):
+        Opponent structures to destroy (must total {own ? own.level : 'X'}, currently {total}):
       </p>
       <div className="deck-search-list">
         {opponentTargets.map((s) => {
