@@ -4,8 +4,7 @@
     "build": {
       "permission": {
         "bash": {
-          "*": "allow",
-          "git push*": "ask"
+          "*": "allow"
         }
       }
     }
