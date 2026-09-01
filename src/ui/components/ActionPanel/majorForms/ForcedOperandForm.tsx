@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getForcedOperandSpec } from '../../../../engine/majorArcana/forcedOperand'
 import type { MajorArcanaCard } from '../../../../engine/types/tarot'
 import { useGameEngine } from '../../../hooks/useGameEngine'
@@ -10,6 +10,7 @@ export function ForcedOperandForm({
   tarot,
   onConfirm,
   onCancel,
+  onPreviewTargetsChange,
 }: {
   tarot: MajorArcanaCard
   onConfirm: (params: unknown) => void
@@ -27,6 +28,24 @@ export function ForcedOperandForm({
   const player = state.players[state.activePlayerIndex]
 
   const canConfirm = casterValue !== '' && logicId && effectId
+
+  const previewTargets = useMemo(() => {
+    if (!state || !spec || !logicId || casterValue === '') return new Set<string>()
+    const structuresMatchingA = state.structures.filter((s) => {
+      const hex = state.board.find((h) => h.id === s.hexId)
+      if (!hex) return false
+      if (spec.casterCategory === 'terrain') return hex.terrain === casterValue
+      if (spec.casterCategory === 'structureType') return s.type === casterValue
+      if (spec.casterCategory === 'level') return s.level === casterValue
+      return false
+    })
+    return new Set(structuresMatchingA.map((s) => s.id))
+  }, [state, spec, logicId, casterValue])
+
+  useEffect(() => {
+    onPreviewTargetsChange?.(previewTargets)
+    return () => { onPreviewTargetsChange?.(new Set()) }
+  }, [previewTargets, onPreviewTargetsChange])
 
   return (
     <div className="major-arcana-form">

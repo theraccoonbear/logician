@@ -20,8 +20,10 @@ export function useAITurns(blocked = false) {
 
     if (!actor?.isAI) return
 
+    console.log(`[useAITurns] AI actor=${actor.name}(${actor.id}) phase=${state.phase} queue=${JSON.stringify(state.majorChoiceQueue ?? state.triggerQueue)}`)
     const ai = createAI(actor.aiDifficulty ?? 'heuristic')
     const timer = setTimeout(() => {
+      console.log(`[useAITurns] dispatching AI move for ${actor.name} phase=${state.phase}`)
       if (state.phase === 'setup' || state.phase === 'build') {
         dispatch(ai.chooseBuildAction(state, actor.id))
       } else if (state.phase === 'cast') {

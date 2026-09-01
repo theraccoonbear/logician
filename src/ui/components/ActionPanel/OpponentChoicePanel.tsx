@@ -38,6 +38,7 @@ export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTarge
 
   const submitChoice = (choice: Record<string, unknown>) => {
     if (!responderId) return
+    console.log(`[OpponentChoicePanel] submitChoice: responder=${responderId} choice=`, choice)
     dispatch({ type: 'SUBMIT_OPPONENT_CHOICE', playerId: responderId, choice })
     setOpponentValue('')
     setCondition(null)

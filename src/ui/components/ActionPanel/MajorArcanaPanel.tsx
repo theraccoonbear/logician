@@ -50,6 +50,7 @@ export function MajorArcanaPanel({
 
   const play = (params?: unknown) => {
     if (!activeTarot) return
+    console.log(`[MajorArcanaPanel] play() card=${activeMajorId} playerId=${player.id} tarotInstanceId=${activeTarot.instanceId} params=`, params)
     dispatch({ type: 'PLAY_MAJOR_ARCANA', playerId: player.id, tarotId: activeTarot.instanceId, params })
     onDeselect()
     setWheelTargets(new Set())
