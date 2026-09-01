@@ -22,29 +22,19 @@ let beforeunloadAdded = false
 
 export function initTelemetry(): void {
   if (initialized) return
-  if (!isTelemetryOptedIn()) {
-    console.log('[telemetry] not opted in, skipping init')
-    return
-  }
+  if (!isTelemetryOptedIn()) return
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return
 
   const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined
-  const host = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) ?? 'https://app.posthog.com'
-  if (!key) {
-    console.warn('[telemetry] VITE_POSTHOG_KEY not set, skipping init')
-    return
-  }
+  const host = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) ?? 'https://us.i.posthog.com'
+  if (!key) return
 
-  console.log('[telemetry] initializing PostHog', { key: key.slice(0, 8) + '...', host })
   posthog.init(key, {
     api_host: host,
     persistence: 'localStorage',
     autocapture: false,
     capture_pageview: false,
-    loaded: () => {
-      initialized = true
-      console.log('[telemetry] PostHog loaded and ready')
-    },
+    loaded: () => { initialized = true },
   })
 
   if (!beforeunloadAdded) {
@@ -57,11 +47,7 @@ export function initTelemetry(): void {
 }
 
 export function capture(event: string, props?: Record<string, unknown>): void {
-  if (!isTelemetryOptedIn() || !initialized) {
-    console.log('[telemetry] capture blocked', { event, optedIn: isTelemetryOptedIn(), initialized })
-    return
-  }
-  console.log('[telemetry] capture', event, props)
+  if (!isTelemetryOptedIn() || !initialized) return
   posthog.capture(event, props)
 }
 
