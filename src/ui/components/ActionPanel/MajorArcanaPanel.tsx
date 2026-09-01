@@ -11,9 +11,7 @@ import { DevilForm } from './majorForms/DevilForm'
 import { ForcedOperandForm } from './majorForms/ForcedOperandForm'
 import { HermitForm } from './majorForms/HermitForm'
 import { MagicianForm } from './majorForms/MagicianForm'
-import { StarForm } from './majorForms/StarForm'
 import { StrengthForm } from './majorForms/StrengthForm'
-import { TemperanceForm } from './majorForms/TemperanceForm'
 import { TowerForm } from './majorForms/TowerForm'
 import { WorldForm } from './majorForms/WorldForm'
 
@@ -113,9 +111,22 @@ export function MajorArcanaPanel({
       {activeMajorId === 'MAGICIAN' && <MagicianForm onConfirm={play} onCancel={cancel} />}
       {activeMajorId === 'TOWER' && <TowerForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
       {activeMajorId === 'STRENGTH' && <StrengthForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
-      {activeMajorId === 'STAR' && <StarForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
-      {activeMajorId === 'TEMPERANCE' && (
-        <TemperanceForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />
+      {(activeMajorId === 'STAR' || activeMajorId === 'TEMPERANCE') && (
+        <div className="major-arcana-form">
+          <p>
+            {activeMajorId === 'STAR'
+              ? 'Every player below the max VP may upgrade or build until they reach it exactly.'
+              : 'Every player above the minimum VP must downgrade or destroy structures until they reach it exactly.'}
+          </p>
+          <div className="action-buttons">
+            <button className="action-button" onClick={() => play()}>
+              Confirm {describeMajorArcana(activeMajorId)}
+            </button>
+            <button className="action-button secondary" onClick={cancel}>
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
       {activeMajorId && activeTarot?.kind === 'major' && isForcedOperandMajor(activeTarot.id) && (
         <ForcedOperandForm tarot={activeTarot} onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />

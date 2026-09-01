@@ -86,7 +86,9 @@ export function GameView() {
   const currentActor =
     state.phase === 'awaitingTrigger'
       ? state.players.find((p) => p.id === state.triggerQueue?.[0])
-      : state.players[state.activePlayerIndex]
+      : state.phase === 'awaitingMajorChoice'
+        ? state.players.find((p) => p.id === state.majorChoiceQueue?.[0])
+        : state.players[state.activePlayerIndex]
   const waitingOnAI = Boolean(currentActor?.isAI) && !state.winner
 
   // Selecting a hex only does something during build (choosing where to place) or when the
