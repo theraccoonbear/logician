@@ -87,7 +87,9 @@ export function ForcedOperandForm({
     if (!state || !spec || casterValue === '' || !player) return new Set<string>()
 
     if (opponentIsAI && aiChoice && logicId) {
-      return computePreview(state, { casterCategory: spec.casterCategory, opponentCategory: spec.opponentCategory }, casterValue, aiChoice.opponentValue, logicId)
+      const logicCard = player.logicHand.find((c) => c.instanceId === logicId)
+      if (!logicCard) return new Set<string>()
+      return computePreview(state, { casterCategory: spec.casterCategory, opponentCategory: spec.opponentCategory }, casterValue, aiChoice.opponentValue, logicCard.kind)
     }
 
     return new Set(
