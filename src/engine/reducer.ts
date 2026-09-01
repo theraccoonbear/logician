@@ -3,8 +3,9 @@ import { canBuildBasic, canBuildFortress, computeVP } from './selectors'
 import { resolveSpell, setFortressedForHex } from './spellResolution'
 import { HOLD_CARD_HANDLERS, computeTriggerQueue, isHoldCard } from './triggers'
 import { drawCards } from './decks'
+import { requiresOpponentChoice, designatedOpponentId, getForcedOperandSpec, validateOperandValue } from './majorArcana/forcedOperand'
 import type { ActionResult, GameAction } from './types/actions'
-import type { GameState, PendingResolution, Player, AssistanceLevel } from './types/state'
+import type { GameState, PendingMajorChoice, PendingResolution, Player, AssistanceLevel } from './types/state'
 import type { Structure } from './types/structure'
 import { LEVEL_BOUNDS } from './types/structure'
 
@@ -430,8 +431,177 @@ function handlePlayMajorArcana(state: GameState, action: { playerId: string; tar
   }
   if (!IMMEDIATE_MAJOR_ARCANA_HANDLERS[tarot.id]) return err(`${tarot.id} is not yet implemented`)
 
+  if (requiresOpponentChoice(tarot.id)) {
+    return initiateMajorChoice(state, player.id, tarot, action.params as Record<string, unknown> | undefined)
+  }
+
   const pending: PendingResolution = { kind: 'majorAction', casterId: player.id, majorId: tarot.id, tarot, params: action.params }
   return initiatePendingResolution(state, pending)
+}
+
+function initiateMajorChoice(
+  state: GameState,
+  casterId: string,
+  tarot: { id: string; instanceId: string },
+  rawParams: Record<string, unknown> | undefined,
+): ActionResult {
+  const params = rawParams ?? {}
+  const majorId = tarot.id as PendingMajorChoice['majorId']
+
+  if (majorId === 'DEVIL') {
+    const queue = buildDevilOpponentQueue(state, casterId)
+    const pending: PendingMajorChoice = {
+      casterId,
+      majorId,
+      tarot: tarot as PendingMajorChoice['tarot'],
+      casterParams: { logicCardId: params.logicCardId },
+      opponentParams: {},
+      devilConditionIndex: 0,
+    }
+    const logged = withLog(
+      { ...state, phase: 'awaitingMajorChoice', pendingMajorChoice: pending, majorChoiceQueue: queue },
+      `${toLGNToken('player', casterId)} played ${toLGNToken('tarot', majorId)}: awaiting opponent condition`,
+    )
+    return ok(logged)
+  }
+
+  const spec = getForcedOperandSpec(majorId)
+  if (!spec) return err(`No forced-operand spec for ${majorId}`)
+
+  const opponentId = designatedOpponentId(state, casterId, spec.opponentDirection)
+  const pending: PendingMajorChoice = {
+    casterId,
+    majorId,
+    tarot: tarot as PendingMajorChoice['tarot'],
+    casterParams: { casterValue: params.casterValue, logicCardId: params.logicCardId, effectCardId: params.effectCardId },
+    opponentParams: {},
+  }
+  const logged = withLog(
+    { ...state, phase: 'awaitingMajorChoice', pendingMajorChoice: pending, majorChoiceQueue: [opponentId] },
+    `${toLGNToken('player', casterId)} played ${toLGNToken('tarot', majorId)}: awaiting ${toLGNToken('player', opponentId)}'s choice`,
+  )
+  return ok(logged)
+}
+
+function buildDevilOpponentQueue(state: GameState, casterId: string): string[] {
+  const n = state.players.length
+  const casterIndex = state.players.findIndex((p) => p.id === casterId)
+  const queue: string[] = []
+  if (n === 2) {
+    const opponent = state.players[(casterIndex + 1) % n].id
+    queue.push(opponent, opponent)
+  } else {
+    queue.push(state.players[(casterIndex + 1) % n].id)
+    queue.push(state.players[(casterIndex + 2) % n].id)
+  }
+  return queue
+}
+
+function handleSubmitOpponentChoice(state: GameState, action: { playerId: string; choice: Record<string, unknown> }): ActionResult {
+  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice || !state.majorChoiceQueue?.length) {
+    return err('No opponent choice is currently expected')
+  }
+  const responderId = state.majorChoiceQueue[0]
+  if (action.playerId !== responderId) return err('Not your turn to respond')
+
+  const pending = state.pendingMajorChoice
+
+  if (pending.majorId === 'DEVIL') {
+    const condIndex = pending.devilConditionIndex ?? 0
+    const condition = action.choice.condition as { kind: string; value: unknown }
+    if (!condition || !condition.kind) return err('Invalid condition format')
+    const condError = validateOperandValue(condition.kind as any, condition.value)
+    if (condError) return err(condError)
+
+    const updatedParams = {
+      ...pending.opponentParams,
+      [`condition${condIndex + 1}`]: condition,
+    }
+    const remaining = state.majorChoiceQueue.slice(1)
+    const nextMajorChoice: PendingMajorChoice = {
+      ...pending,
+      opponentParams: updatedParams,
+      devilConditionIndex: condIndex + 1,
+    }
+
+    const logged = withLog(
+      { ...state, pendingMajorChoice: nextMajorChoice, majorChoiceQueue: remaining },
+      `${toLGNToken('player', responderId)} named condition: ${toLGNToken('operand', condition)}`,
+    )
+
+    if (remaining.length === 0) {
+      return finalizeMajorChoice(logged, nextMajorChoice)
+    }
+    return ok(logged)
+  }
+
+  const spec = getForcedOperandSpec(pending.majorId)
+  if (!spec) return err(`No spec for ${pending.majorId}`)
+
+  const opponentValue = action.choice.opponentValue
+  const valError = validateOperandValue(spec.opponentCategory, opponentValue)
+  if (valError) return err(valError)
+
+  const updatedPending: PendingMajorChoice = {
+    ...pending,
+    opponentParams: { ...pending.opponentParams, opponentValue },
+  }
+  const remaining = state.majorChoiceQueue.slice(1)
+
+  const logged = withLog(
+    { ...state, pendingMajorChoice: updatedPending, majorChoiceQueue: remaining },
+    `${toLGNToken('player', responderId)} chose: ${toLGNToken('operand', { kind: spec.opponentCategory, value: opponentValue })}`,
+  )
+
+  if (remaining.length === 0) {
+    return finalizeMajorChoice(logged, updatedPending)
+  }
+  return ok(logged)
+}
+
+function finalizeMajorChoice(state: GameState, pending: PendingMajorChoice): ActionResult {
+  let base: GameState = { ...state, pendingMajorChoice: undefined, majorChoiceQueue: undefined }
+
+  if (pending.majorId === 'DEVIL') {
+    const c1 = pending.opponentParams.condition1 as { kind: string; value: unknown } | undefined
+    const c2 = pending.opponentParams.condition2 as { kind: string; value: unknown } | undefined
+    if (!c1 || !c2) return err('Devil requires two conditions')
+
+    const fullParams = {
+      condition1: c1,
+      condition2: c2,
+      logicCardId: pending.casterParams.logicCardId,
+    }
+    const resolution: PendingResolution = { kind: 'majorAction', casterId: pending.casterId, majorId: 'DEVIL', tarot: pending.tarot, params: fullParams }
+    return finalizePending(base, resolution)
+  }
+
+  const spec = getForcedOperandSpec(pending.majorId)
+  if (!spec) return err(`No spec for ${pending.majorId}`)
+
+  const fullParams = {
+    casterValue: pending.casterParams.casterValue,
+    opponentValue: pending.opponentParams.opponentValue,
+    logicCardId: pending.casterParams.logicCardId,
+    effectCardId: pending.casterParams.effectCardId,
+  }
+  const resolution: PendingResolution = { kind: 'majorAction', casterId: pending.casterId, majorId: pending.majorId, tarot: pending.tarot, params: fullParams }
+  return finalizePending(base, resolution)
+}
+
+function handleCancelMajorChoice(state: GameState, action: { playerId: string }): ActionResult {
+  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice) {
+    return err('No major choice in progress')
+  }
+  if (action.playerId !== state.pendingMajorChoice.casterId) {
+    return err('Only the caster can cancel')
+  }
+
+  const logged = withLog(
+    { ...state, phase: 'cast', pendingMajorChoice: undefined, majorChoiceQueue: undefined },
+    `${toLGNToken('player', action.playerId)} cancelled major choice`,
+  )
+  return ok(logged)
 }
 
 function handleTakeHoldCard(state: GameState, action: { playerId: string; tarotId: string }): ActionResult {
@@ -545,6 +715,10 @@ export function applyAction(state: GameState, action: GameAction): ActionResult 
       return handlePlayHeldArcana(state, action)
       case 'PASS_TRIGGER_WINDOW':
         return handlePassTriggerWindow(state, action)
+      case 'SUBMIT_OPPONENT_CHOICE':
+        return handleSubmitOpponentChoice(state, action)
+      case 'CANCEL_MAJOR_CHOICE':
+        return handleCancelMajorChoice(state, action)
       case 'SET_ASSISTANCE_LEVEL':
         return handleSetAssistanceLevel(state, action)
   }

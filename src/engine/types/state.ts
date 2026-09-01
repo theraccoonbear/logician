@@ -6,7 +6,7 @@ import type { Structure } from './structure'
 import type { MajorArcanaCard, MajorArcanaId, MinorArcanaCard, Operand, TarotCard } from './tarot'
 
 // 'setup': each player is still placing their initial Pool+Pyramid+Tower trio.
-export type Phase = 'setup' | 'build' | 'cast' | 'awaitingTrigger'
+export type Phase = 'setup' | 'build' | 'cast' | 'awaitingTrigger' | 'awaitingMajorChoice'
 
 export type AIDifficulty = 'random' | 'heuristic' | 'optimus'
 export type AssistanceLevel = 'none' | 'some' | 'full'
@@ -27,6 +27,19 @@ export interface Player {
 export interface HierophantOverride {
   structureId: string
   newLevel: number
+}
+
+/** Tracks an in-progress multi-player Major Arcana interaction where opponents must supply choices. */
+export interface PendingMajorChoice {
+  casterId: PlayerId
+  majorId: MajorArcanaId
+  tarot: MajorArcanaCard
+  /** Caster's own parameter values (e.g. casterValue for forced-operand, logicCardId for Devil). */
+  casterParams: Record<string, unknown>
+  /** Opponent responses collected so far, keyed by player id. */
+  opponentParams: Record<string, unknown>
+  /** For Devil: tracks which condition index (0 or 1) the current responder is filling. */
+  devilConditionIndex?: number
 }
 
 export type PendingResolution =
@@ -74,6 +87,10 @@ export interface GameState {
   pendingTrigger?: PendingResolution
   /** Remaining players (in response order) who still get a chance to react during 'awaitingTrigger'. */
   triggerQueue?: PlayerId[]
+  /** In-progress multi-player Major Arcana interaction: awaiting opponent input. */
+  pendingMajorChoice?: PendingMajorChoice
+  /** Remaining players (in response order) who still need to submit an opponent choice. */
+  majorChoiceQueue?: PlayerId[]
   log: GameEvent[]
   winner?: PlayerId
   /** Seeded PRNG state for deterministic random events. */

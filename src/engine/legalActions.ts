@@ -1,10 +1,12 @@
 import { canBuildBasic, canBuildFortress, computeVP } from './selectors'
 import { LEVEL_BOUNDS } from './types/structure'
 import { isHoldCard } from './triggers'
+import { getForcedOperandSpec, TERRAIN_TYPES, STRUCTURE_TYPES } from './majorArcana/forcedOperand'
 import type { GameAction } from './types/actions'
 import type { PlayerId } from './types/ids'
 import type { GameState } from './types/state'
 import type { StructureType } from './types/structure'
+import type { OperandKind } from './types/tarot'
 
 const BASIC_TYPES: readonly StructureType[] = ['Pool', 'Pyramid', 'Tower']
 
@@ -191,8 +193,6 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
             playerId,
             tarotId: tarot.instanceId,
             params: {
-              condition1: { kind: 'terrain', value: 'Forests' },
-              condition2: { kind: 'structureType', value: 'Pool' },
               logicCardId: player.logicHand[0].instanceId
             }
           })
@@ -208,8 +208,7 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
             params: {
               logicCardId: player.logicHand[0].instanceId,
               effectCardId: player.effectHand[0].instanceId,
-              casterValue: 3,
-              opponentValue: 'Forests'
+              casterValue: 3
             }
           })
         }
@@ -224,8 +223,7 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
             params: {
               logicCardId: player.logicHand[0].instanceId,
               effectCardId: player.effectHand[0].instanceId,
-              casterValue: 'Forests',
-              opponentValue: 3
+              casterValue: 'Forests'
             }
           })
         }
@@ -240,8 +238,7 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
             params: {
               logicCardId: player.logicHand[0].instanceId,
               effectCardId: player.effectHand[0].instanceId,
-              casterValue: 'Forests',
-              opponentValue: 'Pool'
+              casterValue: 'Forests'
             }
           })
         }
@@ -256,8 +253,7 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
             params: {
               logicCardId: player.logicHand[0].instanceId,
               effectCardId: player.effectHand[0].instanceId,
-              casterValue: 'Pool',
-              opponentValue: 'Forests'
+              casterValue: 'Pool'
             }
           })
         }
@@ -272,8 +268,7 @@ function generateMajorArcanaActions(state: GameState, playerId: PlayerId): GameA
             params: {
               logicCardId: player.logicHand[0].instanceId,
               effectCardId: player.effectHand[0].instanceId,
-              casterValue: 3,
-              opponentValue: 'Pool'
+              casterValue: 3
             }
           })
         }
@@ -390,4 +385,46 @@ export function getLegalCastActions(state: GameState, playerId: PlayerId): GameA
   actions.push(...generateMajorArcanaActions(state, playerId))
 
   return actions
+}
+
+function valuesForCategory(kind: OperandKind): (string | number)[] {
+  if (kind === 'terrain') return [...TERRAIN_TYPES]
+  if (kind === 'structureType') return [...STRUCTURE_TYPES]
+  return [1, 2, 3, 4, 5, 6]
+}
+
+/** Legal actions for a player who is next in the majorChoiceQueue (opponent response phase). */
+export function getLegalMajorChoiceActions(state: GameState, playerId: PlayerId): GameAction[] {
+  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice || !state.majorChoiceQueue?.length) return []
+  if (state.majorChoiceQueue[0] !== playerId) return []
+
+  const pending = state.pendingMajorChoice
+  if (pending.majorId === 'DEVIL') {
+    const condIndex = pending.devilConditionIndex ?? 0
+    const usedKinds = new Set<string>()
+    if (condIndex >= 1) {
+      const first = pending.opponentParams.condition1 as { kind: string } | undefined
+      if (first) usedKinds.add(first.kind)
+    }
+    const categories: OperandKind[] = ['terrain', 'structureType', 'level'].filter((k) => !usedKinds.has(k)) as OperandKind[]
+    const actions: GameAction[] = []
+    for (const cat of categories) {
+      for (const val of valuesForCategory(cat)) {
+        actions.push({
+          type: 'SUBMIT_OPPONENT_CHOICE',
+          playerId,
+          choice: { condition: { kind: cat, value: val } },
+        })
+      }
+    }
+    return actions
+  }
+
+  const spec = getForcedOperandSpec(pending.majorId)
+  if (!spec) return []
+  return valuesForCategory(spec.opponentCategory).map((val) => ({
+    type: 'SUBMIT_OPPONENT_CHOICE' as const,
+    playerId,
+    choice: { opponentValue: val },
+  }))
 }

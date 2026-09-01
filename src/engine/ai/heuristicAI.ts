@@ -1,4 +1,4 @@
-import { getLegalBuildActions, getLegalCastActions } from '../legalActions'
+import { getLegalBuildActions, getLegalCastActions, getLegalMajorChoiceActions } from '../legalActions'
 import { applyAction } from '../reducer'
 import type { GameAction } from '../types/actions'
 import type { PlayerId } from '../types/ids'
@@ -42,4 +42,5 @@ export const HeuristicAI: AIStrategy = {
   chooseCastAction: (state, playerId) => pickBest(state, playerId, getLegalCastActions(state, playerId)),
   // v1 never takes a hold card, so it's never in a trigger queue to respond from — always pass if asked.
   respondToTriggerWindow: (_state, playerId) => ({ type: 'PASS_TRIGGER_WINDOW', playerId }),
+  chooseOpponentChoice: (state, playerId) => pickBest(state, playerId, getLegalMajorChoiceActions(state, playerId)),
 }

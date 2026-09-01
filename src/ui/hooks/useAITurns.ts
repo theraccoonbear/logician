@@ -4,7 +4,7 @@ import { useGameEngine } from './useGameEngine'
 
 const AI_MOVE_DELAY_MS = 600
 
-/** Drives AI-controlled seats automatically: build/cast on their turn, or respond to a trigger window. */
+/** Drives AI-controlled seats automatically: build/cast on their turn, respond to a trigger window, or submit opponent choices. */
 export function useAITurns(blocked = false) {
   const { state, dispatch } = useGameEngine()
 
@@ -14,7 +14,9 @@ export function useAITurns(blocked = false) {
     const actor =
       state.phase === 'awaitingTrigger'
         ? state.players.find((p) => p.id === state.triggerQueue?.[0])
-        : state.players[state.activePlayerIndex]
+        : state.phase === 'awaitingMajorChoice'
+          ? state.players.find((p) => p.id === state.majorChoiceQueue?.[0])
+          : state.players[state.activePlayerIndex]
 
     if (!actor?.isAI) return
 
@@ -26,6 +28,8 @@ export function useAITurns(blocked = false) {
         dispatch(ai.chooseCastAction(state, actor.id))
       } else if (state.phase === 'awaitingTrigger') {
         dispatch(ai.respondToTriggerWindow(state, actor.id))
+      } else if (state.phase === 'awaitingMajorChoice') {
+        dispatch(ai.chooseOpponentChoice(state, actor.id))
       }
     }, AI_MOVE_DELAY_MS)
 

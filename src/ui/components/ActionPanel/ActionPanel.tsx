@@ -4,6 +4,7 @@ import { TarotRow } from '../TarotRow/TarotRow'
 import { BuildPanel } from './BuildPanel'
 import { CastingGestureOverlay } from './CastingGestureOverlay'
 import { MajorArcanaPanel } from './MajorArcanaPanel'
+import { OpponentChoicePanel, MajorChoiceWaitingPanel } from './OpponentChoicePanel'
 import { SpellBuilder, type SpellSelection } from './SpellBuilder'
 import { TriggerWindowPanel } from './TriggerWindowPanel'
 
@@ -107,6 +108,14 @@ export function ActionPanel({
         </div>
       </>
     )
+  }
+
+  if (state.phase === 'awaitingMajorChoice') {
+    const isResponder = state.majorChoiceQueue?.[0] === activePlayer?.id
+    if (isResponder) {
+      return <OpponentChoicePanel />
+    }
+    return <MajorChoiceWaitingPanel />
   }
 
   return <TriggerWindowPanel onPreviewTargetsChange={onPreviewTargetsChange} />
