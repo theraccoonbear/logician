@@ -41,7 +41,7 @@ export function initTelemetry(): void {
     beforeunloadAdded = true
     window.addEventListener('beforeunload', () => {
       posthog.capture('$pageleave')
-      posthog._disconnect()
+      posthog.shutdown()
     })
   }
 }
@@ -53,6 +53,6 @@ export function capture(event: string, props?: Record<string, unknown>): void {
 
 export function disableTelemetry(): void {
   if (!initialized) return
-  posthog._disconnect()
+  posthog.shutdown()
   initialized = false
 }
