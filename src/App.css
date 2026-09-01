@@ -1350,6 +1350,60 @@
   color: var(--text);
 }
 
+.major-arcana-preview {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--code-bg);
+  font-size: 13px;
+}
+
+.preview-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.preview-structure-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preview-structure-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-structure-type {
+  font-weight: 500;
+}
+
+.preview-structure-level {
+  color: var(--text);
+}
+
+.preview-destroyed {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.vp-delta, .preview-structure-vp {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.vp-delta.positive, .preview-structure-vp.positive {
+  color: #27ae60;
+}
+
+.vp-delta.negative, .preview-structure-vp.negative {
+  color: #e74c3c;
+}
+
 /* --- Log --- */
 
 .game-log {
