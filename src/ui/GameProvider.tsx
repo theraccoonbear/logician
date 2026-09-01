@@ -83,6 +83,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const result = applyAction(preState, action)
     if (result.ok) {
       console.log(`[dispatch] -> OK`, 'phase=' + result.state.phase, 'activeIdx=' + result.state.activePlayerIndex, result.state.majorChoiceQueue ? 'queue=' + JSON.stringify(result.state.majorChoiceQueue) : '', result.state.pendingMajorChoice ? 'pending=' + result.state.pendingMajorChoice.majorId : '')
+      stateRef.current = result.state
       setState(result.state)
       setLastError(null)
 

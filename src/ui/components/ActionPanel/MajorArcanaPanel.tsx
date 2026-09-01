@@ -46,6 +46,7 @@ export function MajorArcanaPanel({
 
   const player = state.players[state.activePlayerIndex]
   const activeTarot = state.tarotRow.find((t) => t.kind === 'major' && t.id === activeMajorId)
+  console.log(`[MajorArcanaPanel] render activeMajorId=${activeMajorId} activeTarot=${activeTarot?.kind === 'major' ? activeTarot.id : activeTarot?.instanceId} isForcedOperand=${activeTarot?.kind === 'major' ? isForcedOperandMajor(activeTarot.id) : 'n/a'} phase=${state.phase} player=${player?.name}`)
   if (!activeTarot) return null
 
   const play = (params?: unknown) => {
