@@ -9,7 +9,6 @@ import type { OperandKind } from '../../../../engine/types/tarot'
 import type { GameState } from '../../../../engine/types/state'
 import type { Structure } from '../../../../engine/types/structure'
 import type { TerrainType } from '../../../../engine/types/terrain'
-import type { EffectCardId } from '../../../../engine/types/cards'
 import { useGameEngine } from '../../../hooks/useGameEngine'
 import { EffectCardHand } from '../../Hand/EffectCardHand'
 import { LogicCardHand } from '../../Hand/LogicCardHand'
@@ -20,8 +19,6 @@ function predictAIOpponentChoice(
   casterId: string,
   majorTarot: MajorArcanaCard,
   casterValue: unknown,
-  logicCardKind: string,
-  effectCardKind: EffectCardId,
 ): Record<string, unknown> | null {
   const spec = getForcedOperandSpec(majorTarot.id)
   if (!spec) return null
@@ -29,16 +26,11 @@ function predictAIOpponentChoice(
   const opponent = state.players.find((p) => p.id === opponentId)
   if (!opponent?.isAI) return null
 
-  const caster = state.players.find((p) => p.id === casterId)
-  const logicCard = caster?.logicHand.find((c) => c.kind === logicCardKind)
-  const effectCard = caster?.effectHand.find((c) => c.kind === effectCardKind)
-  if (!logicCard || !effectCard) return null
-
   const playResult = applyAction(state, {
     type: 'PLAY_MAJOR_ARCANA',
     playerId: casterId,
     tarotId: majorTarot.instanceId,
-    params: { casterValue, logicCardId: logicCard.instanceId, effectCardId: effectCard.instanceId },
+    params: { casterValue },
   })
   if (!playResult.ok) return null
 
@@ -142,16 +134,10 @@ export function ForcedOperandForm({
   const logicCard = logicId ? player?.logicHand.find((c) => c.instanceId === logicId) : null
   const effectCard = effectId ? player?.effectHand.find((c) => c.instanceId === effectId) : null
 
-  const defaultLogicCard = player?.logicHand[0] ?? null
-  const defaultEffectCard = player?.effectHand[0] ?? null
-
   const aiChoice = useMemo(() => {
     if (!opponentIsAI || !state || !player || !spec || casterValue === '') return null
-    const lc = logicCard ?? defaultLogicCard
-    const ec = effectCard ?? defaultEffectCard
-    if (!lc || !ec) return null
-    return predictAIOpponentChoice(state, player.id, tarot, casterValue, lc.kind, ec.kind)
-  }, [opponentIsAI, state, player, spec, tarot, casterValue, logicCard, defaultLogicCard, effectCard, defaultEffectCard])
+    return predictAIOpponentChoice(state, player.id, tarot, casterValue)
+  }, [opponentIsAI, state, player, spec, tarot, casterValue])
 
   const previewHighlights = useMemo(() => {
     if (!state || !player || !logicCard || !effectCard || !aiChoice || casterValue === '' || !spec) return new Set<string>()
