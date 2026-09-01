@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getForcedOperandSpec } from '../../../engine/majorArcana/forcedOperand'
 import { getAffectedStructures } from '../../../engine/selectors'
 import { describeMajorArcana } from '../../operandLabels'
@@ -24,10 +24,10 @@ export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTarge
   const logicCardId = pending?.casterParams.logicCardId
 
   const previewTargets = useMemo(() => {
-    if (!state || !spec || !logicCardId || casterValue === undefined || opponentValue === '') return new Set<string>()
-    const operandA: Operand = { kind: spec.casterCategory, value: casterValue }
-    const operandB: Operand = { kind: spec.opponentCategory, value: opponentValue }
-    const affected = getAffectedStructures(state, { logicCardId, operandA, operandB })
+    if (!state || !spec || !logicCardId || casterValue == null || opponentValue === '') return new Set<string>()
+    const operandA: Operand = { kind: spec.casterCategory, value: casterValue as Operand['value'] }
+    const operandB: Operand = { kind: spec.opponentCategory, value: opponentValue as Operand['value'] }
+    const affected = getAffectedStructures(state, { logicCardId: logicCardId as Parameters<typeof getAffectedStructures>[1]['logicCardId'], operandA, operandB })
     return new Set(affected.map((s) => s.id))
   }, [state, spec, logicCardId, casterValue, opponentValue])
 

@@ -150,5 +150,8 @@ whenever the `cards/` resize rule in `resize-assets.mjs` changes — either shif
 
 Run all three before every push — no exceptions, every time:
 ```bash
-npx tsc --noEmit && npm run lint && npx vitest run
+npx tsc -b && npm run lint && npx vitest run
 ```
+
+**Must use `tsc -b`, not `tsc --noEmit`** — they use different tsconfig settings.
+CI runs `tsc -b && vite build`. The hook must match.
