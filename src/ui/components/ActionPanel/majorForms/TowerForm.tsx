@@ -52,7 +52,7 @@ export function TowerForm({
         </select>
       </div>
       <p>
-        Opponent structures to destroy (must total {own ? own.level : 'X'} — currently {total}):
+        Opponent structures to destroy (must total {own ? own.level : 'X'}, currently {total}):
       </p>
       <div className="deck-search-list">
         {opponentTargets.map((s) => {

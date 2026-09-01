@@ -76,7 +76,7 @@ export function StarForm({
   return (
     <div className="major-arcana-form">
       <p>Every player below the max VP ({maxVP}) may upgrade or build until they reach it exactly.</p>
-      {laggards.length === 0 && <p>Everyone is already tied at the max — nothing to do.</p>}
+      {laggards.length === 0 && <p>Everyone is already tied at the max, nothing to do.</p>}
       {laggards.map((p) => {
         const original = computeVP(state, p.id)
         const required = maxVP - original

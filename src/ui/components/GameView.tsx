@@ -154,7 +154,7 @@ export function GameView() {
           screens instead of side by side (see .cards-row in App.css). */}
       <div className="cards-row">
         {state.winner ? (
-          <div className="action-panel game-over-panel">Game over — {state.players.find((p) => p.id === state.winner)?.name} wins!</div>
+          <div className="action-panel game-over-panel">Game over: {state.players.find((p) => p.id === state.winner)?.name} wins!</div>
         ) : waitingOnAI ? (
           <div className="action-panel ai-thinking">🤖 {currentActor?.name} is thinking…</div>
         ) : (

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { applyAction } from '../engine/reducer'
 import { createInitialGameState, type PlayerConfig } from '../engine/setup'
+import { computeVP } from '../engine/selectors'
 import type { GameAction } from '../engine/types/actions'
 import type { GameState } from '../engine/types/state'
 import type { LogicCardId, EffectCardId } from '../engine/types/cards'
@@ -8,6 +9,7 @@ import type { Operand } from '../engine/types/tarot'
 import { LOGIC_CARD_LABELS, EFFECT_CARD_LABELS } from './cardLabels'
 import { tarotArtUrl } from './tarotArt'
 import { clearSavedGame, loadSavedGame, saveGame } from './persistence'
+import { capture } from './telemetry'
 
 export interface StructureDelta {
   structureId: string
@@ -59,10 +61,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [state])
 
   const startGame = (players: PlayerConfig[], opts?: { showRules?: boolean }) => {
-    setState(createInitialGameState(players))
+    const gameState = createInitialGameState(players)
+    setState(gameState)
     setLastError(null)
     setPendingRulesOnStart(Boolean(opts?.showRules))
     setSpellAnimation(null)
+    capture('game_started', {
+      player_count: players.length,
+      ai_players: players.filter((p) => p.isAI).length,
+      ai_difficulty: players.find((p) => p.isAI)?.aiDifficulty,
+      assistance_level: players.find((p) => !p.isAI)?.assistanceLevel,
+    })
   }
 
   const clearSpellAnimation = useCallback(() => setSpellAnimation(null), [])
@@ -74,6 +83,56 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (result.ok) {
       setState(result.state)
       setLastError(null)
+
+      if (action.type === 'BUILD_STRUCTURE') {
+        const hex = preState.board.find((h) => h.id === action.hexId)
+        capture('structure_built', {
+          structure_type: action.structureType,
+          terrain: hex?.terrain,
+          player_id: action.playerId,
+          phase: preState.phase,
+        })
+      } else if (action.type === 'SKIP_BUILD') {
+        capture('build_skipped', { player_id: action.playerId })
+      } else if (action.type === 'CAST_SPELL') {
+        const caster = preState.players.find((p) => p.id === action.playerId)
+        const lc = caster?.logicHand.find((c) => c.instanceId === action.logicCardId)
+        const ec = caster?.effectHand.find((c) => c.instanceId === action.effectCardId)
+        const tc = preState.tarotRow.find((t) => t.instanceId === action.tarotId)
+        capture('spell_cast', {
+          logic_card: lc ? LOGIC_CARD_LABELS[lc.kind] : undefined,
+          effect_card: ec ? EFFECT_CARD_LABELS[ec.kind] : undefined,
+          tarot_suit: tc?.kind === 'minor' ? tc.suit : undefined,
+          tarot_rank: tc?.kind === 'minor' ? tc.rank : undefined,
+          player_id: action.playerId,
+        })
+      } else if (action.type === 'PLAY_MAJOR_ARCANA') {
+        capture('major_arcana_played', {
+          card_id: action.tarotId,
+          player_id: action.playerId,
+        })
+      } else if (action.type === 'TAKE_HOLD_CARD') {
+        capture('hold_card_taken', {
+          card_id: action.tarotId,
+          player_id: action.playerId,
+        })
+      } else if (action.type === 'PLAY_HELD_ARCANA') {
+        capture('held_arcana_played', {
+          card_id: action.cardId,
+          player_id: action.playerId,
+        })
+      }
+
+      if (result.state.winner) {
+        const scores = Object.fromEntries(
+          result.state.players.map((p) => [p.id, computeVP(result.state, p.id)]),
+        )
+        capture('game_ended', {
+          winner_id: result.state.winner,
+          scores,
+          player_count: result.state.players.length,
+        })
+      }
 
       if (action.type === 'CAST_SPELL' || action.type === 'PLAY_MAJOR_ARCANA') {
         const caster = preState.players.find((p) => p.id === action.playerId)
@@ -152,6 +211,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   const newGame = () => {
+    const s = stateRef.current
+    if (s && !s.winner) {
+      const scores = Object.fromEntries(
+        s.players.map((p) => [p.id, computeVP(s, p.id)]),
+      )
+      capture('game_abandoned', {
+        phase: s.phase,
+        scores,
+        player_count: s.players.length,
+      })
+    }
     clearSavedGame()
     setState(null)
     setLastError(null)

@@ -11,6 +11,7 @@ import {
   saveSeats,
   type SeatDraft,
 } from '../persistence'
+import { initTelemetry, disableTelemetry, loadTelemetryOptIn, saveTelemetryOptIn } from '../telemetry'
 
 const PLAYER_COUNT = 2
 
@@ -44,6 +45,8 @@ export function SetupScreen() {
   const { startGame } = useGameEngine()
   const [seats, setSeats] = useState<SeatDraft[]>(defaultSeats())
   const [showRules, setShowRules] = useState(loadShowRulesOnStart())
+  const [showTelemetryPrompt, setShowTelemetryPrompt] = useState(loadTelemetryOptIn() === null)
+  const [telemetryOptedIn, setTelemetryOptedIn] = useState(loadTelemetryOptIn() === true)
 
   // Synchronize the complete seats configuration to localStorage whenever it is modified
   useEffect(() => {
@@ -71,7 +74,7 @@ export function SetupScreen() {
   return (
     <div className="setup-screen">
       <img className="setup-title-card" src={assetUrl('/img/title-card.jpg')} alt="Logician" />
-      <p className="setup-subtitle">Hotseat play — any seat can be human or AI.</p>
+      <p className="setup-subtitle">Hotseat play, any seat can be human or AI.</p>
       <div className="setup-form">
         {seats.map((seat, i) => (
           <div key={i} className="seat-container">
@@ -129,6 +132,49 @@ export function SetupScreen() {
         />{' '}
         Show the rules before starting
       </label>
+      {showTelemetryPrompt ? (
+        <div className="telemetry-prompt">
+          <p>Help improve Logician? Anonymous usage analytics help us understand how the game is played, no personal data is collected.</p>
+          <div className="telemetry-prompt-buttons">
+            <button
+              className="action-button"
+              onClick={() => {
+                saveTelemetryOptIn(true)
+                initTelemetry()
+                setShowTelemetryPrompt(false)
+                setTelemetryOptedIn(true)
+              }}
+            >
+              Yes
+            </button>
+            <button
+              className="action-button secondary"
+              onClick={() => {
+                saveTelemetryOptIn(false)
+                setShowTelemetryPrompt(false)
+                setTelemetryOptedIn(false)
+              }}
+            >
+              No thanks
+            </button>
+          </div>
+        </div>
+      ) : (
+        <label className="setup-field show-rules-field">
+          <input
+            type="checkbox"
+            checked={telemetryOptedIn}
+            onChange={(e) => {
+              const next = e.target.checked
+              setTelemetryOptedIn(next)
+              saveTelemetryOptIn(next)
+              if (next) initTelemetry()
+              else disableTelemetry()
+            }}
+          />{' '}
+          Send anonymous usage analytics
+        </label>
+      )}
       <button
         className="primary-button"
         onClick={() =>

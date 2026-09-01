@@ -40,6 +40,8 @@ jobs:
       # reads import.meta.env.BASE_URL, so nothing else needs to know this is a PR build.
       - name: Build Application
         run: npm run build -- --base=/logician/pr-${{ github.event.pull_request.number }}/
+        env:
+          VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

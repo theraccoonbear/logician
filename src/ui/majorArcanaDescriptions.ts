@@ -15,7 +15,7 @@ export const MAJOR_ARCANA_DESCRIPTIONS: Record<MajorArcanaId, string> = {
   WHEEL: 'Randomize the levels of 3 chosen unfortressed structures.',
   JUSTICE: 'You name a terrain, the clockwise opponent names a VP level; cast a spell using those as operands.',
   HANGED_MAN: 'You name a terrain, the counter-clockwise opponent names a structure type; cast a spell using those as operands.',
-  DEATH: 'Destroy every structure at level 2 or below, everywhere — even inside fortresses. Fortresses themselves survive.',
+  DEATH: 'Destroy every structure at level 2 or below, everywhere, even inside fortresses. Fortresses themselves survive.',
   TEMPERANCE: 'Every player above the lowest VP must downgrade or destroy their own structures until they match it exactly.',
   DEVIL: 'Two opponents each name a different condition; destroys all matching structures using one of your Logic cards (no Effect card).',
   TOWER: 'Sacrifice one of your structures (level X); destroy opponent structures totaling exactly X.',

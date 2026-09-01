@@ -93,6 +93,32 @@
   width: auto;
 }
 
+.telemetry-prompt {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  text-align: center;
+}
+
+.telemetry-prompt p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.telemetry-prompt-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.telemetry-prompt-buttons .action-button {
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
 .primary-button,
 .action-button {
   font: inherit;

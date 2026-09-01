@@ -35,7 +35,7 @@ export function DevilForm({
 
   return (
     <div className="major-arcana-form">
-      <p>Two opponents each name a different condition (in a 2-player game, the same opponent names both). No Effect card — the result is always destroy.</p>
+      <p>Two opponents each name a different condition (in a 2-player game, the same opponent names both). No Effect card: the result is always destroy.</p>
       <p>Condition 1:</p>
       <ConditionPicker operand={condition1} onChange={setCondition1} />
       <p>Condition 2 (must be a different category):</p>

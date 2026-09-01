@@ -23,7 +23,7 @@ export function StructureToken({
   crowded?: boolean
   onClick?: (e: MouseEvent) => void
 }) {
-  const title = `${structure.type} — level ${structure.level}`
+  const title = `${structure.type}: level ${structure.level}`
   const artUrl = structureArtUrl(structure)
 
   // Art tokens (currently Pool/Pyramid/Tower) render the real illustration at a
