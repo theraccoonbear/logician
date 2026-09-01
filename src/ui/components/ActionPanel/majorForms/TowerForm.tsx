@@ -31,7 +31,8 @@ export function TowerForm({
 
   const toggle = (id: string) => {
     const next = new Set(opponentIds)
-    next.has(id) ? next.delete(id) : next.add(id)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
     setOpponentIds(next)
   }
 

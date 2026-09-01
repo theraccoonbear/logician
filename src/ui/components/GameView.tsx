@@ -79,7 +79,7 @@ export function GameView() {
       return new Set<string>()
     }
     return new Set([...highlightedIds, ...majorPreviewIds])
-  }, [state, highlightedIds, majorPreviewIds, spellSelection])
+  }, [state, highlightedIds, majorPreviewIds])
 
   if (!state) return null
 
