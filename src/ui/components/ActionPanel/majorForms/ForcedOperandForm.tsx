@@ -2,33 +2,18 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { getForcedOperandSpec, designatedOpponentId } from '../../../../engine/majorArcana/forcedOperand'
 import { applyAction } from '../../../../engine/reducer'
 import { createAI } from '../../../../engine/ai'
-import { getAffectedStructures } from '../../../../engine/selectors'
-import { applyEffect } from '../../../../engine/levelResolution'
+import { terrainArtUrl } from '../../../terrainArt'
+import { structureArtUrl } from '../../../structureArt'
 import type { MajorArcanaCard } from '../../../../engine/types/tarot'
-import type { Operand } from '../../../../engine/types/tarot'
-import type { GameState } from '../../../../engine/types/state'
-import type { EffectCardId, LogicCardId } from '../../../../engine/types/cards'
 import type { OperandKind } from '../../../../engine/types/tarot'
+import type { GameState } from '../../../../engine/types/state'
+import type { Structure } from '../../../../engine/types/structure'
+import type { TerrainType } from '../../../../engine/types/terrain'
+import type { EffectCardId } from '../../../../engine/types/cards'
 import { useGameEngine } from '../../../hooks/useGameEngine'
 import { EffectCardHand } from '../../Hand/EffectCardHand'
 import { LogicCardHand } from '../../Hand/LogicCardHand'
 import { OperandPicker, operandKindLabel } from './OperandPicker'
-
-interface StructurePreview {
-  id: string
-  type: string
-  owner: string
-  oldLevel: number
-  newLevel: number | null
-  destroyed: boolean
-  vpDelta: number
-}
-
-interface PreviewResult {
-  opponentValue: unknown
-  structures: StructurePreview[]
-  totalVPDelta: number
-}
 
 function predictAIOpponentChoice(
   state: GameState,
@@ -63,44 +48,72 @@ function predictAIOpponentChoice(
   return choiceAction.choice as Record<string, unknown>
 }
 
-function computeFullPreview(
+function simulateFullSpell(
   state: GameState,
-  spec: { casterCategory: string; opponentCategory: string },
-  casterValue: unknown,
-  opponentValue: unknown,
-  logicCardKind: string,
-  effectCardKind: EffectCardId,
   casterId: string,
-): PreviewResult | null {
-  if (casterValue == null || casterValue === '' || opponentValue == null || opponentValue === '') return null
-
-    const operandA: Operand = { kind: spec.casterCategory as Operand['kind'], value: casterValue as Operand['value'] }
-    const operandB: Operand = { kind: spec.opponentCategory as Operand['kind'], value: opponentValue as Operand['value'] }
-    const affected = getAffectedStructures(state, { logicCardId: logicCardKind as LogicCardId, operandA, operandB })
-
-  let totalVPDelta = 0
-  const structures: StructurePreview[] = affected.map((s) => {
-    const result = applyEffect(s, effectCardKind)
-    const destroyed = result.destroyed
-    const newLevel = destroyed ? 0 : result.newLevel
-    const vpDelta = s.owner === casterId ? (newLevel - s.level) : -(s.level - newLevel)
-    totalVPDelta += vpDelta
-    return {
-      id: s.id,
-      type: s.type,
-      owner: s.owner,
-      oldLevel: s.level,
-      newLevel: destroyed ? null : newLevel,
-      destroyed,
-      vpDelta,
-    }
+  majorTarot: MajorArcanaCard,
+  casterValue: unknown,
+  logicCardId: string,
+  effectCardId: string,
+  opponentChoice: Record<string, unknown>,
+) {
+  const playResult = applyAction(state, {
+    type: 'PLAY_MAJOR_ARCANA',
+    playerId: casterId,
+    tarotId: majorTarot.instanceId,
+    params: { casterValue, logicCardId, effectCardId },
   })
+  if (!playResult.ok) return null
 
-  return { opponentValue, structures, totalVPDelta }
+  const submitResult = applyAction(playResult.state, {
+    type: 'SUBMIT_OPPONENT_CHOICE',
+    playerId: playResult.state.players[playResult.state.activePlayerIndex].id,
+    choice: opponentChoice,
+  })
+  if (!submitResult.ok) return null
+
+  return submitResult.state
 }
 
-function formatOperandValue(kind: OperandKind, value: unknown): string {
-  return `${operandKindLabel(kind)} ${String(value)}`
+interface StructureChange {
+  structure: Structure
+  terrain: TerrainType
+  isDestroyed: boolean
+  oldLevel: number
+  newLevel: number
+  delta: number
+}
+
+function diffStructures(before: GameState, after: GameState, playerId: string): { playerChanges: StructureChange[]; opponentChanges: StructureChange[] } {
+  const currentMap = new Map(before.structures.map((s) => [s.id, s]))
+  const nextMap = new Map(after.structures.map((s) => [s.id, s]))
+
+  const playerChanges: StructureChange[] = []
+  const opponentChanges: StructureChange[] = []
+
+  for (const [id, current] of currentMap.entries()) {
+    const next = nextMap.get(id)
+    const hex = before.board.find((h) => h.id === current.hexId)
+    const terrain = (hex?.terrain ?? 'Prairies') as TerrainType
+
+    if (!next) {
+      const change: StructureChange = {
+        structure: current, terrain, isDestroyed: true,
+        oldLevel: current.level, newLevel: 0, delta: -current.level,
+      }
+      if (current.owner === playerId) playerChanges.push(change)
+      else opponentChanges.push(change)
+    } else if (next.level !== current.level) {
+      const change: StructureChange = {
+        structure: current, terrain, isDestroyed: false,
+        oldLevel: current.level, newLevel: next.level, delta: next.level - current.level,
+      }
+      if (current.owner === playerId) playerChanges.push(change)
+      else opponentChanges.push(change)
+    }
+  }
+
+  return { playerChanges, opponentChanges }
 }
 
 export function ForcedOperandForm({
@@ -129,45 +142,107 @@ export function ForcedOperandForm({
   const logicCard = logicId ? player?.logicHand.find((c) => c.instanceId === logicId) : null
   const effectCard = effectId ? player?.effectHand.find((c) => c.instanceId === effectId) : null
 
+  const defaultLogicCard = player?.logicHand[0] ?? null
+  const defaultEffectCard = player?.effectHand[0] ?? null
+
   const aiChoice = useMemo(() => {
-    if (!canConfirm || !opponentIsAI || !state || !player || !spec || !logicCard || !effectCard) return null
-    return predictAIOpponentChoice(state, player.id, tarot, casterValue, logicCard.kind, effectCard.kind)
-  }, [canConfirm, opponentIsAI, state, player, tarot, casterValue, logicCard, effectCard, spec])
+    if (!opponentIsAI || !state || !player || !spec || casterValue === '') return null
+    const lc = logicCard ?? defaultLogicCard
+    const ec = effectCard ?? defaultEffectCard
+    if (!lc || !ec) return null
+    return predictAIOpponentChoice(state, player.id, tarot, casterValue, lc.kind, ec.kind)
+  }, [opponentIsAI, state, player, spec, tarot, casterValue, logicCard, defaultLogicCard, effectCard, defaultEffectCard])
 
-  const preview = useMemo(() => {
-    if (!state || !spec || !player || !logicCard || !effectCard) return null
-    if (casterValue === '') return null
+  const previewHighlights = useMemo(() => {
+    if (!state || !player || !logicCard || !effectCard || !aiChoice || casterValue === '' || !spec) return new Set<string>()
+    const nextState = simulateFullSpell(state, player.id, tarot, casterValue, logicCard.instanceId, effectCard.instanceId, aiChoice)
+    if (!nextState) return new Set<string>()
+    const { playerChanges, opponentChanges } = diffStructures(state, nextState, player.id)
+    const changed = new Set<string>()
+    for (const c of [...playerChanges, ...opponentChanges]) changed.add(c.structure.id)
+    return changed
+  }, [state, player, logicCard, effectCard, aiChoice, casterValue, spec, tarot])
 
-    if (opponentIsAI && aiChoice) {
-      return computeFullPreview(state, { casterCategory: spec.casterCategory, opponentCategory: spec.opponentCategory }, casterValue, aiChoice.opponentValue, logicCard.kind, effectCard.kind, player.id)
+  const previewNode = useMemo(() => {
+    if (!state || !player || !logicCard || !effectCard || !aiChoice || casterValue === '' || !spec) return null
+    const nextState = simulateFullSpell(state, player.id, tarot, casterValue, logicCard.instanceId, effectCard.instanceId, aiChoice)
+    if (!nextState) return null
+
+    const { playerChanges, opponentChanges } = diffStructures(state, nextState, player.id)
+    const casterNet = playerChanges.reduce((sum, c) => sum + c.delta, 0)
+    const opponentNet = opponentChanges.reduce((sum, c) => sum + c.delta, 0)
+    const hasChanges = playerChanges.length > 0 || opponentChanges.length > 0
+
+    const renderChangeRow = (c: StructureChange) => {
+      const terrainImg = terrainArtUrl(c.terrain)
+      const structImg = structureArtUrl({ type: c.structure.type, level: c.oldLevel })
+      const deltaText = c.isDestroyed ? `destroyed (-${c.oldLevel})` : `${c.delta > 0 ? '+' : ''}${c.delta}`
+      const deltaClass = c.delta > 0 ? 'delta-positive' : 'delta-negative'
+
+      return (
+        <div key={c.structure.id} className="summary-change-row">
+          <div className="summary-assets">
+            <img className="summary-asset-terrain" src={terrainImg} alt={c.terrain} title={c.terrain} />
+            {structImg ? (
+              <img className="summary-asset-structure" src={structImg} alt={c.structure.type} title={`${c.structure.type} (Level ${c.oldLevel})`} />
+            ) : (
+              <span className="summary-asset-fallback">{c.structure.type[0]}</span>
+            )}
+          </div>
+          <span className={`summary-delta ${deltaClass}`}>{deltaText}</span>
+        </div>
+      )
     }
 
-    const partialAffected = state.structures.filter((s) => {
-      const hex = state.board.find((h) => h.id === s.hexId)
-      if (!hex) return false
-      if (spec.casterCategory === 'terrain') return hex.terrain === casterValue
-      if (spec.casterCategory === 'structureType') return s.type === casterValue
-      if (spec.casterCategory === 'level') return s.level === casterValue
-      return false
-    })
-    return {
-      opponentValue: null as unknown,
-      structures: partialAffected.map((s) => ({
-        id: s.id, type: s.type, owner: s.owner, oldLevel: s.level,
-        newLevel: null as number | null, destroyed: false, vpDelta: 0,
-      })),
-      totalVPDelta: 0,
-    }
-  }, [state, spec, player, logicCard, effectCard, casterValue, opponentIsAI, aiChoice])
-
-  const previewTargets = useMemo(() => {
-    return new Set(preview?.structures.map((s) => s.id) ?? [])
-  }, [preview])
+    return (
+      <div className="spell-impact-summary">
+        <div className="summary-title">Point Impact Summary</div>
+        {hasChanges ? (
+          <>
+            <div className="summary-comparison-table">
+              <div className="summary-column">
+                <div className="summary-column-header">You</div>
+                <div className="summary-rows">
+                  {playerChanges.length > 0 ? (
+                    playerChanges.map(renderChangeRow)
+                  ) : (
+                    <p className="summary-no-changes">No changes</p>
+                  )}
+                </div>
+                <div className="summary-column-footer">
+                  Net: <span className={casterNet >= 0 ? 'delta-positive' : 'delta-negative'}>{casterNet >= 0 ? '+' : ''}{casterNet}</span>
+                </div>
+              </div>
+              <div className="summary-divider" />
+              <div className="summary-column">
+                <div className="summary-column-header">Other Players</div>
+                <div className="summary-rows">
+                  {opponentChanges.length > 0 ? (
+                    opponentChanges.map(renderChangeRow)
+                  ) : (
+                    <p className="summary-no-changes">No changes</p>
+                  )}
+                </div>
+                <div className="summary-column-footer">
+                  Net: <span className={opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}>{opponentNet >= 0 ? '+' : ''}{opponentNet}</span>
+                </div>
+              </div>
+            </div>
+            <div className="summary-comparison-outcome">
+              Net Result Comparison: <span className={casterNet - opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}>{casterNet - opponentNet >= 0 ? '+' : ''}{casterNet - opponentNet}</span> relative to others
+            </div>
+          </>
+        ) : (
+          <p className="summary-empty-text">This spell will not alter any structures on the board.</p>
+        )}
+      </div>
+    )
+  }, [state, player, logicCard, effectCard, aiChoice, casterValue, spec, tarot])
 
   useEffect(() => {
-    onPreviewTargetsChange?.(previewTargets)
+    onPreviewTargetsChange?.(previewHighlights)
     return () => { onPreviewTargetsChange?.(new Set()) }
-  }, [previewTargets, onPreviewTargetsChange])
+  }, [previewHighlights, onPreviewTargetsChange])
 
   const handleConfirm = useCallback(() => {
     if (!canConfirm || !player || !opponentId) return
@@ -196,10 +271,10 @@ export function ForcedOperandForm({
         <OperandPicker kind={spec.casterCategory} value={casterValue} onChange={setCasterValue} />
       </div>
 
-      {opponentIsAI && preview?.opponentValue != null && (
+      {opponentIsAI && aiChoice?.opponentValue != null && (
         <div className="redistribute-row major-arcana-opponent-waiting">
           <span className="opponent-waiting-label">
-            {opponent!.name} names {formatOperandValue(spec.opponentCategory as OperandKind, preview.opponentValue)}.
+            {opponent!.name} names {operandKindLabel(spec.opponentCategory as OperandKind)} {String(aiChoice.opponentValue)}.
           </span>
         </div>
       )}
@@ -207,37 +282,7 @@ export function ForcedOperandForm({
       <LogicCardHand cards={player.logicHand} selectedId={logicId} onSelect={setLogicId} />
       <EffectCardHand cards={player.effectHand} selectedId={effectId} onSelect={setEffectId} />
 
-      {preview && preview.structures.length > 0 && (
-        <div className="major-arcana-preview">
-          <div className="preview-header">
-            {preview.structures.length} structure{preview.structures.length !== 1 ? 's' : ''} affected
-            {preview.totalVPDelta !== 0 && (
-              <span className={`vp-delta ${preview.totalVPDelta > 0 ? 'positive' : 'negative'}`}>
-                {' '}({preview.totalVPDelta > 0 ? '+' : ''}{preview.totalVPDelta} VP)
-              </span>
-            )}
-          </div>
-          <ul className="preview-structure-list">
-            {preview.structures.map((s) => (
-              <li key={s.id} className="preview-structure-item">
-                <span className="preview-structure-type">{s.type}</span>
-                {' '}
-                <span className="preview-structure-level">
-                  {s.oldLevel}{' '}
-                  {s.destroyed
-                    ? <span className="preview-destroyed">destroyed</span>
-                    : <>{'\u2192'} {s.newLevel}</>}
-                </span>
-                {s.vpDelta !== 0 && (
-                  <span className={`preview-structure-vp ${s.vpDelta > 0 ? 'positive' : 'negative'}`}>
-                    {' '}({s.vpDelta > 0 ? '+' : ''}{s.vpDelta} VP)
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {previewNode}
 
       <div className="action-buttons">
         <button
