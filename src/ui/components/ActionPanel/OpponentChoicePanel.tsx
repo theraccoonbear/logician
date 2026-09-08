@@ -3,11 +3,15 @@ import { getForcedOperandSpec } from '../../../engine/majorArcana/forcedOperand'
 import { getAffectedStructures } from '../../../engine/selectors'
 import { describeMajorArcana } from '../../operandLabels'
 import { MAJOR_ARCANA_DESCRIPTIONS } from '../../majorArcanaDescriptions'
+import { terrainArtUrl } from '../../terrainArt'
+import { structureArtUrl } from '../../structureArt'
 import { useGameEngine } from '../../hooks/useGameEngine'
 import { OperandPicker, operandKindLabel } from './majorForms/OperandPicker'
 import { ConditionPicker } from './majorForms/ConditionPicker'
 import { StarAdjustmentForm, TemperanceAdjustmentForm } from './majorForms/AdjustmentForms'
 import type { Operand } from '../../../engine/types/tarot'
+import type { LogicCardId } from '../../../engine/types/cards'
+import type { TerrainType } from '../../../engine/types/terrain'
 
 export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTargetsChange?: (ids: Set<string>) => void }) {
   const { state, dispatch, lastError } = useGameEngine()
@@ -19,17 +23,36 @@ export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTarge
   const responder = state?.players.find((p) => p.id === responderId)
   const caster = state?.players.find((p) => p.id === pending?.casterId)
   const spec = pending ? getForcedOperandSpec(pending.majorId) : undefined
+  const isDevil = pending?.majorId === 'DEVIL'
+  const condIndex = isDevil ? (pending.devilConditionIndex ?? 0) : 0
 
   const casterValue = pending?.casterParams.casterValue
   const logicCardId = pending?.casterParams.logicCardId
 
-  const previewTargets = useMemo(() => {
-    if (!state || !spec || !logicCardId || casterValue == null || opponentValue === '') return new Set<string>()
+  // Forced-operand preview (Hanged Man, Justice, Moon, Sun, Lovers)
+  const forcedPreviewTargets = useMemo(() => {
+    if (isDevil || !state || !spec || !logicCardId || casterValue == null || opponentValue === '') return new Set<string>()
     const operandA: Operand = { kind: spec.casterCategory, value: casterValue as Operand['value'] }
     const operandB: Operand = { kind: spec.opponentCategory, value: opponentValue as Operand['value'] }
     const affected = getAffectedStructures(state, { logicCardId: logicCardId as Parameters<typeof getAffectedStructures>[1]['logicCardId'], operandA, operandB })
     return new Set(affected.map((s) => s.id))
-  }, [state, spec, logicCardId, casterValue, opponentValue])
+  }, [state, spec, logicCardId, casterValue, opponentValue, isDevil])
+
+  // Devil preview: when picking condition 2, show structures matching cond1 + current pick
+  const cond1 = isDevil ? (pending!.opponentParams.condition1 as Operand | undefined) : undefined
+  const logicCard = isDevil && caster && logicCardId ? caster.logicHand.find((c) => c.instanceId === logicCardId) : null
+
+  const devilPreviewTargets = useMemo(() => {
+    if (!isDevil || !state || !logicCard || !cond1 || !condition || condIndex < 1) return new Set<string>()
+    const affected = getAffectedStructures(state, {
+      logicCardId: logicCard.kind as LogicCardId,
+      operandA: cond1,
+      operandB: condition,
+    })
+    return new Set(affected.map((s) => s.id))
+  }, [isDevil, state, logicCard, cond1, condition, condIndex])
+
+  const previewTargets = isDevil ? devilPreviewTargets : forcedPreviewTargets
 
   useEffect(() => {
     onPreviewTargetsChange?.(previewTargets)
@@ -51,13 +74,15 @@ export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTarge
   const label = describeMajorArcana(pending.majorId)
   const description = MAJOR_ARCANA_DESCRIPTIONS[pending.majorId]
 
-  if (pending.majorId === 'DEVIL') {
-    const condIndex = pending.devilConditionIndex ?? 0
+  if (isDevil) {
     const usedKinds = new Set<string>()
-    if (condIndex >= 1) {
-      const first = pending.opponentParams.condition1 as { kind: string } | undefined
-      if (first) usedKinds.add(first.kind)
+    if (condIndex >= 1 && cond1) {
+      usedKinds.add(cond1.kind)
     }
+
+    const devilStructures = condIndex >= 1 && cond1 && condition
+      ? getAffectedStructures(state, { logicCardId: logicCard!.kind as LogicCardId, operandA: cond1, operandB: condition })
+      : []
 
     return (
       <div className="action-panel opponent-choice-panel">
@@ -65,6 +90,11 @@ export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTarge
           <span className="opponent-choice-card">{label}</span>
           <span className="opponent-choice-desc">{description}</span>
         </div>
+        {condIndex >= 1 && cond1 && (
+          <div className="opponent-choice-prompt" style={{ opacity: 0.7, fontSize: '13px' }}>
+            Condition 1: {operandKindLabel(cond1.kind as any)} {String(cond1.value)}
+          </div>
+        )}
         <div className="opponent-choice-prompt">
           <strong>{responder.name}</strong>, name condition {condIndex + 1} of 2:
         </div>
@@ -73,6 +103,32 @@ export function OpponentChoicePanel({ onPreviewTargetsChange }: { onPreviewTarge
           onChange={setCondition}
           excludedKinds={usedKinds}
         />
+        {devilStructures.length > 0 && (
+          <div className="spell-impact-summary" style={{ marginTop: 8 }}>
+            <div className="summary-title">Will destroy {devilStructures.length} structure{devilStructures.length !== 1 ? 's' : ''}</div>
+            <div className="summary-rows">
+              {devilStructures.map((s) => {
+                const hex = state.board.find((h) => h.id === s.hexId)
+                const terrain = (hex?.terrain ?? 'Prairies') as TerrainType
+                const terrainImg = terrainArtUrl(terrain)
+                const structImg = structureArtUrl({ type: s.type, level: s.level })
+                return (
+                  <div key={s.id} className="summary-change-row">
+                    <div className="summary-assets">
+                      <img className="summary-asset-terrain" src={terrainImg} alt={terrain} title={terrain} />
+                      {structImg ? (
+                        <img className="summary-asset-structure" src={structImg} alt={s.type} title={`${s.type} (Level ${s.level})`} />
+                      ) : (
+                        <span className="summary-asset-fallback">{s.type[0]}</span>
+                      )}
+                    </div>
+                    <span className="summary-delta delta-negative">destroyed (-{s.level})</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
         <div className="action-buttons">
           <button
             className="action-button"
@@ -166,6 +222,15 @@ export function MajorChoiceWaitingPanel() {
 
   const label = describeMajorArcana(pending.majorId)
 
+  // Show conditions chosen so far for Devil
+  const isDevil = pending.majorId === 'DEVIL'
+  const cond1 = isDevil ? (pending.opponentParams.condition1 as Operand | undefined) : undefined
+
+  // For forced-operand cards, show the caster's choice and opponent's choice so far
+  const forcedSpec = getForcedOperandSpec(pending.majorId)
+  const casterValue = pending.casterParams.casterValue
+  const opponentValue = (pending.opponentParams as { opponentValue?: unknown }).opponentValue
+
   const cancel = () => dispatch({ type: 'CANCEL_MAJOR_CHOICE', playerId: pending.casterId })
 
   return (
@@ -173,6 +238,21 @@ export function MajorChoiceWaitingPanel() {
       <div className="opponent-choice-header">
         <span className="opponent-choice-card">{label}</span>
       </div>
+      {isDevil && cond1 && (
+        <div className="waiting-message" style={{ fontSize: '13px', opacity: 0.7 }}>
+          Condition 1: {operandKindLabel(cond1.kind as any)} {String(cond1.value)}
+        </div>
+      )}
+      {forcedSpec && casterValue != null && (
+        <div className="waiting-message" style={{ fontSize: '13px', opacity: 0.7 }}>
+          Your choice: {operandKindLabel(forcedSpec.casterCategory)} {String(casterValue)}
+        </div>
+      )}
+      {forcedSpec && opponentValue != null && (
+        <div className="waiting-message" style={{ fontSize: '13px', opacity: 0.7 }}>
+          Opponent&apos;s choice: {operandKindLabel(forcedSpec.opponentCategory)} {String(opponentValue)}
+        </div>
+      )}
       <div className="waiting-message">
         Waiting for <strong>{nextResponder.name}</strong> to choose...
       </div>
