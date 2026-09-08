@@ -5,7 +5,6 @@ import { createAI } from '../../../../engine/ai'
 import { terrainArtUrl } from '../../../terrainArt'
 import { structureArtUrl } from '../../../structureArt'
 import type { MajorArcanaCard } from '../../../../engine/types/tarot'
-import type { OperandKind } from '../../../../engine/types/tarot'
 import type { GameState } from '../../../../engine/types/state'
 import type { Structure } from '../../../../engine/types/structure'
 import type { TerrainType } from '../../../../engine/types/terrain'
@@ -259,16 +258,13 @@ export function ForcedOperandForm({
 
       <div className="redistribute-row">
         <span>{opponent!.name} names the {operandKindLabel(spec.opponentCategory)}:</span>
-        <OperandPicker kind={spec.opponentCategory} value="" onChange={() => {}} disabled />
+        <OperandPicker
+          kind={spec.opponentCategory}
+          value={opponentIsAI && aiChoice?.opponentValue != null ? aiChoice.opponentValue as string | number : ''}
+          onChange={() => {}}
+          disabled
+        />
       </div>
-
-      {opponentIsAI && aiChoice?.opponentValue != null && (
-        <div className="redistribute-row major-arcana-opponent-waiting">
-          <span className="opponent-waiting-label">
-            Predicted: {operandKindLabel(spec.opponentCategory as OperandKind)} {String(aiChoice.opponentValue)}
-          </span>
-        </div>
-      )}
 
       <LogicCardHand cards={player.logicHand} selectedId={logicId} onSelect={setLogicId} />
       <EffectCardHand cards={player.effectHand} selectedId={effectId} onSelect={setEffectId} />
