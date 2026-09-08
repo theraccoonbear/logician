@@ -6,4 +6,5 @@ export interface AIStrategy {
   chooseBuildAction(state: GameState, playerId: PlayerId): GameAction
   chooseCastAction(state: GameState, playerId: PlayerId): GameAction
   respondToTriggerWindow(state: GameState, playerId: PlayerId): GameAction
+  chooseOpponentChoice(state: GameState, playerId: PlayerId): GameAction
 }

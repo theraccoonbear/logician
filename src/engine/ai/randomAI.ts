@@ -1,4 +1,4 @@
-import { getLegalBuildActions, getLegalCastActions } from '../legalActions'
+import { getLegalBuildActions, getLegalCastActions, getLegalMajorChoiceActions } from '../legalActions'
 import { nextRandom } from '../prng'
 import type { GameAction } from '../types/actions'
 import type { GameState } from '../types/state'
@@ -15,4 +15,5 @@ export const RandomAI: AIStrategy = {
   chooseBuildAction: (state, playerId) => pickRandom(getLegalBuildActions(state, playerId), state).action,
   chooseCastAction: (state, playerId) => pickRandom(getLegalCastActions(state, playerId), state).action,
   respondToTriggerWindow: (_state, playerId) => ({ type: 'PASS_TRIGGER_WINDOW', playerId }),
+  chooseOpponentChoice: (state, playerId) => pickRandom(getLegalMajorChoiceActions(state, playerId), state).action,
 }

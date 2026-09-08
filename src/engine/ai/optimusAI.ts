@@ -1,4 +1,4 @@
-import { getLegalBuildActions, getLegalCastActions } from '../legalActions'
+import { getLegalBuildActions, getLegalCastActions, getLegalMajorChoiceActions } from '../legalActions'
 import { applyAction } from '../reducer'
 import type { GameAction } from '../types/actions'
 import type { PlayerId } from '../types/ids'
@@ -206,5 +206,20 @@ export const OptimusAI: AIStrategy = {
     }
 
     return { type: 'PASS_TRIGGER_WINDOW', playerId }
+  },
+  chooseOpponentChoice: (state, playerId) => {
+    const candidates = getLegalMajorChoiceActions(state, playerId)
+    let bestAction = candidates[0]
+    let bestScore = -Infinity
+
+    for (const action of candidates) {
+      const score = getExpectedScore(state, playerId, action)
+      if (score > bestScore) {
+        bestScore = score
+        bestAction = action
+      }
+    }
+
+    return bestAction
   },
 }

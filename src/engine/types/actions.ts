@@ -10,6 +10,8 @@ export type GameAction =
   | { type: 'TAKE_HOLD_CARD'; playerId: PlayerId; tarotId: string }
   | { type: 'PLAY_HELD_ARCANA'; playerId: PlayerId; cardId: string; params?: unknown }
   | { type: 'PASS_TRIGGER_WINDOW'; playerId: PlayerId }
+  | { type: 'SUBMIT_OPPONENT_CHOICE'; playerId: PlayerId; choice: Record<string, unknown> }
+  | { type: 'CANCEL_MAJOR_CHOICE'; playerId: PlayerId }
   | { type: 'END_TURN'; playerId: PlayerId }
   | { type: 'SET_ASSISTANCE_LEVEL'; playerId: PlayerId; assistanceLevel: AssistanceLevel }
 

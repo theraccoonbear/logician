@@ -1299,6 +1299,57 @@
   margin-top: 8px;
 }
 
+/* --- Opponent choice panel (multi-player Major Arcana) --- */
+
+.opponent-choice-panel,
+.major-choice-waiting {
+  text-align: center;
+}
+
+.opponent-choice-header {
+  margin-bottom: 12px;
+}
+
+.opponent-choice-card {
+  font-weight: 700;
+  font-size: 16px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.opponent-choice-desc {
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.opponent-choice-prompt {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.waiting-message {
+  font-size: 15px;
+  color: var(--text);
+  margin: 16px 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.major-arcana-opponent-waiting {
+  opacity: 0.7;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.opponent-waiting-label {
+  color: var(--text);
+}
+
 /* --- Log --- */
 
 .game-log {

@@ -81,6 +81,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!preState) return
     const result = applyAction(preState, action)
     if (result.ok) {
+      stateRef.current = result.state
       setState(result.state)
       setLastError(null)
 
@@ -134,8 +135,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         })
       }
 
-      if (action.type === 'CAST_SPELL' || action.type === 'PLAY_MAJOR_ARCANA') {
-        const caster = preState.players.find((p) => p.id === action.playerId)
+      if (action.type === 'CAST_SPELL' || action.type === 'PLAY_MAJOR_ARCANA' || action.type === 'SUBMIT_OPPONENT_CHOICE') {
+        const casterId = action.type === 'SUBMIT_OPPONENT_CHOICE'
+          ? preState.pendingMajorChoice?.casterId
+          : action.playerId
+        const caster = casterId ? preState.players.find((p) => p.id === casterId) : undefined
         if (!caster) return
 
         const preStructuresMap = new Map(preState.structures.map((s) => [s.id, s]))
@@ -194,10 +198,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
           operandA: tc.kind === 'minor' ? tc.operandA : null,
           operandB: tc.kind === 'minor' ? tc.operandB : null,
         }
+        } else if (action.type === 'SUBMIT_OPPONENT_CHOICE' || action.type === 'PLAY_MAJOR_ARCANA') {
+          const pending = preState.pendingMajorChoice
+          if (pending) {
+            const tc = pending.tarot
+            tarotCard = { label: tc.id, artUrl: tarotArtUrl(tc), operandA: null, operandB: null }
+          }
         }
 
         setSpellAnimation({
-          casterId: action.playerId,
+          casterId: casterId ?? action.playerId,
           logicCard,
           effectCard,
           tarotCard,

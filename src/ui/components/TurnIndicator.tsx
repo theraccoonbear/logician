@@ -7,6 +7,7 @@ const PHASE_LABELS: Record<GameState['phase'], string> = {
   build: 'Phase 1: Build',
   cast: 'Phase 2: Cast a Spell',
   awaitingTrigger: 'Waiting on a trigger response',
+  awaitingMajorChoice: 'Waiting for opponent choice',
 }
 
 export function TurnIndicator({ state }: { state: GameState }) {

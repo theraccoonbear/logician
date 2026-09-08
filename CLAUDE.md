@@ -145,3 +145,13 @@ whenever the `cards/` resize rule in `resize-assets.mjs` changes — either shif
   reducer logic with no side effects and no UI dependency — the AI depends on this.
 - **No emdashes in user-facing copy.** Use colons, semicolons, commas, or parentheses instead.
   Emdashes are an AI writing tell. Code comments can use them freely.
+
+## Pre-push verification
+
+Run all three before every push — no exceptions, every time:
+```bash
+npx tsc -b && npm run lint && npx vitest run
+```
+
+**Must use `tsc -b`, not `tsc --noEmit`** — they use different tsconfig settings.
+CI runs `tsc -b && vite build`. The hook must match.
