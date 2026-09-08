@@ -13,6 +13,15 @@ import { EffectCardHand } from '../../Hand/EffectCardHand'
 import { LogicCardHand } from '../../Hand/LogicCardHand'
 import { OperandPicker, operandKindLabel } from './OperandPicker'
 
+interface StructureChange {
+  structure: Structure
+  terrain: TerrainType
+  isDestroyed: boolean
+  oldLevel: number
+  newLevel: number
+  delta: number
+}
+
 function predictAIOpponentChoice(
   state: GameState,
   casterId: string,
@@ -66,15 +75,6 @@ function simulateFullSpell(
   return submitResult.state
 }
 
-interface StructureChange {
-  structure: Structure
-  terrain: TerrainType
-  isDestroyed: boolean
-  oldLevel: number
-  newLevel: number
-  delta: number
-}
-
 function diffStructures(before: GameState, after: GameState, playerId: string): { playerChanges: StructureChange[]; opponentChanges: StructureChange[] } {
   const currentMap = new Map(before.structures.map((s) => [s.id, s]))
   const nextMap = new Map(after.structures.map((s) => [s.id, s]))
@@ -105,6 +105,83 @@ function diffStructures(before: GameState, after: GameState, playerId: string): 
   }
 
   return { playerChanges, opponentChanges }
+}
+
+function renderChangeRow(c: StructureChange) {
+  const terrainImg = terrainArtUrl(c.terrain)
+  const structImg = structureArtUrl({ type: c.structure.type, level: c.oldLevel })
+  const deltaText = c.isDestroyed ? `destroyed (-${c.oldLevel})` : `${c.delta > 0 ? '+' : ''}${c.delta}`
+  const deltaClass = c.delta > 0 ? 'delta-positive' : 'delta-negative'
+
+  return (
+    <div key={c.structure.id} className="summary-change-row">
+      <div className="summary-assets">
+        <img className="summary-asset-terrain" src={terrainImg} alt={c.terrain} title={c.terrain} />
+        {structImg ? (
+          <img className="summary-asset-structure" src={structImg} alt={c.structure.type} title={`${c.structure.type} (Level ${c.oldLevel})`} />
+        ) : (
+          <span className="summary-asset-fallback">{c.structure.type[0]}</span>
+        )}
+      </div>
+      <span className={`summary-delta ${deltaClass}`}>{deltaText}</span>
+    </div>
+  )
+}
+
+function BreakdownPreview({
+  playerChanges,
+  opponentChanges,
+}: {
+  playerChanges: StructureChange[]
+  opponentChanges: StructureChange[]
+}) {
+  const casterNet = playerChanges.reduce((sum, c) => sum + c.delta, 0)
+  const opponentNet = opponentChanges.reduce((sum, c) => sum + c.delta, 0)
+  const hasChanges = playerChanges.length > 0 || opponentChanges.length > 0
+
+  return (
+    <div className="spell-impact-summary">
+      <div className="summary-title">Point Impact Summary</div>
+      {hasChanges ? (
+        <>
+          <div className="summary-comparison-table">
+            <div className="summary-column">
+              <div className="summary-column-header">You</div>
+              <div className="summary-rows">
+                {playerChanges.length > 0 ? (
+                  playerChanges.map(renderChangeRow)
+                ) : (
+                  <p className="summary-no-changes">No changes</p>
+                )}
+              </div>
+              <div className="summary-column-footer">
+                Net: <span className={casterNet >= 0 ? 'delta-positive' : 'delta-negative'}>{casterNet >= 0 ? '+' : ''}{casterNet}</span>
+              </div>
+            </div>
+            <div className="summary-divider" />
+            <div className="summary-column">
+              <div className="summary-column-header">Other Players</div>
+              <div className="summary-rows">
+                {opponentChanges.length > 0 ? (
+                  opponentChanges.map(renderChangeRow)
+                ) : (
+                  <p className="summary-no-changes">No changes</p>
+                )}
+              </div>
+              <div className="summary-column-footer">
+                Net: <span className={opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}>{opponentNet >= 0 ? '+' : ''}{opponentNet}</span>
+              </div>
+            </div>
+          </div>
+          <div className="summary-comparison-outcome">
+            Net Result Comparison: <span className={casterNet - opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}>{casterNet - opponentNet >= 0 ? '+' : ''}{casterNet - opponentNet}</span> relative to others
+          </div>
+        </>
+      ) : (
+        <p className="summary-empty-text">This spell will not alter any structures on the board.</p>
+      )}
+    </div>
+  )
 }
 
 export function ForcedOperandForm({
@@ -138,91 +215,20 @@ export function ForcedOperandForm({
     return predictAIOpponentChoice(state, player.id, tarot, casterValue)
   }, [opponentIsAI, state, player, spec, tarot, casterValue])
 
-  const previewHighlights = useMemo(() => {
-    if (!state || !player || !logicCard || !effectCard || !aiChoice || casterValue === '' || !spec) return new Set<string>()
-    const nextState = simulateFullSpell(state, player.id, tarot, casterValue, logicCard.instanceId, effectCard.instanceId, aiChoice)
-    if (!nextState) return new Set<string>()
-    const { playerChanges, opponentChanges } = diffStructures(state, nextState, player.id)
-    const changed = new Set<string>()
-    for (const c of [...playerChanges, ...opponentChanges]) changed.add(c.structure.id)
-    return changed
-  }, [state, player, logicCard, effectCard, aiChoice, casterValue, spec, tarot])
-
-  const previewNode = useMemo(() => {
-    if (!state || !player || !logicCard || !effectCard || !aiChoice || casterValue === '' || !spec) return null
+  const fullPreview = useMemo(() => {
+    if (!state || !player || !logicCard || !effectCard || casterValue === '' || !spec) return null
+    if (!aiChoice) return null
     const nextState = simulateFullSpell(state, player.id, tarot, casterValue, logicCard.instanceId, effectCard.instanceId, aiChoice)
     if (!nextState) return null
-
-    const { playerChanges, opponentChanges } = diffStructures(state, nextState, player.id)
-    const casterNet = playerChanges.reduce((sum, c) => sum + c.delta, 0)
-    const opponentNet = opponentChanges.reduce((sum, c) => sum + c.delta, 0)
-    const hasChanges = playerChanges.length > 0 || opponentChanges.length > 0
-
-    const renderChangeRow = (c: StructureChange) => {
-      const terrainImg = terrainArtUrl(c.terrain)
-      const structImg = structureArtUrl({ type: c.structure.type, level: c.oldLevel })
-      const deltaText = c.isDestroyed ? `destroyed (-${c.oldLevel})` : `${c.delta > 0 ? '+' : ''}${c.delta}`
-      const deltaClass = c.delta > 0 ? 'delta-positive' : 'delta-negative'
-
-      return (
-        <div key={c.structure.id} className="summary-change-row">
-          <div className="summary-assets">
-            <img className="summary-asset-terrain" src={terrainImg} alt={c.terrain} title={c.terrain} />
-            {structImg ? (
-              <img className="summary-asset-structure" src={structImg} alt={c.structure.type} title={`${c.structure.type} (Level ${c.oldLevel})`} />
-            ) : (
-              <span className="summary-asset-fallback">{c.structure.type[0]}</span>
-            )}
-          </div>
-          <span className={`summary-delta ${deltaClass}`}>{deltaText}</span>
-        </div>
-      )
-    }
-
-    return (
-      <div className="spell-impact-summary">
-        <div className="summary-title">Point Impact Summary</div>
-        {hasChanges ? (
-          <>
-            <div className="summary-comparison-table">
-              <div className="summary-column">
-                <div className="summary-column-header">You</div>
-                <div className="summary-rows">
-                  {playerChanges.length > 0 ? (
-                    playerChanges.map(renderChangeRow)
-                  ) : (
-                    <p className="summary-no-changes">No changes</p>
-                  )}
-                </div>
-                <div className="summary-column-footer">
-                  Net: <span className={casterNet >= 0 ? 'delta-positive' : 'delta-negative'}>{casterNet >= 0 ? '+' : ''}{casterNet}</span>
-                </div>
-              </div>
-              <div className="summary-divider" />
-              <div className="summary-column">
-                <div className="summary-column-header">Other Players</div>
-                <div className="summary-rows">
-                  {opponentChanges.length > 0 ? (
-                    opponentChanges.map(renderChangeRow)
-                  ) : (
-                    <p className="summary-no-changes">No changes</p>
-                  )}
-                </div>
-                <div className="summary-column-footer">
-                  Net: <span className={opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}>{opponentNet >= 0 ? '+' : ''}{opponentNet}</span>
-                </div>
-              </div>
-            </div>
-            <div className="summary-comparison-outcome">
-              Net Result Comparison: <span className={casterNet - opponentNet >= 0 ? 'delta-positive' : 'delta-negative'}>{casterNet - opponentNet >= 0 ? '+' : ''}{casterNet - opponentNet}</span> relative to others
-            </div>
-          </>
-        ) : (
-          <p className="summary-empty-text">This spell will not alter any structures on the board.</p>
-        )}
-      </div>
-    )
+    return diffStructures(state, nextState, player.id)
   }, [state, player, logicCard, effectCard, aiChoice, casterValue, spec, tarot])
+
+  const previewHighlights = useMemo(() => {
+    if (!fullPreview) return new Set<string>()
+    const changed = new Set<string>()
+    for (const c of [...fullPreview.playerChanges, ...fullPreview.opponentChanges]) changed.add(c.structure.id)
+    return changed
+  }, [fullPreview])
 
   useEffect(() => {
     onPreviewTargetsChange?.(previewHighlights)
@@ -269,7 +275,9 @@ export function ForcedOperandForm({
       <LogicCardHand cards={player.logicHand} selectedId={logicId} onSelect={setLogicId} />
       <EffectCardHand cards={player.effectHand} selectedId={effectId} onSelect={setEffectId} />
 
-      {previewNode}
+      {fullPreview && (
+        <BreakdownPreview playerChanges={fullPreview.playerChanges} opponentChanges={fullPreview.opponentChanges} />
+      )}
 
       <div className="action-buttons">
         <button

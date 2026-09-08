@@ -239,18 +239,28 @@ export function MajorChoiceWaitingPanel() {
         <span className="opponent-choice-card">{label}</span>
       </div>
       {isDevil && cond1 && (
-        <div className="waiting-message" style={{ fontSize: '13px', opacity: 0.7 }}>
-          Condition 1: {operandKindLabel(cond1.kind as any)} {String(cond1.value)}
+        <div className="opponent-choice-prompt">
+          Condition 1: <strong>{operandKindLabel(cond1.kind as any)} {String(cond1.value)}</strong>
+        </div>
+      )}
+      {isDevil && !cond1 && (
+        <div className="waiting-message">
+          Opponent is choosing condition 1...
         </div>
       )}
       {forcedSpec && casterValue != null && (
-        <div className="waiting-message" style={{ fontSize: '13px', opacity: 0.7 }}>
-          Your choice: {operandKindLabel(forcedSpec.casterCategory)} {String(casterValue)}
+        <div className="opponent-choice-prompt">
+          Your choice: <strong>{operandKindLabel(forcedSpec.casterCategory)} {String(casterValue)}</strong>
         </div>
       )}
       {forcedSpec && opponentValue != null && (
-        <div className="waiting-message" style={{ fontSize: '13px', opacity: 0.7 }}>
-          Opponent&apos;s choice: {operandKindLabel(forcedSpec.opponentCategory)} {String(opponentValue)}
+        <div className="opponent-choice-prompt">
+          Opponent chose: <strong>{operandKindLabel(forcedSpec.opponentCategory)} {String(opponentValue)}</strong>
+        </div>
+      )}
+      {forcedSpec && opponentValue == null && (
+        <div className="waiting-message">
+          Opponent is choosing the {operandKindLabel(forcedSpec.opponentCategory)}...
         </div>
       )}
       <div className="waiting-message">
