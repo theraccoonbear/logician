@@ -106,7 +106,7 @@ export function MajorArcanaPanel({
       {activeMajorId === 'CHARIOT' && (
         <ChariotForm selectedHexId={selectedHexId} onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />
       )}
-      {activeMajorId === 'DEVIL' && <DevilForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
+      {activeMajorId === 'DEVIL' && <DevilForm onConfirm={play} onCancel={cancel} />}
       {activeMajorId === 'WORLD' && <WorldForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}
       {activeMajorId === 'MAGICIAN' && <MagicianForm onConfirm={play} onCancel={cancel} />}
       {activeMajorId === 'TOWER' && <TowerForm onConfirm={play} onCancel={cancel} onPreviewTargetsChange={onPreviewTargetsChange} />}

@@ -10,6 +10,19 @@ import { operandKindLabel } from './OperandPicker'
 import type { Operand } from '../../../../engine/types/tarot'
 import type { TerrainType } from '../../../../engine/types/terrain'
 
+function ConditionDropdown({ operand }: { operand: Operand }) {
+  return (
+    <span className="redistribute-row" style={{ opacity: 0.7 }}>
+      <select disabled value={operand.kind}>
+        <option>{operandKindLabel(operand.kind as any)}</option>
+      </select>
+      <select disabled value={String(operand.value)}>
+        <option>{String(operand.value)}</option>
+      </select>
+    </span>
+  )
+}
+
 export function DevilLogicPickerForm({
   onPreviewTargetsChange,
 }: {
@@ -17,8 +30,7 @@ export function DevilLogicPickerForm({
 }) {
   const { state, dispatch, lastError } = useGameEngine()
   const pending = state?.pendingMajorChoice
-  const initialLogicId = (pending?.casterParams.logicCardId as string | undefined) ?? null
-  const [logicId, setLogicId] = useState<string | null>(initialLogicId)
+  const [logicId, setLogicId] = useState<string | null>(null)
 
   const caster = state?.players.find((p) => p.id === pending?.casterId)
 
@@ -71,17 +83,20 @@ export function DevilLogicPickerForm({
         <span className="opponent-choice-card">{label}</span>
         <span className="opponent-choice-desc">{description}</span>
       </div>
-      <div className="opponent-choice-prompt" style={{ opacity: 0.7, fontSize: '13px' }}>
-        Condition 1: <strong>{operandKindLabel(cond1.kind as any)} {String(cond1.value)}</strong>
-      </div>
-      <div className="opponent-choice-prompt" style={{ opacity: 0.7, fontSize: '13px' }}>
-        Condition 2: <strong>{operandKindLabel(cond2.kind as any)} {String(cond2.value)}</strong>
-      </div>
       <div className="opponent-choice-prompt">
+        <strong>{caster.name}</strong>, your opponent chose:
+      </div>
+      <div className="opponent-choice-prompt" style={{ paddingLeft: 16 }}>
+        Condition 1: <ConditionDropdown operand={cond1} />
+      </div>
+      <div className="opponent-choice-prompt" style={{ paddingLeft: 16 }}>
+        Condition 2: <ConditionDropdown operand={cond2} />
+      </div>
+      <div className="opponent-choice-prompt" style={{ marginTop: 8 }}>
         Pick a Logic card. All structures matching both conditions and the logic card will be destroyed.
       </div>
       <LogicCardHand cards={caster.logicHand} selectedId={logicId} onSelect={setLogicId} />
-      {previewStructures.length > 0 && (
+      {logicId && previewStructures.length > 0 && (
         <div className="spell-impact-summary" style={{ marginTop: 8 }}>
           <div className="summary-title">Will destroy {previewStructures.length} structure{previewStructures.length !== 1 ? 's' : ''}</div>
           <div className="summary-rows">
@@ -117,6 +132,7 @@ export function DevilLogicPickerForm({
         <button
           className="action-button"
           disabled={!logicId}
+          style={!logicId ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
           onClick={submitLogicCard}
         >
           Cast The Devil
