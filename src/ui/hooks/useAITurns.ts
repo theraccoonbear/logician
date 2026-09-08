@@ -15,7 +15,9 @@ export function useAITurns(blocked = false) {
       state.phase === 'awaitingTrigger'
         ? state.players.find((p) => p.id === state.triggerQueue?.[0])
         : state.phase === 'awaitingMajorChoice'
-          ? state.players.find((p) => p.id === state.majorChoiceQueue?.[0])
+          ? state.pendingMajorChoice?.devilAwaitingLogicCard
+            ? state.players.find((p) => p.id === state.pendingMajorChoice?.casterId)
+            : state.players.find((p) => p.id === state.majorChoiceQueue?.[0])
           : state.players[state.activePlayerIndex]
 
     if (!actor?.isAI) return

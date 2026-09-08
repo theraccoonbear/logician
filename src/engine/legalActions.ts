@@ -335,10 +335,25 @@ function valuesForCategory(kind: OperandKind): (string | number)[] {
 
 /** Legal actions for a player who is next in the majorChoiceQueue (opponent response phase). */
 export function getLegalMajorChoiceActions(state: GameState, playerId: PlayerId): GameAction[] {
-  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice || !state.majorChoiceQueue?.length) return []
-  if (state.majorChoiceQueue[0] !== playerId) return []
+  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice) return []
 
   const pending = state.pendingMajorChoice
+
+  // Devil: after both conditions collected, caster picks a logic card from hand.
+  if (pending.majorId === 'DEVIL' && pending.devilAwaitingLogicCard) {
+    if (pending.casterId !== playerId) return []
+    const caster = state.players.find((p) => p.id === playerId)
+    if (!caster) return []
+    return caster.logicHand.map((card) => ({
+      type: 'SUBMIT_OPPONENT_CHOICE' as const,
+      playerId,
+      choice: { logicCardId: card.instanceId },
+    }))
+  }
+
+  if (!state.majorChoiceQueue?.length) return []
+  if (state.majorChoiceQueue[0] !== playerId) return []
+
   if (pending.majorId === 'DEVIL') {
     const condIndex = pending.devilConditionIndex ?? 0
     const usedKinds = new Set<string>()

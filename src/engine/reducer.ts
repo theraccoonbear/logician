@@ -517,13 +517,33 @@ function buildDevilOpponentQueue(state: GameState, casterId: string): string[] {
 }
 
 function handleSubmitOpponentChoice(state: GameState, action: { playerId: string; choice: Record<string, unknown> }): ActionResult {
-  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice || !state.majorChoiceQueue?.length) {
+  if (state.phase !== 'awaitingMajorChoice' || !state.pendingMajorChoice) {
+    return err('No opponent choice is currently expected')
+  }
+  const pending = state.pendingMajorChoice
+
+  // Devil: after both conditions collected, caster picks a logic card (no queue entry).
+  if (pending.majorId === 'DEVIL' && pending.devilAwaitingLogicCard) {
+    if (action.playerId !== pending.casterId) return err('Only the caster may pick a logic card')
+    const logicCardId = action.choice.logicCardId as string | undefined
+    if (!logicCardId) return err('Missing logicCardId')
+    const updatedPending: PendingMajorChoice = {
+      ...pending,
+      casterParams: { ...pending.casterParams, logicCardId },
+      devilAwaitingLogicCard: undefined,
+    }
+    return finalizeMajorChoice(
+      { ...state, pendingMajorChoice: updatedPending },
+      updatedPending,
+    )
+  }
+
+  // Normal queue-based response path.
+  if (!state.majorChoiceQueue?.length) {
     return err('No opponent choice is currently expected')
   }
   const responderId = state.majorChoiceQueue[0]
   if (action.playerId !== responderId) return err('Not your turn to respond')
-
-  const pending = state.pendingMajorChoice
 
   if (pending.majorId === 'DEVIL') {
     const condIndex = pending.devilConditionIndex ?? 0
@@ -549,7 +569,15 @@ function handleSubmitOpponentChoice(state: GameState, action: { playerId: string
     )
 
     if (remaining.length === 0) {
-      return finalizeMajorChoice(logged, nextMajorChoice)
+      // Both conditions collected. Hand control back to caster to pick a logic card.
+      const casterIdx = logged.players.findIndex((p) => p.id === pending.casterId)
+      const devilAwaiting: PendingMajorChoice = { ...nextMajorChoice, devilAwaitingLogicCard: true }
+      return ok({
+        ...logged,
+        pendingMajorChoice: devilAwaiting,
+        majorChoiceQueue: undefined,
+        activePlayerIndex: casterIdx,
+      })
     }
     const nextIdx = logged.players.findIndex((p) => p.id === remaining[0])
     return ok({ ...logged, activePlayerIndex: nextIdx })

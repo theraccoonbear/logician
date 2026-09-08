@@ -168,7 +168,7 @@ describe('multi-player Major Arcana flow', () => {
     expect(err).toContain('Invalid terrain')
   })
 
-  it('Devil in 2P queues same opponent twice', () => {
+  it('Devil in 2P queues same opponent twice, then caster picks logic card', () => {
     const devil = makeMajorTarot('DEVIL', 'devil-1')
     let state = makeState({ tarotRow: [devil] })
 
@@ -176,7 +176,7 @@ describe('multi-player Major Arcana flow', () => {
       type: 'PLAY_MAJOR_ARCANA',
       playerId: 'p1',
       tarotId: 'devil-1',
-      params: { logicCardId: 'l1' },
+      params: {},
     }))
 
     expect(state.phase).toBe('awaitingMajorChoice')
@@ -199,6 +199,18 @@ describe('multi-player Major Arcana flow', () => {
       choice: { condition: { kind: 'structureType', value: 'Pool' } },
     }))
 
+    // Both conditions collected — now awaiting caster's logic card
+    expect(state.phase).toBe('awaitingMajorChoice')
+    expect(state.pendingMajorChoice!.devilAwaitingLogicCard).toBe(true)
+    expect(state.majorChoiceQueue).toBeUndefined()
+
+    // Caster picks a logic card to finalize
+    state = expectOk(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p1',
+      choice: { logicCardId: 'l1' },
+    }))
+
     expect(state.phase).toBe('build')
     expect(state.pendingMajorChoice).toBeUndefined()
   })
@@ -211,7 +223,7 @@ describe('multi-player Major Arcana flow', () => {
       type: 'PLAY_MAJOR_ARCANA',
       playerId: 'p1',
       tarotId: 'devil-1',
-      params: { logicCardId: 'l1' },
+      params: {},
     }))
 
     state = expectOk(applyAction(state, {
@@ -220,10 +232,20 @@ describe('multi-player Major Arcana flow', () => {
       choice: { condition: { kind: 'terrain', value: 'Forests' } },
     }))
 
-    const err = expectErr(applyAction(state, {
+    state = expectOk(applyAction(state, {
       type: 'SUBMIT_OPPONENT_CHOICE',
       playerId: 'p2',
       choice: { condition: { kind: 'terrain', value: 'Mountains' } },
+    }))
+
+    // Both conditions collected — now awaiting caster's logic card
+    expect(state.pendingMajorChoice!.devilAwaitingLogicCard).toBe(true)
+
+    // Caster picks a logic card — same-category validation happens at finalization
+    const err = expectErr(applyAction(state, {
+      type: 'SUBMIT_OPPONENT_CHOICE',
+      playerId: 'p1',
+      choice: { logicCardId: 'l1' },
     }))
     expect(err).toContain('different categories')
   })
@@ -742,7 +764,7 @@ describe('activePlayerIndex alignment with UI routing', () => {
 
     state = expectOk(applyAction(state, {
       type: 'PLAY_MAJOR_ARCANA', playerId: 'p1', tarotId: 'devil-1',
-      params: { logicCardId: 'l1' },
+      params: {},
     }))
 
     const activePlayer = state.players[state.activePlayerIndex]
@@ -791,7 +813,7 @@ describe('activePlayerIndex alignment with UI routing', () => {
 
     state = expectOk(applyAction(state, {
       type: 'PLAY_MAJOR_ARCANA', playerId: 'p1', tarotId: 'devil-1',
-      params: { logicCardId: 'l1' },
+      params: {},
     }))
     expect(state.players[state.activePlayerIndex].id).toBe(state.majorChoiceQueue![0])
 

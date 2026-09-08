@@ -40,6 +40,8 @@ export interface PendingMajorChoice {
   opponentParams: Record<string, unknown>
   /** For Devil: tracks which condition index (0 or 1) the current responder is filling. */
   devilConditionIndex?: number
+  /** For Devil: both conditions collected, now awaiting caster's logic card pick. */
+  devilAwaitingLogicCard?: boolean
 }
 
 export type PendingResolution =

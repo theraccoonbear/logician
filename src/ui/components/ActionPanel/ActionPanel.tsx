@@ -7,6 +7,7 @@ import { MajorArcanaPanel } from './MajorArcanaPanel'
 import { OpponentChoicePanel, MajorChoiceWaitingPanel } from './OpponentChoicePanel'
 import { SpellBuilder, type SpellSelection } from './SpellBuilder'
 import { TriggerWindowPanel } from './TriggerWindowPanel'
+import { DevilLogicPickerForm } from './majorForms/DevilLogicPickerForm'
 
 const EMPTY_SELECTION: SpellSelection = { logicId: null, effectId: null, tarotId: null }
 
@@ -114,6 +115,9 @@ export function ActionPanel({
     const isResponder = state.majorChoiceQueue?.[0] === activePlayer?.id
     if (isResponder) {
       return <OpponentChoicePanel onPreviewTargetsChange={onPreviewTargetsChange} />
+    }
+    if (state.pendingMajorChoice?.devilAwaitingLogicCard) {
+      return <DevilLogicPickerForm onPreviewTargetsChange={onPreviewTargetsChange} />
     }
     return <MajorChoiceWaitingPanel />
   }
