@@ -16,9 +16,10 @@ export function DevilLogicPickerForm({
   onPreviewTargetsChange?: (ids: Set<string>) => void
 }) {
   const { state, dispatch, lastError } = useGameEngine()
-  const [logicId, setLogicId] = useState<string | null>(null)
-
   const pending = state?.pendingMajorChoice
+  const initialLogicId = (pending?.casterParams.logicCardId as string | undefined) ?? null
+  const [logicId, setLogicId] = useState<string | null>(initialLogicId)
+
   const caster = state?.players.find((p) => p.id === pending?.casterId)
 
   const cond1 = pending?.opponentParams.condition1 as Operand | undefined

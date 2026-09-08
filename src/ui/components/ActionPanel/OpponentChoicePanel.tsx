@@ -3,6 +3,7 @@ import { getForcedOperandSpec } from '../../../engine/majorArcana/forcedOperand'
 import { getAffectedStructures } from '../../../engine/selectors'
 import { describeMajorArcana } from '../../operandLabels'
 import { MAJOR_ARCANA_DESCRIPTIONS } from '../../majorArcanaDescriptions'
+import { LOGIC_CARD_LABELS } from '../../cardLabels'
 import { terrainArtUrl } from '../../terrainArt'
 import { structureArtUrl } from '../../structureArt'
 import { useGameEngine } from '../../hooks/useGameEngine'
@@ -225,11 +226,16 @@ export function MajorChoiceWaitingPanel() {
   // Show conditions chosen so far for Devil
   const isDevil = pending.majorId === 'DEVIL'
   const cond1 = isDevil ? (pending.opponentParams.condition1 as Operand | undefined) : undefined
+  const cond2 = isDevil ? (pending.opponentParams.condition2 as Operand | undefined) : undefined
 
   // For forced-operand cards, show the caster's choice and opponent's choice so far
   const forcedSpec = getForcedOperandSpec(pending.majorId)
   const casterValue = pending.casterParams.casterValue
   const opponentValue = (pending.opponentParams as { opponentValue?: unknown }).opponentValue
+
+  // For Devil, show the caster's chosen logic card
+  const devilLogicCardId = isDevil ? (pending.casterParams.logicCardId as string | undefined) : undefined
+  const devilLogicCard = isDevil && caster && devilLogicCardId ? caster.logicHand.find((c) => c.instanceId === devilLogicCardId) : null
 
   const cancel = () => dispatch({ type: 'CANCEL_MAJOR_CHOICE', playerId: pending.casterId })
 
@@ -243,9 +249,24 @@ export function MajorChoiceWaitingPanel() {
           Condition 1: <strong>{operandKindLabel(cond1.kind as any)} {String(cond1.value)}</strong>
         </div>
       )}
+      {isDevil && cond1 && !cond2 && (
+        <div className="waiting-message">
+          Opponent is choosing condition 2...
+        </div>
+      )}
       {isDevil && !cond1 && (
         <div className="waiting-message">
           Opponent is choosing condition 1...
+        </div>
+      )}
+      {isDevil && cond2 && (
+        <div className="opponent-choice-prompt">
+          Condition 2: <strong>{operandKindLabel(cond2.kind as any)} {String(cond2.value)}</strong>
+        </div>
+      )}
+      {isDevil && devilLogicCard && (
+        <div className="opponent-choice-prompt" style={{ opacity: 0.7, fontSize: '13px' }}>
+          Your logic card: <strong>{LOGIC_CARD_LABELS[devilLogicCard.kind]}</strong>
         </div>
       )}
       {forcedSpec && casterValue != null && (
