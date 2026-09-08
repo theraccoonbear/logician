@@ -257,10 +257,15 @@ export function ForcedOperandForm({
         <OperandPicker kind={spec.casterCategory} value={casterValue} onChange={setCasterValue} />
       </div>
 
+      <div className="redistribute-row">
+        <span>{opponent!.name} names the {operandKindLabel(spec.opponentCategory)}:</span>
+        <OperandPicker kind={spec.opponentCategory} value="" onChange={() => {}} disabled />
+      </div>
+
       {opponentIsAI && aiChoice?.opponentValue != null && (
         <div className="redistribute-row major-arcana-opponent-waiting">
           <span className="opponent-waiting-label">
-            {opponent!.name} names {operandKindLabel(spec.opponentCategory as OperandKind)} {String(aiChoice.opponentValue)}.
+            Predicted: {operandKindLabel(spec.opponentCategory as OperandKind)} {String(aiChoice.opponentValue)}
           </span>
         </div>
       )}

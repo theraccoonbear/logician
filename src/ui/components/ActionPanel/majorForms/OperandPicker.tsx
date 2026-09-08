@@ -7,14 +7,16 @@ export function OperandPicker({
   kind,
   value,
   onChange,
+  disabled,
 }: {
   kind: OperandKind
   value: string | number | ''
   onChange: (value: string | number) => void
+  disabled?: boolean
 }) {
   if (kind === 'terrain') {
     return (
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
         <option value="">choose a terrain…</option>
         {TERRAIN_TYPES.map((t) => (
           <option key={t} value={t}>
@@ -26,7 +28,7 @@ export function OperandPicker({
   }
   if (kind === 'structureType') {
     return (
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
         <option value="">choose a structure type…</option>
         {STRUCTURE_TYPES.map((t) => (
           <option key={t} value={t}>
@@ -37,7 +39,7 @@ export function OperandPicker({
     )
   }
   return (
-    <select value={value} onChange={(e) => onChange(Number(e.target.value))}>
+    <select value={value} onChange={(e) => onChange(Number(e.target.value))} disabled={disabled}>
       <option value="">choose a level…</option>
       {LEVELS.map((l) => (
         <option key={l} value={l}>
